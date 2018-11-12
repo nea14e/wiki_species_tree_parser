@@ -46,9 +46,14 @@ def parse_list_for_kingdom(kingdom_list_url):
     driver.get(kingdom_list_url)
     time.sleep(1)
     driver.implicitly_wait(2)
+    item_counter = 0
 
     while True: # Цикл перехода на след. страницу
-        next_page = driver.find_element_by_xpath('//div[@id="mw-pages"]/a[2]').get_attribute("href") # След. страница
+        try:
+            next_page = driver.find_element_by_xpath('//div[@id="mw-pages"]/a[2]').get_attribute("href") # След. страница
+        except:
+            print('Все страницы списка обработаны')
+            break
         for link in driver.find_elements_by_xpath('//div[@class="mw-category-group"]/ul/li/a'): #Цикл заполнения "массива ссылок на странице" ссылками, чтобы по ним переходить
             try:
                 details_page_url = link.get_attribute("href") #Ссылка
@@ -62,23 +67,14 @@ def parse_list_for_kingdom(kingdom_list_url):
                 print('===========================================')
                 print('ССЫЛКА: ' + str(link))
                 get_levels(driver) #Парсинг информации
+                item_counter += 1
                 time.sleep(1)
             except WebDriverException:
                 print('Ошибка:\n', traceback.format_exc())
-        if next_page == last_page: #Проверяем дошли ли до страницы где начинаются английские слова
-            break #Выходим из "цикла перехода на след. страницу"
-        else:
-            # TODO переходить на следующую страницу списка - while
-            driver.get(next_page) #Переходим на след страницу
-            links_mas = [] #Чистим "массив ссылок на странице" для повтороной итерации
+        driver.get(next_page) #Переходим на след страницу
+        links_mas = [] #Чистим "массив ссылок на странице" для повтороной итерации
     print('ЦАРСТВО ' + kingdom_list_url + ' БЫЛО ОБРАБОТАНО!')
     driver.quit()
-
-
-
-last_page = 'https://ru.wikipedia.org/w/index.php?title=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%96%D0' \
-            '%B8%D0%B2%D0%BE%D1%82%D0%BD%D1%8B%D0%B5_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1%82%D1%83&subcatfrom=' \
-            '%D0%9A&filefrom=%D0%9A&pagefrom=%D0%9A%D0%BE%D0%BB%D1%8C%D1%87%D0%B0%D1%82%D1%8B%D0%B5+%D1%87%D0%B5%D1%80%D0%B2%D0%B8#mw-pages' # Страница где начинаются английские слова
 
 kingdom_animals_url = 'https://ru.wikipedia.org/wiki/%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%96%D0' \
                       '%B8%D0%B2%D0%BE%D1%82%D0%BD%D1%8B%D0%B5_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1' \
