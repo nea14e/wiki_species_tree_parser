@@ -76,7 +76,6 @@ def parse_details(kingdom_title):
     #     print('Ошибка:\n', traceback.format_exc())
 
 
-
 def get_levels(driver):
     # TODO по ссылкам где нет кнопки "показать" пропускает информацию(Скорей всего там другая структура HTML),
     # TODO сделать реплейс <b> и </b> в результате на пустоту

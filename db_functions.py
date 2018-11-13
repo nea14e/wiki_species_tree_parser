@@ -135,3 +135,5 @@ class DbFunctions:
         print(str(sql))
         cur.execute(sql)
 
+
+class DbListItemsIterator:
