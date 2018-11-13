@@ -16,7 +16,7 @@ def populate_list_for_kingdom(kingdom_title):
     driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
     driver.get(kingdom_list_url)
     time.sleep(1)
-    driver.implicitly_wait(2)
+    driver.implicitly_wait(5)
     item_counter = 0
 
     while True:  # Цикл перехода на след. страницу
@@ -32,8 +32,7 @@ def populate_list_for_kingdom(kingdom_title):
             if next_page_elem.text == 'Следующая страница':
                 next_page_url = next_page_elem.get_attribute("href")  # След. страница
             elif next_page_elem.text == 'Предыдущая страница':
-                print('Все страницы списка обработаны')
-                break
+                next_page_url = None
             else:
                 raise Exception("Ссылка на следующую страницу не найдена")
         else:
@@ -51,8 +50,10 @@ def populate_list_for_kingdom(kingdom_title):
                 item_counter += 1
             except WebDriverException:
                 print('Ошибка:\n', traceback.format_exc())
+
         if next_page_url:
             driver.get(next_page_url)  # Переходим на след страницу
+            time.sleep(1)
         else:
             print('Все страницы списка обработаны')
             break
@@ -113,4 +114,4 @@ class ParsedLevel:
 
 # Выберите нужное и подставьте сюда перед запуском
 DbFunctions.init_db()
-populate_list_for_kingdom('plants')
+populate_list_for_kingdom('mushrooms')
