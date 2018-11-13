@@ -20,12 +20,25 @@ def populate_list_for_kingdom(kingdom_title):
     item_counter = 0
 
     while True:  # Цикл перехода на след. страницу
+        # Cсылка на следующую страницу
         try:
-            next_page = driver.find_element_by_xpath('//div[@id="mw-pages"]/a[2]').get_attribute(
-                "href")  # След. страница
+            next_page_elem = driver.find_element_by_xpath('//div[@id="mw-pages"]/a[2]')
         except WebDriverException:
-            print('Все страницы списка обработаны')
-            break
+            next_page_elem = None
+            pass
+
+        # Адрес из ссылки на следующую страницу
+        if next_page_elem:
+            if next_page_elem.text == 'Следующая страница':
+                next_page_url = next_page_elem.get_attribute("href")  # След. страница
+            elif next_page_elem.text == 'Предыдущая страница':
+                print('Все страницы списка обработаны')
+                break
+            else:
+                raise Exception("Ссылка на следующую страницу не найдена")
+        else:
+            next_page_url = None
+
         # Сохраем в базу ссылки, чтобы потом по ним переходить
         for link in driver.find_elements_by_xpath(
                 '//div[@class="mw-category-group"]/ul/li/a'):
@@ -38,7 +51,11 @@ def populate_list_for_kingdom(kingdom_title):
                 item_counter += 1
             except WebDriverException:
                 print('Ошибка:\n', traceback.format_exc())
-        driver.get(next_page)  # Переходим на след страницу
+        if next_page_url:
+            driver.get(next_page_url)  # Переходим на след страницу
+        else:
+            print('Все страницы списка обработаны')
+            break
     print('ЦАРСТВО ' + kingdom_list_url + ' БЫЛО ОБРАБОТАНО! Всего успешно ' + str(item_counter) + " элементов добавлено в список.")
     driver.quit()
 
@@ -96,4 +113,4 @@ class ParsedLevel:
 
 # Выберите нужное и подставьте сюда перед запуском
 DbFunctions.init_db()
-populate_list_for_kingdom('animals')
+populate_list_for_kingdom('plants')
