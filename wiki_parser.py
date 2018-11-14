@@ -60,10 +60,9 @@ def populate_list_for_kingdom(driver, kingdom_title):
 
 def parse_details(driver, kingdom_title):
     kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
-    query = "SELECT l.id, l.title, l.href " \
-            "FROM public.list l " \
-            "  INNER JOIN public.kingdoms k ON k.id = l.kingdom_id " \
-            "WHERE k.title = '" + str(kingdom_title) + "';"
+    query = "SELECT id, title, href " \
+            "FROM public.list" \
+            "WHERE kingdom_id = '" + str(kingdom_id) + "';"
     list_iterator = DbListItemsIterator(query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
@@ -82,6 +81,13 @@ def parse_details(driver, kingdom_title):
 
             # Парсинг информации
             levels = get_levels(driver)  # TODO Парсинг информации
+            current_level = levels[0]
+            details_category = current_level.category
+            # Ищем родителя, к которому прикрепить этот элемент
+            levels.pop(0)  # Сам текущий элемент (первый в списке) не может быть родителем
+            for level in levels:
+                # Проверить, есть ли такой элемент среди public.list, используя level.value и kingdom_id - они уникальны в таблице list.
+                # Если есть, то берём его id и записываем как details_parent_id. На этом break
 
             item_counter += 1
             time.sleep(1)
@@ -124,7 +130,9 @@ def get_levels(driver):
 
 
 class ParsedLevel:
-    pass
+    def __init__(self):
+        self.category = ""
+        self.value = ""
 
 
 driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
