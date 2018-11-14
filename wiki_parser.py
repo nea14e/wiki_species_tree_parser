@@ -7,16 +7,13 @@ import time
 
 from selenium.common.exceptions import WebDriverException
 
-from db_functions import DbFunctions
+from db_functions import DbFunctions, DbListItemsIterator
 
 
-def populate_list_for_kingdom(kingdom_title):
+def populate_list_for_kingdom(driver, kingdom_title):
     kingdom_list_url = DbFunctions.get_kingdom_url(kingdom_title)
-
-    driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
     driver.get(kingdom_list_url)
-    time.sleep(1)
-    driver.implicitly_wait(5)
+
     item_counter = 0
 
     while True:  # Цикл перехода на след. страницу
@@ -57,31 +54,50 @@ def populate_list_for_kingdom(kingdom_title):
         else:
             print('Все страницы списка обработаны')
             break
-    print('ЦАРСТВО ' + kingdom_list_url + ' БЫЛО ОБРАБОТАНО! Всего успешно ' + str(item_counter) + " элементов добавлено в список.")
-    driver.quit()
+    print('ЦАРСТВО ' + kingdom_list_url + ' БЫЛО ОБРАБОТАНО! Всего успешно ' + str(
+        item_counter) + " элементов добавлено в список.")
 
 
-def parse_details(kingdom_title):
-    kingdom_list_url = DbFunctions.get_kingdom_url(kingdom_title)
-    # for link in links_mas:  # Цикл по "массиву ссылок на странице"
-    # try:
-    #     driver.get(link)  # TODO Переход по ссылке
-    #     print('\n')
-    #     print('===========================================')
-    #     print('ССЫЛКА: ' + str(link))
-    #     get_levels(driver)  # TODO Парсинг информации
-    #     item_counter += 1
-    #     time.sleep(1)
-    # except WebDriverException:
-    #     print('Ошибка:\n', traceback.format_exc())
+def parse_details(driver, kingdom_title):
+    kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
+    query = "SELECT l.id, l.title, l.href " \
+            "FROM public.list l " \
+            "  INNER JOIN public.kingdoms k ON k.id = l.kingdom_id " \
+            "WHERE k.title = '" + str(kingdom_title) + "';"
+    list_iterator = DbListItemsIterator(query)
+
+    # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
+    item_counter = 0
+    while True:
+        list_item = list_iterator.fetchone()
+        if not list_item:
+            break
+        try:
+            details_id = list_item[0]
+            details_title = str(list_item[1])
+            details_link = str(list_item[2])
+            print('===========================================')
+            print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details_title + " ссылка: " + details_link)
+            driver.get(details_link)
+
+            # Парсинг информации
+            levels = get_levels(driver)  # TODO Парсинг информации
+
+            item_counter += 1
+            time.sleep(1)
+        except WebDriverException:
+            print('Ошибка:\n', traceback.format_exc())
+    print(
+        "ВЕСЬ СПИСОК ПО ЦАРСТВУ " + str(kingdom_title) + " ПРОЙДЕН! Добавлены детели о " + str(item_counter) + "видах.")
 
 
 def get_levels(driver):
-    # TODO по ссылкам где нет кнопки "показать" пропускает информацию(Скорей всего там другая структура HTML),
     # TODO сделать реплейс <b> и </b> в результате на пустоту
     parsed_levels = []
     infobox = driver.find_element_by_xpath('//table[@class="infobox"]')
     levels = infobox.find_elements_by_xpath('.//div[@class="NavFrame collapsed"]/div')
+    if len(levels) == 0:
+        levels = infobox.find_elements_by_xpath('(./tbody/tr/td/table)[1]/tbody/tr')
     for level in reversed(levels):
         if level != levels[0]:  # Если 1 элемент(ненужный) то пропускаем
             parsed_level = ParsedLevel()
@@ -111,6 +127,14 @@ class ParsedLevel:
     pass
 
 
-# Выберите нужное и подставьте сюда перед запуском
+driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
+time.sleep(1)
+driver.implicitly_wait(5)
+
 DbFunctions.init_db()
-populate_list_for_kingdom('mushrooms')
+
+# Выберите нужное и подставьте сюда перед запуском
+# populate_list_for_kingdom(driver, 'mushrooms')
+parse_details(driver, 'mushrooms')
+
+driver.quit()

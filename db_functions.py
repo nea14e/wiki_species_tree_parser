@@ -96,7 +96,7 @@ class DbFunctions:
         if not DbFunctions.conn:
             raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
 
-        # Узнаем id царства по его названию
+        # Узнаем url царства по его названию
         cur = DbFunctions.conn.cursor()
         sql = "SELECT href " \
               "FROM public.kingdoms " \
@@ -109,6 +109,25 @@ class DbFunctions:
         except:
             raise Exception("Царство не найдено: " + str(kingdom_title))
         return kingdom_url
+
+    @staticmethod
+    def get_kingdom_id(kingdom_title):
+        if not DbFunctions.conn:
+            raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
+
+        # Узнаем id царства по его названию
+        cur = DbFunctions.conn.cursor()
+        sql = "SELECT id " \
+              "FROM public.kingdoms " \
+              "WHERE title = '" + str(kingdom_title) + "';"
+        print(str(sql))
+        cur.execute(sql)
+        try:
+            kingdom_id = cur.fetchone()[0]
+            print('kingdom_id = ' + str(kingdom_id))
+        except:
+            raise Exception("Царство не найдено: " + str(kingdom_title))
+        return kingdom_id
 
     @staticmethod
     def add_list_item(kingdom_title, title, href):
@@ -131,9 +150,20 @@ class DbFunctions:
         cur = DbFunctions.conn.cursor()
         sql = "INSERT INTO public.list (kingdom_id, title, href) " \
               "VALUES ('" + str(kingdom_id) + "', '" + str(title) + "', '" + str(href) + "')" \
-                                                              "ON CONFLICT ON CONSTRAINT uq_list DO UPDATE SET href = EXCLUDED.href;"
+                                                                                         "ON CONFLICT ON CONSTRAINT uq_list DO UPDATE SET href = EXCLUDED.href;"
         print(str(sql))
         cur.execute(sql)
 
 
-class DbListItemsIterator:
+class DbListItemsIterator(DbFunctions):
+    def __init__(self, query):
+        self.conn1 = psycopg2.connect(
+            "dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
+        self.cur1 = DbFunctions.conn.cursor()
+        self.cur1.execute(query)
+
+    def fetchone(self):
+        return self.cur1.fetchone()
+
+    def __del__(self):
+        self.conn1.close()
