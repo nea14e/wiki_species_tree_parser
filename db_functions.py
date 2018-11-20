@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import csv
 
 
 class DbFunctions:
@@ -31,6 +32,8 @@ class DbFunctions:
             DbFunctions.conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
         # Создаём в ней таблицы, если надо
+        # Наполняем их данными, если надо
+
         # Таблица с царствами
         cur = DbFunctions.conn.cursor()
         sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'kingdoms';"
@@ -47,14 +50,23 @@ class DbFunctions:
                   ");"
             print(str(sql))
             cur.execute(sql)
+        # Данные о списках для парсинга (например, царствах).
+        # Они не содержатся на Википедии ни в каком явном списке, поэтому вбиваются сюда фиксированно
+        cur = DbFunctions.conn.cursor()
+        sql = "SELECT COUNT(1) FROM public.kingdoms;"
+        cur.execute(sql)
+        if cur.rowcount == 0:
             cur = DbFunctions.conn.cursor()
-            sql = "INSERT INTO public.kingdoms (title, href) " \
-                  "VALUES ('animals', 'https://ru.wikipedia.org/wiki/%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%96%D0%B8%D0%B2%D0%BE%D1%82%D0%BD%D1%8B%D0%B5_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1%82%D1%83')," \
-                  "       ('plants', 'https://ru.wikipedia.org/wiki/%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%A0%D0%B0%D1%81%D1%82%D0%B5%D0%BD%D0%B8%D1%8F_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1%82%D1%83')," \
-                  "       ('mushrooms', 'https://ru.wikipedia.org/wiki/%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%93%D1%80%D0%B8%D0%B1%D1%8B_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1%82%D1%83')," \
-                  "       ('viruses', 'https://ru.wikipedia.org/wiki/%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D1%8F:%D0%92%D0%B8%D1%80%D1%83%D1%81%D1%8B_%D0%BF%D0%BE_%D0%B0%D0%BB%D1%84%D0%B0%D0%B2%D0%B8%D1%82%D1%83');"
-            print(str(sql))
-            cur.execute(sql)
+            with open('db_init/kingdoms.csv', 'r') as csv_file:
+                csv_content = csv.reader(csv_file)
+            for ind, row in enumerate(csv_content):
+                if ind == 0:
+                    continue
+                sql = "INSERT INTO public.kingdoms (id, title, href) " \
+                      "VALUES (%i, '%s', '%s');" % (row[0], row[1], row[2])
+                print(str(sql))
+                cur.execute(sql)
+
         # Таблица со списком
         cur = DbFunctions.conn.cursor()
         sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list';"
@@ -72,6 +84,23 @@ class DbFunctions:
                   ");"
             print(str(sql))
             cur.execute(sql)
+        # Данные для корня дерева.
+        # Они не содержатся на Википедии ни в каком явном списке, поэтому вбиваются сюда фиксированно
+        cur = DbFunctions.conn.cursor()
+        sql = "SELECT COUNT(1) FROM public.list;"
+        cur.execute(sql)
+        if cur.rowcount == 0:
+            cur = DbFunctions.conn.cursor()
+            with open('db_init/list.csv', 'r') as csv_file:
+                csv_content = csv.reader(csv_file)
+            for ind, row in enumerate(csv_content):
+                if ind == 0:
+                    continue
+                sql = "INSERT INTO public.list (id, kingdom_id, title, href) " \
+                      "VALUES (%i, %i, '%s', '%s');" % (row[0], row[1], row[2], row[3])
+                print(str(sql))
+                cur.execute(sql)
+
         # Таблица с подробностями
         cur = DbFunctions.conn.cursor()
         sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'details';"
@@ -80,7 +109,6 @@ class DbFunctions:
             cur = DbFunctions.conn.cursor()
             sql = "CREATE TABLE public.details (" \
                   "id bigint NOT NULL" \
-                  ", title text NOT NULL" \
                   ", type text NOT NULL" \
                   ", image_url text" \
                   ", parent_id bigint" \
@@ -90,6 +118,22 @@ class DbFunctions:
                   ");"
             print(str(sql))
             cur.execute(sql)
+        # Данные для корня дерева.
+        # Они не содержатся на Википедии ни в каком явном списке, поэтому вбиваются сюда фиксированно
+        cur = DbFunctions.conn.cursor()
+        sql = "SELECT COUNT(1) FROM public.details;"
+        cur.execute(sql)
+        if cur.rowcount == 0:
+            cur = DbFunctions.conn.cursor()
+            with open('db_init/details.csv', 'r') as csv_file:
+                csv_content = csv.reader(csv_file)
+            for ind, row in enumerate(csv_content):
+                if ind == 0:
+                    continue
+                sql = "INSERT INTO public.details (id, type, image_url, parent_id) " \
+                      "VALUES (%i, '%s', '%s', %i);" % (row[0], row[1], row[2], row[3])
+                print(str(sql))
+                cur.execute(sql)
 
     @staticmethod
     def get_kingdom_url(kingdom_title):
