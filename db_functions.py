@@ -187,15 +187,49 @@ class DbFunctions:
         cur.execute(sql)
 
 
-class DbListItemsIterator(DbFunctions):
-    def __init__(self, query):
-        self.conn1 = psycopg2.connect(
-            "dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
-        self.cur1 = DbFunctions.conn.cursor()
+class DbConnectionsHandler():
+    connections_pool = {}
+
+    @classmethod
+    def get_connection(cls, tag):
+        """
+                Выдаёт соединение, соответствующее тегу.
+                Запоминает его для переиспользования - для одного и того же тега всегда выдаётся одно и то же соединение.
+                При необходимости создаёт новый элемент (для нового тега).
+                :param tag: некий тег для различения соединений
+                :return: соединение, соответствующее тегу.
+                """
+        if tag in cls.connections_pool.keys():
+            return cls.connections_pool[str(tag)]
+        else:
+            new_conn = psycopg2.connect("dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
+            cls.connections_pool[str(tag)] = new_conn
+            return new_conn
+
+
+class DbListItemsIterator:
+    def __init__(self, connection_tag, query):
+        self.conn1 = DbConnectionsHandler.get_connection(connection_tag)
+        self.cur1 = self.conn1.cursor()
         self.cur1.execute(query)
+
+    def rowcount(self):
+        return self.cur1.rowcount
 
     def fetchone(self):
         return self.cur1.fetchone()
 
-    def __del__(self):
-        self.conn1.close()
+
+class DbExecuteNonQuery:
+    @staticmethod
+    def execute(connection_tag, query):
+        conn1 = DbConnectionsHandler.get_connection(connection_tag)
+        cur1 = conn1.cursor()
+        cur1.execute(query)
+
+
+def quote_nullable(val):
+    if val is None:
+        return "null"
+    else:
+        return "'" + str(val) + "'"
