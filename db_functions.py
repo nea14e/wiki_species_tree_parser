@@ -70,6 +70,10 @@ class DbFunctions:
                           "VALUES (%s, '%s', '%s');" % (row[0], row[1], row[2])
                     print(str(sql))
                     cur.execute(sql)
+            cur = DbFunctions.conn.cursor()
+            sql = "select setval('kingdoms_id_seq', (select max(id) from public.kingdoms), true)"
+            print(str(sql))
+            cur.execute(sql)
         else:
             print("Таблица public.kingdoms уже наполнена, пропускаем этап заполнения.")
 
@@ -112,6 +116,10 @@ class DbFunctions:
                           "VALUES (%s, %s, '%s', '%s', '%s', '%s', %s);" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6])
                     print(str(sql))
                     cur.execute(sql)
+            cur = DbFunctions.conn.cursor()
+            sql = "select setval('list_id_seq', (select max(id) from public.list), true)"
+            print(str(sql))
+            cur.execute(sql)
         else:
             print("Таблица public.list уже наполнена, пропускаем этап заполнения.")
 
