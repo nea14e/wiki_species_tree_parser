@@ -60,7 +60,7 @@ def populate_list_for_kingdom(driver, kingdom_title):
 
 def parse_details(driver, kingdom_title):
     kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
-    query = "SELECT id, title, href " \
+    query = "SELECT id, title, page_url " \
             "FROM public.list " \
             "WHERE kingdom_id = '" + str(kingdom_id) + "';"
     list_iterator = DbListItemsIterator(query)
