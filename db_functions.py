@@ -55,17 +55,17 @@ class DbFunctions:
         cur = DbFunctions.conn.cursor()
         sql = "SELECT COUNT(1) FROM public.kingdoms;"
         cur.execute(sql)
-        if cur.rowcount == 0:
+        if cur.fetchone()[0] == 0:
             cur = DbFunctions.conn.cursor()
             with open('db_init/kingdoms.csv', 'r') as csv_file:
                 csv_content = csv.reader(csv_file)
-            for ind, row in enumerate(csv_content):
-                if ind == 0:
-                    continue
-                sql = "INSERT INTO public.kingdoms (id, title, href) " \
-                      "VALUES (%i, '%s', '%s');" % (row[0], row[1], row[2])
-                print(str(sql))
-                cur.execute(sql)
+                for ind, row in enumerate(csv_content):
+                    if ind == 0:
+                        continue
+                    sql = "INSERT INTO public.kingdoms (id, title, href) " \
+                          "VALUES (%s, '%s', '%s');" % (row[0], row[1], row[2])
+                    print(str(sql))
+                    cur.execute(sql)
 
         # Таблица со списком
         cur = DbFunctions.conn.cursor()
@@ -89,17 +89,17 @@ class DbFunctions:
         cur = DbFunctions.conn.cursor()
         sql = "SELECT COUNT(1) FROM public.list;"
         cur.execute(sql)
-        if cur.rowcount == 0:
+        if cur.fetchone()[0] == 0:
             cur = DbFunctions.conn.cursor()
             with open('db_init/list.csv', 'r') as csv_file:
                 csv_content = csv.reader(csv_file)
-            for ind, row in enumerate(csv_content):
-                if ind == 0:
-                    continue
-                sql = "INSERT INTO public.list (id, kingdom_id, title, href) " \
-                      "VALUES (%i, %i, '%s', '%s');" % (row[0], row[1], row[2], row[3])
-                print(str(sql))
-                cur.execute(sql)
+                for ind, row in enumerate(csv_content):
+                    if ind == 0:
+                        continue
+                    sql = "INSERT INTO public.list (id, kingdom_id, title, href) " \
+                          "VALUES (%s, %s, '%s', '%s');" % (row[0], row[1], row[2], row[3])
+                    print(str(sql))
+                    cur.execute(sql)
 
         # Таблица с подробностями
         cur = DbFunctions.conn.cursor()
@@ -123,17 +123,17 @@ class DbFunctions:
         cur = DbFunctions.conn.cursor()
         sql = "SELECT COUNT(1) FROM public.details;"
         cur.execute(sql)
-        if cur.rowcount == 0:
+        if cur.fetchone()[0] == 0:
             cur = DbFunctions.conn.cursor()
             with open('db_init/details.csv', 'r') as csv_file:
                 csv_content = csv.reader(csv_file)
-            for ind, row in enumerate(csv_content):
-                if ind == 0:
-                    continue
-                sql = "INSERT INTO public.details (id, type, image_url, parent_id) " \
-                      "VALUES (%i, '%s', '%s', %i);" % (row[0], row[1], row[2], row[3])
-                print(str(sql))
-                cur.execute(sql)
+                for ind, row in enumerate(csv_content):
+                    if ind == 0:
+                        continue
+                    sql = "INSERT INTO public.details (id, type, image_url, parent_id) " \
+                          "VALUES (%s, '%s', '%s', %s);" % (row[0], row[1], row[2], row[3])
+                    print(str(sql))
+                    cur.execute(sql)
 
     @staticmethod
     def get_kingdom_url(kingdom_title):

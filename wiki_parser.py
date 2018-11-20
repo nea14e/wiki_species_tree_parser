@@ -136,14 +136,14 @@ class ParsedLevel:
         self.value = ""
 
 
-driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
-time.sleep(1)
-driver.implicitly_wait(5)
+# driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
+# time.sleep(1)
+# driver.implicitly_wait(5)
 
 DbFunctions.init_db()
 
 # Выберите нужное и подставьте сюда перед запуском
 # populate_list_for_kingdom(driver, 'mushrooms')
-parse_details(driver, 'mushrooms')
+# parse_details(driver, 'mushrooms')
 
-driver.quit()
+# driver.quit()
