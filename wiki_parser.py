@@ -109,10 +109,10 @@ def parse_details(driver, kingdom_title):
                     # Запись всех подробностей в базу
                     # (именно в этом месте кода, только если нашли родителя - без родителей в дереве элементы не нужны)
                     query = "UPDATE public.list " \
-                            "SET type = " + str(details.type) + \
+                            "SET type = '" + str(details.type) + "' " \
                             "  , image_url = " + quote_nullable(details.image_url) + \
                             "  , parent_id = " + quote_nullable(details.parent_id) + \
-                            "WHERE id = '" + str(details.id) + "';"
+                            "WHERE id = " + str(details.id) + ";"
                     DbExecuteNonQuery.execute('parse_details:update_details', query)
                     is_parent_found = True
                     break
@@ -149,7 +149,7 @@ def get_levels(infobox):
     if len(levels) == 0:
         levels = infobox.find_elements_by_xpath('(./tbody/tr/td/table)[1]/tbody/tr')
     for ind, level in enumerate(reversed(levels)):
-        if ind == 0:  # Если 1 элемент(ненужный) то пропускаем
+        if ind == 0 or ind == len(levels) - 1:  # Если 1 элемент(ненужный) или последний(неправильный), то пропускаем
             continue
         parsed_level = ParsedLevel()
         category_html = level.find_element_by_xpath('.//td[1]')
@@ -157,6 +157,7 @@ def get_levels(infobox):
             parsed_level.category = category_html.find_element_by_xpath('.//span').get_attribute('innerHTML')
         except WebDriverException:
             parsed_level.category = category_html.text
+        parsed_level.category = str(parsed_level.category).rstrip(" ").rstrip(":")
         # print(category)
 
         value_html = level.find_element_by_xpath('.//td[2]')
@@ -174,12 +175,12 @@ def get_levels(infobox):
 
 def parse_image(infobox):
     try:
-        image = infobox.find_element_by_xpath('(./tbody/tr/td/table)[2]//img')
+        image = infobox.find_element_by_xpath('(./tbody/tr)[2]//img')
         src = image.get_attribute('src')
         print("Картинка: " + str(src))
         return src
     except WebDriverException:
-        print("Картинка НЕ НАЙДЕНА")
+        print("Картинка НЕ НАЙДЕНА" + traceback.format_exc())
         return None
 
 
@@ -190,14 +191,14 @@ class ParsedLevel:
         self.value = ""
 
 
-# driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
-# time.sleep(1)
-# driver.implicitly_wait(5)
+driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
+time.sleep(1)
+driver.implicitly_wait(5)
 
 DbFunctions.init_db()
 
 # Выберите нужное и подставьте сюда перед запуском
 # populate_list_for_kingdom(driver, 'mushrooms')
-# parse_details(driver, 'mushrooms')
+parse_details(driver, 'mushrooms')
 
-# driver.quit()
+driver.quit()
