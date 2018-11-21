@@ -74,50 +74,25 @@ def parse_details(driver, kingdom_title):
         if not list_item:
             break
         try:
-            details = ListItemDetails(list_item[0], list_item[1], list_item[2])
+            details = ListItemDetails(list_item[0], kingdom_id, list_item[1], list_item[2])
             print('===========================================')
             print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + details.page_url)
             driver.get(details.page_url)
 
             # Парсинг информации
             infobox = driver.find_element_by_xpath('//table[@class="infobox"]')
+            details = parse_image(infobox, details)
+            is_parent_found, details = parse_levels(infobox, details)
 
-            # TODO парсить url картинки (её может не быть, не падать тогда в except, а всё равно добавлять)
-            details.image_url = parse_image(infobox)
-
-            # Парсим таблицу элементов-родителей, в которые вложен данный элемент
-            # (для черепах это будет что-то вроде Животные, Хордовые, Позвоночные, Пресмыкающиеся)
-            levels = get_levels(infobox)
-            current_level = levels[0]
-            details.type = current_level.category
-            # Ищем родителя, к которому прикрепить этот элемент
-            levels.pop(0)  # Сам текущий элемент (первый в списке) не может быть родителем
-            is_parent_found = False
-            for level in levels:
-                # Проверим, есть ли такой элемент среди public.list, используя level.value и kingdom_id - они уникальны в таблице list:
-                query = "SELECT id " \
-                        "FROM public.list " \
-                        "WHERE kingdom_id = " + str(kingdom_id) + \
-                        "  AND title = '" + str(level.value) + "' " \
-                                                               "LIMIT 1;"
-                parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
-                if parent_in_db_iter.rowcount() > 0:
-                    # Нашли в базе данных запись о родителе
-                    details.parent_id = parent_in_db_iter.fetchone()[0]
-                    print("Найден родитель: " + str(level.category) + " " + str(level.value))
-
-                    # Запись всех подробностей в базу
-                    # (именно в этом месте кода, только если нашли родителя - без родителей в дереве элементы не нужны)
-                    query = "UPDATE public.list " \
-                            "SET type = '" + str(details.type) + "' " \
-                            "  , image_url = " + quote_nullable(details.image_url) + \
-                            "  , parent_id = " + quote_nullable(details.parent_id) + \
-                            "WHERE id = " + str(details.id) + ";"
-                    DbExecuteNonQuery.execute('parse_details:update_details', query)
-                    is_parent_found = True
-                    break
-
+            # Запись всех подробностей в базу
+            # (только если нашли родителя - без родителей в дереве элементы не нужны)
             if is_parent_found:
+                query = "UPDATE public.list " \
+                        "SET type = '" + str(details.type) + "' " \
+                                                             "  , image_url = " + quote_nullable(details.image_url) + \
+                        "  , parent_id = " + quote_nullable(details.parent_id) + \
+                        "WHERE id = " + str(details.id) + ";"
+                DbExecuteNonQuery.execute('parse_details:update_details', query)
                 item_counter += 1
             else:
                 without_parents += 1
@@ -133,8 +108,9 @@ def parse_details(driver, kingdom_title):
 
 
 class ListItemDetails:
-    def __init__(self, id, title, page_url):
+    def __init__(self, id, kingdom_id, title, page_url):
         self.id = id
+        self.kingdom_id = kingdom_id
         self.title = title
         self.page_url = page_url
         self.type = None
@@ -142,14 +118,35 @@ class ListItemDetails:
         self.parent_id = None
 
 
-def get_levels(infobox):
+def parse_image(infobox, details):
+    try:
+        image = infobox.find_element_by_xpath('(./tbody/tr)[2]//img')
+        src = image.get_attribute('src')
+        print("Картинка: " + str(src))
+        details.image_url = src
+    except WebDriverException:  # Картинки может не быть - всё равно обрабатывать эту страницу дальше
+        print("Картинка НЕ НАЙДЕНА" + traceback.format_exc())
+        details.image_url = None
+    return details
+
+
+def parse_levels(infobox, details):
+    """
+            Парсим таблицу элементов-родителей, в которые вложен данный элемент
+            (для черепах это будет что-то вроде
+              Царство: Животные, Тип: Хордовые, Подтип: Позвоночные, Класс: Пресмыкающиеся, Отряд: Черепахи)
+            Вытаскивает: тип текущего элемента (Отряд),
+              название и тип ближайшего имеющегося в базе родителя (Класс: Пресмыкающиеся)
+            """
     # TODO сделать реплейс <b> и </b> в результате на пустоту
-    parsed_levels = []
     levels = infobox.find_elements_by_xpath('.//div[@class="NavFrame collapsed"]/div')
     if len(levels) == 0:
         levels = infobox.find_elements_by_xpath('(./tbody/tr/td/table)[1]/tbody/tr')
+    is_parent_found = False
     for ind, level in enumerate(reversed(levels)):
-        if ind == 0 or ind == len(levels) - 1:  # Если 1 элемент(ненужный) или последний(неправильный), то пропускаем
+        # Пропускаем самый верхний элемент иерархии
+        # Прямым родителем он вряд ли когда будет, зато его парсить надо по-другому из-за "Показать промежуточные ранги"
+        if ind == len(levels) - 1:
             continue
         parsed_level = ParsedLevel()
         category_html = level.find_element_by_xpath('.//td[1]')
@@ -158,7 +155,6 @@ def get_levels(infobox):
         except WebDriverException:
             parsed_level.category = category_html.text
         parsed_level.category = str(parsed_level.category).rstrip(" ").rstrip(":")
-        # print(category)
 
         value_html = level.find_element_by_xpath('.//td[2]')
         try:
@@ -169,20 +165,36 @@ def get_levels(infobox):
             except WebDriverException:
                 parsed_level.value = value_html.text
         print(parsed_level.category + ' ' + parsed_level.value)
-        parsed_levels.append(parsed_level)
-    return parsed_levels
 
+        # Самый нижний элемент - это сам тот, кого парсим. Там написан тип (это Вид, Род, Семейство или что ещё)
+        if ind == 0:
+            details.type = parsed_level.category
+            print("Сам этот элемент: " + parsed_level.category + " " + parsed_level.value + " " + details.title)
+        else:  # Все последующие за ним - кандидаты быть его прямым родителем
+            # Родителя надо вычислить, чтобы к нему прикрепить текущий элемент - получится дерево.
 
-def parse_image(infobox):
-    try:
-        image = infobox.find_element_by_xpath('(./tbody/tr)[2]//img')
-        src = image.get_attribute('src')
-        print("Картинка: " + str(src))
-        return src
-    except WebDriverException:
-        print("Картинка НЕ НАЙДЕНА" + traceback.format_exc())
-        return None
-
+            # Проверим, есть ли такой элемент среди public.list,
+            # используя level.value и kingdom_id - они уникальны в таблице list
+            # (одно level.value может повторяться - есть растение и животное с одинаковым именем;
+            # тип и имя использовать нельзя, т.к. тип level.category у родителя заполняется при парсинге родителя,
+            # а он может быть ещё не распарсен).
+            # Чтобы вершина дерева царства подцепилась к самому элементу Царство, надо, чтобы он в корне дерева имел
+            # такой же kingdom_id, как само царство (потому что здесь при поиске родителя в WHERE подставляется
+            # kingdom_id текущего элемента, а не самого родителя, т.е. считается, что они совпадают)
+            #  - это примечание важно для заполнения файла db_init/list.csv.
+            query = "SELECT id " \
+                    "FROM public.list " \
+                    "WHERE kingdom_id = " + str(details.kingdom_id) + \
+                    "  AND title = '" + str(level.value) + "' " \
+                                                           "LIMIT 1;"
+            parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
+            if parent_in_db_iter.rowcount() > 0:
+                # Нашли в базе данных запись о родителе
+                details.parent_id = parent_in_db_iter.fetchone()[0]
+                is_parent_found = True
+                print("Найден родитель: " + str(level.category) + " " + str(level.value))
+                break  # Не считываем дальнейшую иерархию - это долго и не нужно
+    return is_parent_found, details
 
 
 class ParsedLevel:
