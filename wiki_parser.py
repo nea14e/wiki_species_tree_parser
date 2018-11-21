@@ -104,8 +104,12 @@ def parse_details(driver, kingdom_title, not_parsed_only):
                 without_parents += 1
 
             time.sleep(1)
-        except (WebDriverException, IntegrityError):
+        except WebDriverException:
             print('Ошибка:\n', traceback.format_exc())
+            errors += 1
+        except IntegrityError:
+            print('Ошибка:\n', traceback.format_exc())
+            DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
             errors += 1
     print("\n")
     print("ПАРСИНГ ЦАРСТВА " + str(kingdom_title) + " ОКОНЧЕН!")
