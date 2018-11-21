@@ -128,7 +128,7 @@ def parse_image(infobox, details):
         print("Картинка: " + str(src))
         details.image_url = src
     except WebDriverException:  # Картинки может не быть - всё равно обрабатывать эту страницу дальше
-        print("Картинка НЕ НАЙДЕНА" + traceback.format_exc())
+        print("Картинка НЕ НАЙДЕНА " + traceback.format_exc())
         details.image_url = None
     return details
 
@@ -190,7 +190,7 @@ def parse_levels(infobox, details):
                 a = level.find_element_by_xpath(".//a")
                 parsed_level.html_class = a.get_attribute("class")
                 print("Class: '" + parsed_level.html_class + "'")
-                if str(parsed_level.html_class).find("new") > 0:
+                if str(parsed_level.html_class).find("new") >= 0:
                     print(" - Это ссылка на несозданную страницу, ищем родителя на более высоком уровне...")
                 else:
                     details.parent_title = parsed_level.value
