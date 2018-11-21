@@ -2,6 +2,8 @@
 import traceback
 
 import os
+
+from psycopg2._psycopg import IntegrityError
 from selenium import webdriver
 import time
 
@@ -58,12 +60,14 @@ def populate_list_for_kingdom(driver, kingdom_title):
         item_counter) + " элементов добавлено в список.")
 
 
-def parse_details(driver, kingdom_title):
+def parse_details(driver, kingdom_title, not_parsed_only):
     kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
     query = "SELECT id, title, page_url " \
             "FROM public.list " \
-            "WHERE kingdom_id = '" + str(kingdom_id) + "' " \
-                                                       "ORDER BY title;"
+            "WHERE kingdom_id = '" + str(kingdom_id) + "' "
+    if not_parsed_only:
+        query += "AND type IS NULL "
+    query += "ORDER BY title;"
     list_iterator = DbListItemsIterator('parse_details:list_to_parse', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
@@ -100,9 +104,10 @@ def parse_details(driver, kingdom_title):
                 without_parents += 1
 
             time.sleep(1)
-        except WebDriverException:
+        except (WebDriverException, IntegrityError):
             print('Ошибка:\n', traceback.format_exc())
             errors += 1
+    print("\n")
     print("ПАРСИНГ ЦАРСТВА " + str(kingdom_title) + " ОКОНЧЕН!")
     print("Добавлены детали о " + str(item_counter) + " элементов.")
     print("Не найдены родители для " + str(without_parents) + " элементов.")
@@ -128,7 +133,7 @@ def parse_image(infobox, details):
         print("Картинка: " + str(src))
         details.image_url = src
     except WebDriverException:  # Картинки может не быть - всё равно обрабатывать эту страницу дальше
-        print("Картинка НЕ НАЙДЕНА " + traceback.format_exc())
+        print("Картинка НЕ НАЙДЕНА")
         details.image_url = None
     return details
 
@@ -245,6 +250,7 @@ def correct_parents(kingdom_title, kingdom_id):
             item_counter += 1
         else:
             without_parents += 1
+    print("\n")
     print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ В ЦАРСТВЕ " + str(kingdom_title) + " ОКОНЧЕНО!")
     print("Добавлены родители к " + str(item_counter) + " элементам.")
     print("Не найдены родители для " + str(without_parents) + " элементов.")
@@ -265,6 +271,6 @@ DbFunctions.init_db()
 
 # Выберите нужное и подставьте сюда перед запуском
 # populate_list_for_kingdom(driver, 'mushrooms')
-parse_details(driver, 'animals')
+parse_details(driver, 'animals', True)
 
 driver.quit()

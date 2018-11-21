@@ -227,6 +227,7 @@ class DbExecuteNonQuery:
         conn1 = DbConnectionsHandler.get_connection(connection_tag)
         cur1 = conn1.cursor()
         cur1.execute(query)
+        conn1.commit()
 
 
 def quote_nullable(val):
