@@ -90,6 +90,7 @@ class DbFunctions:
                   ", page_url text NOT NULL" \
                   ", type text" \
                   ", image_url text" \
+                  ", parent_title text" \
                   ", parent_id bigint" \
                   ", CONSTRAINT pk_list PRIMARY KEY(id)" \
                   ", CONSTRAINT fk_list_kingdom FOREIGN KEY (kingdom_id) REFERENCES public.kingdoms(id)" \
