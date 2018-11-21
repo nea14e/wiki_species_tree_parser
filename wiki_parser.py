@@ -12,6 +12,21 @@ from selenium.common.exceptions import WebDriverException
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
 
+def main():
+    driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
+    time.sleep(1)
+    driver.implicitly_wait(5)
+
+    DbFunctions.init_db()
+
+    # Выберите нужное и подставьте сюда перед запуском
+    # populate_list_for_kingdom(driver, 'mushrooms')  # 1 этап
+    parse_details(driver, 'animals', True)  # 2 этап
+    # correct_parents('animals', 1)  # построить дерево (при окончании парсинга списка автоматически будет вызвано)
+
+    driver.quit()
+
+
 def populate_list_for_kingdom(driver, kingdom_title):
     kingdom_list_url = DbFunctions.get_kingdom_url(kingdom_title)
     driver.get(kingdom_list_url)
@@ -95,7 +110,7 @@ def parse_details(driver, kingdom_title, not_parsed_only):
                 query = "UPDATE public.list " \
                         "SET title = '" + str(details.title) + "' " \
                         "  , type = '" + str(details.type) + "' " \
-                                                             "  , image_url = " + quote_nullable(details.image_url) + \
+                        "  , image_url = " + quote_nullable(details.image_url) + \
                         "  , parent_title = " + quote_nullable(details.parent_title) + \
                         "WHERE id = " + str(details.id) + ";"
                 DbExecuteNonQuery.execute('parse_details:update_details', query)
@@ -230,7 +245,8 @@ def correct_parents(kingdom_title, kingdom_id):
     print("Поправляем ссылки на родителей (построение дерева)...")
     query = "SELECT id, kingdom_id, parent_title " \
             "FROM public.list " \
-            "WHERE kingdom_id = '" + str(kingdom_id) + "';"
+            "WHERE kingdom_id = '" + str(kingdom_id) + "' " \
+            "  AND parent_title IS NOT NULL AND parent_id IS NULL;"  # Только у которых уже заполнен текст родителя, но ещё не привязаны
     list_iterator = DbListItemsIterator('parse_details:list_to_parse', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
@@ -254,7 +270,7 @@ def correct_parents(kingdom_title, kingdom_id):
                 "FROM public.list " \
                 "WHERE kingdom_id = " + str(list_item[1]) + \
                 "  AND title = '" + str(list_item[2]) + "' " \
-                                                       "LIMIT 1;"
+                                                        "LIMIT 1;"
         parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
         if parent_in_db_iter.rowcount() > 0:
             # Нашли в базе данных запись о родителе
@@ -272,21 +288,11 @@ def correct_parents(kingdom_title, kingdom_id):
     print("Не найдены родители для " + str(without_parents) + " элементов.")
 
 
-
 class ParsedLevel:
     def __init__(self):
         self.category = ""
         self.value = ""
 
 
-driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
-time.sleep(1)
-driver.implicitly_wait(5)
-
-DbFunctions.init_db()
-
-# Выберите нужное и подставьте сюда перед запуском
-# populate_list_for_kingdom(driver, 'mushrooms')
-parse_details(driver, 'animals', True)
-
-driver.quit()
+if __name__ == "__main__":
+    main()
