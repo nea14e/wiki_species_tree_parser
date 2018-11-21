@@ -181,8 +181,20 @@ def parse_levels(infobox, details):
         parsed_level.value = parsed_level.value.lstrip("<b>").rstrip("</b>")
         print("Иерархия: " + parsed_level.category + ' ' + parsed_level.value)
 
-        # Самый нижний элемент - это сам тот, кого парсим. Там написан тип (это Вид, Род, Семейство или что ещё)
+        # Проверим, что самый нижний элемент - это сам тот, кого парсим.
+        # Там написан тип (это Вид, Род, Семейство или что ещё) и название, которые нам нужны.
+        # Иногда самого этого элемента не бывает - тогда самый нижний элемент уже может стать его родителем.
         if ind == 0:
+            a_arr = level.find_elements_by_xpath(".//a")
+            if len(a_arr) == 0:
+                is_level_self = True
+            else:
+                is_level_self = False
+                details.type = '?'  # Самый нижний элемент - это не сам он, а родитель. Тогда тип самого уже не узнаем.
+        else:
+            is_level_self = False  # Самим текущим элементом может быть только самый нижний
+
+        if is_level_self:
             print("Сам этот элемент: " + parsed_level.category + " " + parsed_level.value +
                   " (изначально: " + details.title + ")")
             details.type = parsed_level.category
