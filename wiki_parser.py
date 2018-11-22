@@ -51,7 +51,7 @@ def main():
         else:
             where = ""
         parse_details(driver, kingdom_title, not_parsed_only, where)  # 2 этап
-    elif stage_number == '3':
+    elif stage_number == '2a':
         if len(sys.argv) >= 3:
             kingdom_title = sys.argv[2]
         else:
