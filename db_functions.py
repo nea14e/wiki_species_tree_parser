@@ -91,10 +91,11 @@ class DbFunctions:
                   ", type text" \
                   ", image_url text" \
                   ", parent_title text" \
+                  ", parent_type text" \
                   ", parent_id bigint" \
                   ", CONSTRAINT pk_list PRIMARY KEY(id)" \
                   ", CONSTRAINT fk_list_kingdom FOREIGN KEY (kingdom_id) REFERENCES public.kingdoms(id)" \
-                  ", CONSTRAINT uq_list UNIQUE (kingdom_id, title)" \
+                  ", CONSTRAINT uq_list UNIQUE (kingdom_id, title, type)" \
                   ", CONSTRAINT fk_list_parent_id FOREIGN KEY(parent_id) REFERENCES public.list(id)" \
                   ");"
             print(str(sql))

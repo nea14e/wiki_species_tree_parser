@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+import sys
 import traceback
 
 import os
 
-from psycopg2._psycopg import IntegrityError
 from selenium import webdriver
 import time
 
@@ -13,6 +13,11 @@ from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, qu
 
 
 def main():
+    if len(sys.argv) < 2:
+        print_usage()
+        return
+    stage_number = sys.argv[1]
+
     driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
     time.sleep(1)
     driver.implicitly_wait(5)
@@ -20,11 +25,51 @@ def main():
     DbFunctions.init_db()
 
     # Выберите нужное и подставьте сюда перед запуском
-    # populate_list_for_kingdom(driver, 'mushrooms')  # 1 этап
-    parse_details(driver, 'animals', True)  # 2 этап
-    # correct_parents('animals', 1)  # построить дерево (при окончании парсинга списка автоматически будет вызвано)
+    if stage_number == '1':
+        if len(sys.argv) >= 3:
+            kingdom_title = sys.argv[2]
+        else:
+            print_usage()
+            driver.quit()
+            return
+        populate_list_for_kingdom(driver, kingdom_title)  # 1 этап
+    elif stage_number == '2':
+        if len(sys.argv) >= 3:
+            kingdom_title = sys.argv[2]
+        else:
+            print_usage()
+            driver.quit()
+            return
+        if len(sys.argv) >= 4:
+            not_parsed_only = sys.argv[3]
+        else:
+            not_parsed_only = True
+        if len(sys.argv) >= 5:
+            where = sys.argv[4]
+        else:
+            where = ""
+        parse_details(driver, kingdom_title, not_parsed_only, where)  # 2 этап
+    elif stage_number == '3':
+        if len(sys.argv) >= 3:
+            kingdom_title = sys.argv[2]
+        else:
+            print_usage()
+            driver.quit()
+            return
+        kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
+        # построить дерево (при окончании парсинга списка автоматически будет вызвано)
+        correct_parents(kingdom_title, kingdom_id)
 
     driver.quit()
+
+
+def print_usage():
+    print("ОШИБКА: неизвестные параметры.")
+    print("Запускайте через параметры командной строки")
+    print("Для 1 этапа - составления списка:")
+    print("1 имя_царства")
+    print("Для 2 этапа - получения деталей по списку:")
+    print("2 имя_царства [добавлять_ли_к_существующим:bool=True] [where_фильтр_на_список=\"\"]")
 
 
 def populate_list_for_kingdom(driver, kingdom_title):
@@ -75,14 +120,17 @@ def populate_list_for_kingdom(driver, kingdom_title):
         item_counter) + " элементов добавлено в список.")
 
 
-def parse_details(driver, kingdom_title, not_parsed_only):
+def parse_details(driver, kingdom_title, not_parsed_only, where=""):
     kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
     query = "SELECT id, title, page_url " \
             "FROM public.list " \
             "WHERE kingdom_id = '" + str(kingdom_id) + "' "
     if not_parsed_only:
         query += "AND type IS NULL "
+    if where is not None and where != "":
+        query += "AND " + str(where) + " "
     query += "ORDER BY title;"
+    print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator('parse_details:list_to_parse', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
@@ -111,6 +159,7 @@ def parse_details(driver, kingdom_title, not_parsed_only):
                         "SET title = '" + str(details.title) + "' " \
                         "  , type = '" + str(details.type) + "' " \
                         "  , image_url = " + quote_nullable(details.image_url) + \
+                        "  , parent_type = " + quote_nullable(details.parent_type) + \
                         "  , parent_title = " + quote_nullable(details.parent_title) + \
                         "WHERE id = " + str(details.id) + ";"
                 DbExecuteNonQuery.execute('parse_details:update_details', query)
@@ -122,7 +171,7 @@ def parse_details(driver, kingdom_title, not_parsed_only):
         except WebDriverException:
             print('Ошибка:\n', traceback.format_exc())
             errors += 1
-        except IntegrityError:
+        except:  # Ошибки базы могут разных видов. Ловим вообще все
             print('Ошибка:\n', traceback.format_exc())
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
             errors += 1
@@ -142,6 +191,7 @@ class ListItemDetails:
         self.page_url = page_url
         self.type = None
         self.image_url = None
+        self.parent_type = None
         self.parent_title = None
 
 
@@ -223,16 +273,20 @@ def parse_levels(infobox, details):
             # Поэтому parent_id заполнять ещё рано, а вместо него - parent_title.
             # Потом после парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
             try:
-                a = level.find_element_by_xpath(".//a")
+                a = level.find_element_by_xpath(".//a[1]")
                 parsed_level.html_class = a.get_attribute("class")
-                print("Class: '" + parsed_level.html_class + "'")
                 if str(parsed_level.html_class).find("new") >= 0:
-                    print(" - Это ссылка на несозданную страницу, ищем родителя на более высоком уровне...")
+                    print(" - это ссылка на несозданную страницу, ищем родителя на более высоком уровне...")
                 else:
-                    details.parent_title = parsed_level.value
-                    is_parent_found = True
-                    print(" - Это родитель")
-                    break  # Не считываем дальнейшую иерархию - это долго и не нужно
+                    b_arr = level.find_elements_by_xpath(".//b")
+                    if len(b_arr) > 0:
+                        print(" - похоже, тут нет ссылки на страницу, ищем родителя на более высоком уровне...")
+                    else:
+                        print(" - это родитель")
+                        details.parent_type = parsed_level.category
+                        details.parent_title = parsed_level.value
+                        is_parent_found = True
+                        break  # Не считываем дальнейшую иерархию - это долго и не нужно
             except WebDriverException:
                 print(" - ссылки не найдено, ищем родителя на более высоком уровне...")
     return is_parent_found, details
@@ -243,7 +297,7 @@ def correct_parents(kingdom_title, kingdom_id):
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
     """
     print("Поправляем ссылки на родителей (построение дерева)...")
-    query = "SELECT id, kingdom_id, parent_title " \
+    query = "SELECT id, kingdom_id, parent_type, parent_title " \
             "FROM public.list " \
             "WHERE kingdom_id = '" + str(kingdom_id) + "' " \
             "  AND parent_title IS NOT NULL AND parent_id IS NULL;"  # Только у которых уже заполнен текст родителя, но ещё не привязаны
@@ -269,7 +323,8 @@ def correct_parents(kingdom_title, kingdom_id):
         query = "SELECT id " \
                 "FROM public.list " \
                 "WHERE kingdom_id = " + str(list_item[1]) + \
-                "  AND title = '" + str(list_item[2]) + "' " \
+                "  AND (type = '" + quote_nullable(list_item[2]) + "' OR ) " \
+                "  AND title = '" + quote_nullable(list_item[3]) + "' " \
                                                         "LIMIT 1;"
         parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
         if parent_in_db_iter.rowcount() > 0:
