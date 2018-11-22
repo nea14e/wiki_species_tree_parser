@@ -25,7 +25,9 @@ def main():
     DbFunctions.init_db()
 
     # Выберите нужное и подставьте сюда перед запуском
-    if stage_number == '1':
+    if stage_number == '0':
+        pass  # Только инициализация базы (написана вне if)
+    elif stage_number == '1':
         if len(sys.argv) >= 3:
             kingdom_title = sys.argv[2]
         else:
@@ -66,10 +68,14 @@ def main():
 def print_usage():
     print("ОШИБКА: неизвестные параметры.")
     print("Запускайте через параметры командной строки")
+    print("Для 0 этапа - инициализации базы:")
+    print("0")
     print("Для 1 этапа - составления списка:")
     print("1 имя_царства")
     print("Для 2 этапа - получения деталей по списку:")
     print("2 имя_царства [добавлять_ли_к_существующим:bool=True] [where_фильтр_на_список=\"\"]")
+    print("Для 2a этапа - построения дерева (вызывается из 2 автоматически):")
+    print("2a имя_царства")
 
 
 def populate_list_for_kingdom(driver, kingdom_title):
@@ -323,8 +329,8 @@ def correct_parents(kingdom_title, kingdom_id):
         query = "SELECT id " \
                 "FROM public.list " \
                 "WHERE kingdom_id = " + str(list_item[1]) + \
-                "  AND (type = '" + quote_nullable(list_item[2]) + "' OR ) " \
-                "  AND title = '" + quote_nullable(list_item[3]) + "' " \
+                "  AND (type = " + quote_nullable(list_item[2]) + " OR " + quote_nullable(list_item[2]) + " IS NULL) " \
+                "  AND title = " + quote_nullable(list_item[3]) + \
                                                         "LIMIT 1;"
         parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
         if parent_in_db_iter.rowcount() > 0:
