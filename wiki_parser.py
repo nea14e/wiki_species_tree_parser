@@ -12,6 +12,11 @@ from selenium.common.exceptions import WebDriverException
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
 
+BROWSER_LOAD_TIMEOUT = 1
+PAGE_LOAD_TIMEOUT = 1
+NEXT_PAGE_DELAY = 3
+
+
 def main():
     if len(sys.argv) < 2:
         print_usage()
@@ -19,8 +24,7 @@ def main():
     stage_number = sys.argv[1]
 
     driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
-    time.sleep(1)
-    driver.implicitly_wait(5)
+    time.sleep(BROWSER_LOAD_TIMEOUT)
 
     DbFunctions.init_db()
 
@@ -81,6 +85,7 @@ def print_usage():
 def populate_list_for_kingdom(driver, kingdom_title):
     kingdom_list_url = DbFunctions.get_kingdom_url(kingdom_title)
     driver.get(kingdom_list_url)
+    time.sleep(PAGE_LOAD_TIMEOUT)
 
     item_counter = 0
 
@@ -118,7 +123,7 @@ def populate_list_for_kingdom(driver, kingdom_title):
 
         if next_page_url:
             driver.get(next_page_url)  # Переходим на след страницу
-            time.sleep(1)
+            time.sleep(NEXT_PAGE_DELAY)
         else:
             print('Все страницы списка обработаны')
             break
@@ -152,6 +157,7 @@ def parse_details(driver, kingdom_title, not_parsed_only, where=""):
             print('===========================================')
             print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + details.page_url)
             driver.get(details.page_url)
+            time.sleep(PAGE_LOAD_TIMEOUT)
 
             # Парсинг информации
             infobox = driver.find_element_by_xpath('//table[@class="infobox"]')
@@ -173,7 +179,6 @@ def parse_details(driver, kingdom_title, not_parsed_only, where=""):
             else:
                 without_parents += 1
 
-            time.sleep(1)
         except WebDriverException:
             print('Ошибка:\n', traceback.format_exc())
             errors += 1
@@ -181,6 +186,8 @@ def parse_details(driver, kingdom_title, not_parsed_only, where=""):
             print('Ошибка:\n', traceback.format_exc())
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
             errors += 1
+
+        time.sleep(NEXT_PAGE_DELAY)
     print("\n")
     print("ПАРСИНГ ЦАРСТВА " + str(kingdom_title) + " ОКОНЧЕН!")
     print("Добавлены детали о " + str(item_counter) + " элементов.")
