@@ -228,7 +228,7 @@ def parse_levels(infobox, details):
             Вытаскивает: тип текущего элемента (Отряд),
               название и тип ближайшего имеющегося в базе родителя (Класс: Пресмыкающиеся)
             """
-    # TODO сделать реплейс <b> и </b> в результате на пустоту
+    # TODO учитывать спецзначки вымерших видов, гибридов и др - сейчас они могут не попадать в имя родителя, но есть, когда парсят самого родителя
     levels = infobox.find_elements_by_xpath('.//div[@class="NavFrame collapsed"]/div')
     if len(levels) == 0:
         levels = infobox.find_elements_by_xpath('(./tbody/tr/td/table)[1]/tbody/tr')
