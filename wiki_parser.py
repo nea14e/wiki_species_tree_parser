@@ -47,7 +47,12 @@ def main():
             driver.quit()
             return
         if len(sys.argv) >= 4:
-            not_parsed_only = sys.argv[3]
+            if sys.argv[3] == "True":
+                not_parsed_only = True
+            elif sys.argv[3] == "False":
+                not_parsed_only = False
+            else:
+                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[3]))
         else:
             not_parsed_only = True
         if len(sys.argv) >= 5:
@@ -228,7 +233,6 @@ def parse_levels(infobox, details):
             Вытаскивает: тип текущего элемента (Отряд),
               название и тип ближайшего имеющегося в базе родителя (Класс: Пресмыкающиеся)
             """
-    # TODO учитывать спецзначки вымерших видов, гибридов и др - сейчас они могут не попадать в имя родителя, но есть, когда парсят самого родителя
     levels = infobox.find_elements_by_xpath('.//div[@class="NavFrame collapsed"]/div')
     if len(levels) == 0:
         levels = infobox.find_elements_by_xpath('(./tbody/tr/td/table)[1]/tbody/tr')
@@ -336,7 +340,7 @@ def correct_parents(kingdom_title, kingdom_id):
         query = "SELECT id " \
                 "FROM public.list " \
                 "WHERE kingdom_id = " + str(list_item[1]) + \
-                "  AND (type = " + quote_nullable(list_item[2]) + " OR " + quote_nullable(list_item[2]) + " IS NULL) " \
+                "  AND (type = " + quote_nullable(list_item[2]) + " OR type = '?' OR " + quote_nullable(list_item[2]) + " IS NULL) " \
                 "  AND title = " + quote_nullable(list_item[3]) + \
                                                         "LIMIT 1;"
         parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
