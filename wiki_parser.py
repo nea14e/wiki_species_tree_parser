@@ -62,12 +62,16 @@ def main():
         parse_details(driver, kingdom_title, not_parsed_only, where)  # 2 этап
     elif stage_number == '2a':
         if len(sys.argv) >= 3:
-            kingdom_title = sys.argv[2]
+            if sys.argv[2] == "All":
+                kingdom_title = None
+                kingdom_id = None
+            else:
+                kingdom_title = sys.argv[2]
+                kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
         else:
             print_usage()
             driver.quit()
             return
-        kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
         # построить дерево (при окончании парсинга списка автоматически будет вызвано)
         correct_parents(kingdom_title, kingdom_id)
 
@@ -82,9 +86,9 @@ def print_usage():
     print("Для 1 этапа - составления списка:")
     print("1 имя_царства")
     print("Для 2 этапа - получения деталей по списку:")
-    print("2 имя_царства [добавлять_ли_к_существующим:bool=True] [where_фильтр_на_список=\"\"]")
+    print("2 имя_царства [bool(True только ещё не распарсенные, False для перезаписи)=True] [where_фильтр_на_список=\"\"]")
     print("Для 2a этапа - построения дерева (вызывается из 2 автоматически):")
-    print("2a имя_царства")
+    print("2a [имя_царства=All(для всех царств)]")
 
 
 def populate_list_for_kingdom(driver, kingdom_title):
@@ -309,15 +313,19 @@ def parse_levels(infobox, details):
     return is_parent_found, details
 
 
-def correct_parents(kingdom_title, kingdom_id):
+def correct_parents(kingdom_title=None, kingdom_id=None):
     """
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
+    При None обрабатывает все царства.
     """
     print("Поправляем ссылки на родителей (построение дерева)...")
     query = "SELECT id, kingdom_id, parent_type, parent_title " \
             "FROM public.list " \
-            "WHERE kingdom_id = '" + str(kingdom_id) + "' " \
-            "  AND parent_title IS NOT NULL AND parent_id IS NULL;"  # Только у которых уже заполнен текст родителя, но ещё не привязаны
+            "WHERE "
+    if kingdom_id is not None:
+        query += "kingdom_id = '" + str(kingdom_id) + "' " \
+                  "AND "
+    query += " parent_title IS NOT NULL AND parent_id IS NULL;"  # Только у которых уже заполнен текст родителя, но ещё не привязаны
     list_iterator = DbListItemsIterator('parse_details:list_to_parse', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
@@ -355,7 +363,10 @@ def correct_parents(kingdom_title, kingdom_id):
         else:
             without_parents += 1
     print("\n")
-    print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ В ЦАРСТВЕ " + str(kingdom_title) + " ОКОНЧЕНО!")
+    if kingdom_title is not None:
+        print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ В ЦАРСТВЕ " + str(kingdom_title) + " ОКОНЧЕНО!")
+    else:
+        print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ВО ВСЕХ ЦАРСТВАХ ОКОНЧЕНО!")
     print("Добавлены родители к " + str(item_counter) + " элементам.")
     print("Не найдены родители для " + str(without_parents) + " элементов.")
 
