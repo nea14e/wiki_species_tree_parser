@@ -36,68 +36,27 @@ class DbFunctions:
         # Создаём в ней таблицы, если надо
         # Наполняем их данными, если надо
 
-        # Таблица с царствами
-        cur = DbFunctions.conn.cursor()
-        sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'kingdoms';"
-        cur.execute(sql)
-        if cur.rowcount == 0:
-            cur = DbFunctions.conn.cursor()
-            sql = "CREATE TABLE public.kingdoms (" \
-                  "id serial NOT NULL" \
-                  ", title text NOT NULL" \
-                  ", list_url text NOT NULL" \
-                  ", CONSTRAINT pk_kingdoms PRIMARY KEY(id)" \
-                  ", CONSTRAINT uq_kingdoms_title UNIQUE (title)" \
-                  ", CONSTRAINT uq_kingdoms_href UNIQUE (list_url)" \
-                  ");"
-            print(str(sql))
-            cur.execute(sql)
-        else:
-            print("Таблица public.kingdoms уже существует, пропускаем этап создания.")
-        # Данные о списках для парсинга (например, царствах).
-        # Они не содержатся на Википедии ни в каком явном списке, поэтому вбиваются сюда фиксированно
-        cur = DbFunctions.conn.cursor()
-        sql = "SELECT COUNT(1) FROM public.kingdoms;"
-        cur.execute(sql)
-        if cur.fetchone()[0] == 0:
-            cur = DbFunctions.conn.cursor()
-            with open('db_init/kingdoms.csv', 'r') as csv_file:
-                csv_content = csv.reader(csv_file)
-                for ind, row in enumerate(csv_content):
-                    if ind == 0:
-                        continue
-                    sql = "INSERT INTO public.kingdoms (id, title, list_url) " \
-                          "VALUES (%s, '%s', '%s');" % (row[0], row[1], row[2])
-                    print(str(sql))
-                    cur.execute(sql)
-            cur = DbFunctions.conn.cursor()
-            sql = "select setval('kingdoms_id_seq', (select max(id) from public.kingdoms), true)"
-            print(str(sql))
-            cur.execute(sql)
-        else:
-            print("Таблица public.kingdoms уже наполнена, пропускаем этап заполнения.")
-
         # Таблица со списком
         cur = DbFunctions.conn.cursor()
         sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list';"
         cur.execute(sql)
         if cur.rowcount == 0:
             cur = DbFunctions.conn.cursor()
-            sql = "CREATE TABLE public.list (" \
-                  "id bigserial NOT NULL" \
-                  ", kingdom_id int NOT NULL" \
-                  ", title text NOT NULL" \
-                  ", page_url text NOT NULL" \
-                  ", type text" \
-                  ", image_url text" \
-                  ", parent_title text" \
-                  ", parent_type text" \
-                  ", parent_id bigint" \
-                  ", CONSTRAINT pk_list PRIMARY KEY(id)" \
-                  ", CONSTRAINT fk_list_kingdom FOREIGN KEY (kingdom_id) REFERENCES public.kingdoms(id)" \
-                  ", CONSTRAINT uq_list UNIQUE (kingdom_id, title, type)" \
-                  ", CONSTRAINT fk_list_parent_id FOREIGN KEY(parent_id) REFERENCES public.list(id)" \
-                  ");"
+            sql = """
+                CREATE TABLE public.list (
+                    id bigserial NOT NULL
+                    , title text NOT NULL
+                    , page_url text NOT NULL
+                    , type text
+                    , image_url text
+                    , parent_title text
+                    , parent_type text
+                    , parent_id bigint
+                    , CONSTRAINT pk_list PRIMARY KEY(id)
+                    , CONSTRAINT uq_list UNIQUE (kingdom_id, title, type)
+                    , CONSTRAINT fk_list_parent_id FOREIGN KEY(parent_id) REFERENCES public.list(id)
+                );
+                """  # TODO add json field for multilanguage wikipedia refs
             print(str(sql))
             cur.execute(sql)
         else:
@@ -126,65 +85,17 @@ class DbFunctions:
             print("Таблица public.list уже наполнена, пропускаем этап заполнения.")
 
     @staticmethod
-    def get_kingdom_url(kingdom_title):
+    def add_list_item(title, page_url):
         if not DbFunctions.conn:
             raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
-
-        # Узнаем url царства по его названию
-        cur = DbFunctions.conn.cursor()
-        sql = "SELECT list_url " \
-              "FROM public.kingdoms " \
-              "WHERE title = '" + str(kingdom_title) + "';"
-        print(str(sql))
-        cur.execute(sql)
-        try:
-            kingdom_url = cur.fetchone()[0]
-            print('kingdom_url = ' + str(kingdom_url))
-        except:
-            raise Exception("Царство не найдено: " + str(kingdom_title))
-        return kingdom_url
-
-    @staticmethod
-    def get_kingdom_id(kingdom_title):
-        if not DbFunctions.conn:
-            raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
-
-        # Узнаем id царства по его названию
-        cur = DbFunctions.conn.cursor()
-        sql = "SELECT id " \
-              "FROM public.kingdoms " \
-              "WHERE title = '" + str(kingdom_title) + "';"
-        print(str(sql))
-        cur.execute(sql)
-        try:
-            kingdom_id = cur.fetchone()[0]
-            print('kingdom_id = ' + str(kingdom_id))
-        except:
-            raise Exception("Царство не найдено: " + str(kingdom_title))
-        return kingdom_id
-
-    @staticmethod
-    def add_list_item(kingdom_title, title, page_url):
-        if not DbFunctions.conn:
-            raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
-
-        # Узнаем id царства по его названию
-        cur = DbFunctions.conn.cursor()
-        sql = "SELECT id " \
-              "FROM public.kingdoms " \
-              "WHERE title = '" + str(kingdom_title) + "';"
-        print(str(sql))
-        cur.execute(sql)
-        try:
-            kingdom_id = cur.fetchone()[0]
-        except:
-            raise Exception("Царство не найдено: " + str(kingdom_title))
 
         # Добавляем новый элемент в список или обновляем уже существующий
         cur = DbFunctions.conn.cursor()
-        sql = "INSERT INTO public.list (kingdom_id, title, page_url) " \
-              "VALUES ('" + str(kingdom_id) + "', '" + str(title) + "', '" + str(page_url) + "')" \
-                                                                                         "ON CONFLICT ON CONSTRAINT uq_list DO UPDATE SET page_url = EXCLUDED.page_url;"
+        sql = """
+                INSERT INTO public.list (title, page_url)
+                VALUES ('{}', '{}')
+                ON CONFLICT ON CONSTRAINT uq_list DO UPDATE SET page_url = EXCLUDED.page_url;
+            """.format(str(title), str(page_url))
         print(str(sql))
         cur.execute(sql)
 

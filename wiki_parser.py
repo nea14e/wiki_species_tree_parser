@@ -32,48 +32,22 @@ def main():
     if stage_number == '0':
         pass  # Только инициализация базы (написана вне if)
     elif stage_number == '1':
-        if len(sys.argv) >= 3:
-            kingdom_title = sys.argv[2]
-        else:
-            print_usage()
-            driver.quit()
-            return
-        populate_list_for_kingdom(driver, kingdom_title)  # 1 этап
+        populate_list(driver)  # 1 этап
     elif stage_number == '2':
         if len(sys.argv) >= 3:
-            kingdom_title = sys.argv[2]
-        else:
-            print_usage()
-            driver.quit()
-            return
-        if len(sys.argv) >= 4:
-            if sys.argv[3] == "True":
+            if sys.argv[2] == "True":
                 not_parsed_only = True
-            elif sys.argv[3] == "False":
+            elif sys.argv[2] == "False":
                 not_parsed_only = False
             else:
-                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[3]))
+                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[2]))
         else:
             not_parsed_only = True
-        if len(sys.argv) >= 5:
-            where = sys.argv[4]
+        if len(sys.argv) >= 4:
+            where = sys.argv[3]
         else:
             where = ""
-        parse_details(driver, kingdom_title, not_parsed_only, where)  # 2 этап
-    elif stage_number == '2a':
-        if len(sys.argv) >= 3:
-            if sys.argv[2] == "All":
-                kingdom_title = None
-                kingdom_id = None
-            else:
-                kingdom_title = sys.argv[2]
-                kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
-        else:
-            print_usage()
-            driver.quit()
-            return
-        # построить дерево (при окончании парсинга списка автоматически будет вызвано)
-        correct_parents(kingdom_title, kingdom_id)
+        parse_details(driver, not_parsed_only, where)  # 2 этап
 
     driver.quit()
 
@@ -87,60 +61,55 @@ def print_usage():
     print("1 имя_царства")
     print("Для 2 этапа - получения деталей по списку:")
     print("2 имя_царства [bool(True только ещё не распарсенные, False для перезаписи)=True] [where_фильтр_на_список=\"\"]")
-    print("Для 2a этапа - построения дерева (вызывается из 2 автоматически):")
-    print("2a [имя_царства=All(для всех царств)]")
 
 
-def populate_list_for_kingdom(driver, kingdom_title):
-    kingdom_list_url = DbFunctions.get_kingdom_url(kingdom_title)
-    driver.get(kingdom_list_url)
+def populate_list(driver):
+    driver.get("https://species.wikimedia.org/wiki/Special:AllPages")
     time.sleep(PAGE_LOAD_TIMEOUT)
 
-    item_counter = 0
-
+    succeeds = 0
+    skipped = 0
+    errors = 0
     while True:  # Цикл перехода на след. страницу
         # Cсылка на следующую страницу
-        try:
-            next_page_elem = driver.find_element_by_xpath('//div[@id="mw-pages"]/a[2]')
-        except WebDriverException:
-            next_page_elem = None
-            pass
+        navigate_page_elems = driver.find_elements_by_xpath("//div[@class='mw-allpages-nav']/a")
+        next_page_elem = None
+        for el in navigate_page_elems:
+            if "Next page" in el.text:
+                next_page_elem = el
+                break
 
         # Адрес из ссылки на следующую страницу
         if next_page_elem:
-            if next_page_elem.text == 'Следующая страница':
-                next_page_url = next_page_elem.get_attribute("href")  # След. страница
-            elif next_page_elem.text == 'Предыдущая страница':
-                next_page_url = None
-            else:
-                raise Exception("Ссылка на следующую страницу не найдена")
+            next_page_url = next_page_elem.get_attribute("href")
         else:
             next_page_url = None
 
         # Сохраем в базу ссылки, чтобы потом по ним переходить
-        for link in driver.find_elements_by_xpath(
-                '//div[@class="mw-category-group"]/ul/li/a'):
+        for link in driver.find_elements_by_xpath("//ul[@class='mw-allpages-chunk']/li/a"):
             try:
-                item_title = link.text  # Ссылка
+                item_title = link.text
+                if "." in item_title:  # Пропускаем имена учёных (с инициалами, поэтому у них точки)
+                    skipped += 1
+                    continue
                 item_details_href = link.get_attribute("href")  # Ссылка
-                print(
-                    'Новый элемент в списке для парсинга: %s, %s, %s' % (kingdom_title, item_title, item_details_href))
-                DbFunctions.add_list_item(kingdom_title, item_title, item_details_href)
-                item_counter += 1
+                print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # TODO debug only
+                DbFunctions.add_list_item(item_title, item_details_href)
+                succeeds += 1
             except WebDriverException:
+                errors += 1
                 print('Ошибка:\n', traceback.format_exc())
 
         if next_page_url:
+            print("Страница обработана. {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(next_page_elem.text, succeeds, skipped, errors))
             driver.get(next_page_url)  # Переходим на след страницу
             time.sleep(NEXT_PAGE_DELAY)
         else:
-            print('Все страницы списка обработаны')
-            break
-    print('ЦАРСТВО ' + kingdom_list_url + ' БЫЛО ОБРАБОТАНО! Всего успешно ' + str(
-        item_counter) + " элементов добавлено в список.")
+            print("ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок.".format(succeeds, skipped, errors))
+            return
 
 
-def parse_details(driver, kingdom_title, not_parsed_only, where=""):
+def parse_details(driver, kingdom_title, not_parsed_only, where=""):  # TODO parse_details() rework
     kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
     query = "SELECT id, title, page_url " \
             "FROM public.list " \
