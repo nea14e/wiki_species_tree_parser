@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import platform
 import sys
 import traceback
 
@@ -16,6 +17,10 @@ BROWSER_LOAD_TIMEOUT = 1
 PAGE_LOAD_TIMEOUT = 1
 NEXT_PAGE_DELAY = 3
 
+# ! Внимание! Чтобы использовать Selenium, нужен Firefox версии не выше 66.
+# Скачать его можно отсюда: https://ftp.mozilla.org/pub/firefox/releases/66.0.5/
+
+URL_START = "https://species.wikimedia.org/wiki/"
 
 def main():
     if len(sys.argv) < 2:
@@ -23,7 +28,12 @@ def main():
         return
     stage_number = sys.argv[1]
 
-    driver = webdriver.Firefox(executable_path=os.path.join(os.getcwd(), 'geckodriver'))
+    if platform.system() == 'Linux':
+        geckodriver_name = 'geckodriver'
+    else:
+        geckodriver_name = 'geckodriver.exe'
+    geckodriver_path = os.path.join(os.getcwd(), geckodriver_name)
+    driver = webdriver.Firefox(executable_path=geckodriver_path)
     time.sleep(BROWSER_LOAD_TIMEOUT)
 
     DbFunctions.init_db()
@@ -63,8 +73,8 @@ def print_usage():
     print("2 имя_царства [bool(True только ещё не распарсенные, False для перезаписи)=True] [where_фильтр_на_список=\"\"]")
 
 
-def populate_list(driver):
-    driver.get("https://species.wikimedia.org/wiki/Special:AllPages")
+def populate_list(driver, from_title: str = "", to_title: str = ""):
+    driver.get("https://species.wikimedia.org/wiki/Special:AllPages?from={}&to={}&namespace=0".format(from_title, to_title))
     time.sleep(PAGE_LOAD_TIMEOUT)
 
     succeeds = 0
@@ -92,8 +102,10 @@ def populate_list(driver):
                 if "." in item_title:  # Пропускаем имена учёных (с инициалами, поэтому у них точки)
                     skipped += 1
                     continue
-                item_details_href = link.get_attribute("href")  # Ссылка
-                print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # TODO debug only
+                item_title = item_title.replace("'", "''")  # Экранирование для базы
+                item_details_href = str(link.get_attribute("href"))
+                item_details_href = item_details_href[len(URL_START):]  # Ссылка (без начала)
+                # print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # debug only
                 DbFunctions.add_list_item(item_title, item_details_href)
                 succeeds += 1
             except WebDriverException:
@@ -101,7 +113,7 @@ def populate_list(driver):
                 print('Ошибка:\n', traceback.format_exc())
 
         if next_page_url:
-            print("Страница обработана. {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(next_page_elem.text, succeeds, skipped, errors))
+            print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(next_page_elem.text, succeeds, skipped, errors))
             driver.get(next_page_url)  # Переходим на след страницу
             time.sleep(NEXT_PAGE_DELAY)
         else:

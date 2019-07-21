@@ -1,3 +1,5 @@
+import json
+
 import psycopg2
 import psycopg2.extras
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -6,8 +8,9 @@ import csv
 
 class DbFunctions:
     user = str("postgres")
-    host = str("192.168.3.23")
-    password = str("postgres")
+    # host = str("192.168.3.23")
+    host = str("127.0.0.1")
+    password = str("12345")
     conn = None
 
     @staticmethod
@@ -49,40 +52,25 @@ class DbFunctions:
                     , page_url text NOT NULL
                     , type text
                     , image_url text
-                    , parent_title text
-                    , parent_type text
+                    , wikipedias_by_languages json DEFAULT '{}'
+                    , parent_page_url text
                     , parent_id bigint
-                    , CONSTRAINT pk_list PRIMARY KEY(id)
-                    , CONSTRAINT uq_list UNIQUE (kingdom_id, title, type)
-                    , CONSTRAINT fk_list_parent_id FOREIGN KEY(parent_id) REFERENCES public.list(id)
+                    , CONSTRAINT pk_list PRIMARY KEY (id)
+                    , CONSTRAINT uq_page_url UNIQUE (page_url)
+                    , CONSTRAINT fk_list_parent_id FOREIGN KEY (parent_id) REFERENCES public.list (id)
                 );
-                """  # TODO add json field for multilanguage wikipedia refs
+                """
             print(str(sql))
             cur.execute(sql)
         else:
             print("Таблица public.list уже существует, пропускаем этап создания.")
-        # Данные для корня дерева.
-        # Они не содержатся на Википедии ни в каком явном списке, поэтому вбиваются сюда фиксированно
+
+        # Просто так
         cur = DbFunctions.conn.cursor()
         sql = "SELECT COUNT(1) FROM public.list;"
         cur.execute(sql)
-        if cur.fetchone()[0] == 0:
-            cur = DbFunctions.conn.cursor()
-            with open('db_init/list.csv', 'r') as csv_file:
-                csv_content = csv.reader(csv_file)
-                for ind, row in enumerate(csv_content):
-                    if ind == 0:
-                        continue
-                    sql = "INSERT INTO public.list (id, kingdom_id, title, page_url, type, image_url, parent_id) " \
-                          "VALUES (%s, %s, '%s', '%s', '%s', '%s', %s);" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6])
-                    print(str(sql))
-                    cur.execute(sql)
-            cur = DbFunctions.conn.cursor()
-            sql = "select setval('list_id_seq', (select max(id) from public.list), true)"
-            print(str(sql))
-            cur.execute(sql)
-        else:
-            print("Таблица public.list уже наполнена, пропускаем этап заполнения.")
+        list_count = cur.fetchone()[0]
+        print("В таблице public.list сейчас {} записей.".format(list_count))
 
     @staticmethod
     def add_list_item(title, page_url):
@@ -93,10 +81,39 @@ class DbFunctions:
         cur = DbFunctions.conn.cursor()
         sql = """
                 INSERT INTO public.list (title, page_url)
-                VALUES ('{}', '{}')
-                ON CONFLICT ON CONSTRAINT uq_list DO UPDATE SET page_url = EXCLUDED.page_url;
+                  VALUES ('{}', '{}')
+                ON CONFLICT ON CONSTRAINT uq_page_url 
+                  DO UPDATE 
+                  SET title = EXCLUDED.title;
             """.format(str(title), str(page_url))
-        print(str(sql))
+        # print(str(sql))    # debug only
+        cur.execute(sql)
+
+    @staticmethod
+    def add_details_to_item(title, page_url, _type, image_url, wikipedias_by_languages, parent_page_url):
+        if not DbFunctions.conn:
+            raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
+
+        # Добавляем новый элемент в список или обновляем уже существующий
+        cur = DbFunctions.conn.cursor()
+        sql = """
+                UPDATE public.list
+                SET
+                  title = '{}'
+                  , type = '{}'
+                  , image_url = '{}'
+                  , wikipedias_by_languages = '{}'
+                  , parent_page_url = '{}'
+                WHERE page_url = '{}';
+            """.format(
+                str(title)
+                , str(_type)
+                , str(image_url)
+                , json.dumps(wikipedias_by_languages)
+                , str(parent_page_url)
+                , str(page_url)
+            )
+        # print(str(sql))    # debug only
         cur.execute(sql)
 
 
