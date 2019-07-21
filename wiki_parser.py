@@ -5,6 +5,7 @@ import traceback
 
 import os
 
+from requests.utils import requote_uri
 from selenium import webdriver
 import time
 
@@ -42,7 +43,15 @@ def main():
     if stage_number == '0':
         pass  # Только инициализация базы (написана вне if)
     elif stage_number == '1':
-        populate_list(driver)  # 1 этап
+        if len(sys.argv) >= 3:
+            from_title = sys.argv[2]
+        else:
+            from_title = ""
+        if len(sys.argv) >= 4:
+            to_title = sys.argv[3]
+        else:
+            to_title = ""
+        populate_list(driver, from_title, to_title)  # 1 этап
     elif stage_number == '2':
         if len(sys.argv) >= 3:
             if sys.argv[2] == "True":
@@ -74,7 +83,12 @@ def print_usage():
 
 
 def populate_list(driver, from_title: str = "", to_title: str = ""):
-    driver.get("https://species.wikimedia.org/wiki/Special:AllPages?from={}&to={}&namespace=0".format(from_title, to_title))
+    print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
+
+    driver.get(
+        "https://species.wikimedia.org/wiki/Special:AllPages?from={}&to={}&namespace=0" \
+            .format(requote_uri(from_title), requote_uri(to_title))
+    )
     time.sleep(PAGE_LOAD_TIMEOUT)
 
     succeeds = 0
