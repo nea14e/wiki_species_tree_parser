@@ -14,7 +14,7 @@ from selenium.webdriver.firefox.options import Options
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
-IS_HEADLESS = True
+IS_HEADLESS = False
 
 BROWSER_LOAD_TIMEOUT = 1
 PAGE_LOAD_TIMEOUT = 1
@@ -246,7 +246,18 @@ def parse_levels(tree_box, details):  # TODO test
               Царство: Животные, Тип: Хордовые, Подтип: Позвоночные, Класс: Пресмыкающиеся, Отряд: Черепахи)
             Вытаскивает: тип текущего элемента (Отряд),
               название и тип ближайшего имеющегося в базе родителя (Класс: Пресмыкающиеся)
-            """
+
+    Или вот пример:
+    <p>
+        Familia: <a href="https://species.wikimedia.org/wiki/Heliconiaceae" title="Heliconiaceae">Heliconiaceae</a>
+        <br>
+        Genus:
+        <i>
+            <a class="mw-selflink selflink">Heliconia</a>
+        </i>
+        <br>
+        ...
+    """
     levels_p = tree_box.find_element_by_xpath("./p[1]")
     levels = levels_p.find_elements_by_xpath("./*")
 
