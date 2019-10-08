@@ -136,17 +136,18 @@ def populate_list(driver, from_title: str = "", to_title: str = ""):
 
 
 def parse_details(driver, kingdom_title, not_parsed_only, where=""):  # TODO parse_details() rework
-    kingdom_id = DbFunctions.get_kingdom_id(kingdom_title)
-    query = "SELECT id, title, page_url " \
-            "FROM public.list " \
-            "WHERE kingdom_id = '" + str(kingdom_id) + "' "
+    query = """
+      SELECT id, title, page_url
+      FROM public.list
+      WHERE 1 = 1
+      """
     if not_parsed_only:
         query += "AND type IS NULL "
     if where is not None and where != "":
         query += "AND " + str(where) + " "
     query += "ORDER BY title;"
     print("Список для парсинга:\n" + query)
-    list_iterator = DbListItemsIterator('parse_details:list_to_parse', query)
+    list_iterator = DbListItemsIterator("parse_details:list_to_parse", query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
     item_counter = 0
@@ -157,27 +158,36 @@ def parse_details(driver, kingdom_title, not_parsed_only, where=""):  # TODO par
         if not list_item:
             break
         try:
-            details = ListItemDetails(list_item[0], kingdom_id, list_item[1], list_item[2])
+            details = ListItemDetails(list_item[0], list_item[1], list_item[2])
             print('===========================================')
             print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + details.page_url)
             driver.get(details.page_url)
             time.sleep(PAGE_LOAD_TIMEOUT)
 
             # Парсинг информации
-            infobox = driver.find_element_by_xpath('//table[@class="infobox"]')
-            details = parse_image(infobox, details)
-            is_parent_found, details = parse_levels(infobox, details)
+            all_content = driver.find_element_by_xpath("//div[@class='mw-parser-output']")
+            details = parse_image(all_content, details)
+            is_parent_found, details = parse_levels(all_content, details)
 
             # Запись всех подробностей в базу
             # (только если нашли родителя - без родителей в дереве элементы не нужны)
             if is_parent_found:
-                query = "UPDATE public.list " \
-                        "SET title = '" + str(details.title) + "' " \
-                        "  , type = '" + str(details.type) + "' " \
-                        "  , image_url = " + quote_nullable(details.image_url) + \
-                        "  , parent_type = " + quote_nullable(details.parent_type) + \
-                        "  , parent_title = " + quote_nullable(details.parent_title) + \
-                        "WHERE id = " + str(details.id) + ";"
+                query = """
+                  UPDATE public.list
+                  SET title = '{}'
+                    , type = '{}'
+                    , image_url = {}
+                    , parent_type = {}
+                    , parent_title = {}
+                  WHERE id = '{}';
+                """.format(
+                    str(details.title)
+                    , str(details.type)
+                    , quote_nullable(details.image_url)
+                    , quote_nullable(details.parent_type)
+                    , quote_nullable(details.parent_title)
+                    , str(details.id)
+                )
                 DbExecuteNonQuery.execute('parse_details:update_details', query)
                 item_counter += 1
             else:
@@ -197,13 +207,12 @@ def parse_details(driver, kingdom_title, not_parsed_only, where=""):  # TODO par
     print("Добавлены детали о " + str(item_counter) + " элементов.")
     print("Не найдены родители для " + str(without_parents) + " элементов.")
     print("Ошибки для " + str(errors) + " элементов.")
-    correct_parents(kingdom_title, kingdom_id)
+    correct_parents()
 
 
 class ListItemDetails:
-    def __init__(self, id, kingdom_id, title, page_url):
+    def __init__(self, id, title, page_url):
         self.id = id
-        self.kingdom_id = kingdom_id
         self.title = title
         self.page_url = page_url
         self.type = None
@@ -212,9 +221,9 @@ class ListItemDetails:
         self.parent_title = None
 
 
-def parse_image(infobox, details):
+def parse_image(main_content, details):
     try:
-        image = infobox.find_element_by_xpath('(./tbody/tr)[2]//img')
+        image = main_content.find_element_by_xpath(".//div[@class='tright']//img")  # Просто любая картинка справа в основном содержимом
         src = image.get_attribute('src')
         print("Картинка: " + str(src))
         details.image_url = src
@@ -224,7 +233,7 @@ def parse_image(infobox, details):
     return details
 
 
-def parse_levels(infobox, details):
+def parse_levels(tree_box, details):  # TODO test
     """
             Парсим таблицу элементов-родителей, в которые вложен данный элемент
             (для черепах это будет что-то вроде
@@ -232,83 +241,65 @@ def parse_levels(infobox, details):
             Вытаскивает: тип текущего элемента (Отряд),
               название и тип ближайшего имеющегося в базе родителя (Класс: Пресмыкающиеся)
             """
-    levels = infobox.find_elements_by_xpath('.//div[@class="NavFrame collapsed"]/div')
-    if len(levels) == 0:
-        levels = infobox.find_elements_by_xpath('(./tbody/tr/td/table)[1]/tbody/tr')
-    is_parent_found = False
-    for ind, level in enumerate(reversed(levels)):
-        # Пропускаем самый верхний элемент иерархии
-        # Прямым родителем он вряд ли когда будет, зато его парсить надо по-другому из-за "Показать промежуточные ранги"
-        if ind == len(levels) - 1:
-            continue
+    levels_p = tree_box.find_element_by_xpath("./p[1]")
+    levels = levels_p.find_elements_by_xpath("./*")
 
-        # Найдём category, value для parsed_level
-        parsed_level = ParsedLevel()
-        category_html = level.find_element_by_xpath('.//td[1]')
-        try:
-            parsed_level.category = category_html.find_element_by_xpath('.//span').get_attribute('innerHTML')
-        except WebDriverException:
-            parsed_level.category = category_html.text
-        parsed_level.category = str(parsed_level.category).rstrip(" ").rstrip(":")
+    # Найдём category, value для текущего уровня
 
-        value_html = level.find_element_by_xpath('.//td[2]')
-        try:
-            parsed_level.value = value_html.find_element_by_xpath('.//a').get_attribute("innerHTML")
-        except WebDriverException:
-            try:
-                parsed_level.value = value_html.find_element_by_xpath('.//span').get_attribute("innerHTML")
-            except WebDriverException:
-                parsed_level.value = value_html.text
-        parsed_level.value = parsed_level.value.lstrip("<b>").rstrip("</b>")
-        print("Иерархия: " + parsed_level.category + ' ' + parsed_level.value)
+    is_current_found = False
+    current_level_a = None
+    for ind, level in enumerate(levels):
+        # Найдём сначала сам текущий уровень - у него value написано особой ссылкой:
+        current_level_a_s = level.find_elements_by_xpath("./a[@class='mw-selflink']")
+        if len(current_level_a_s) == 0:
+            continue  # эта ссылка НЕ в просматриваемом нами уровне, пропускаем
 
-        # Проверим, что самый нижний элемент - это сам тот, кого парсим.
-        # Там написан тип (это Вид, Род, Семейство или что ещё) и название, которые нам нужны.
-        # Иногда самого этого элемента не бывает - тогда самый нижний элемент уже может стать его родителем.
-        if ind == 0:
-            a_arr = level.find_elements_by_xpath(".//a")
-            if len(a_arr) == 0:
-                is_level_self = True
-            else:
-                is_level_self = False
-                details.type = '?'  # Самый нижний элемент - это не сам он, а родитель. Тогда тип самого уже не узнаем.
+        # эта ссылка ЕСТЬ в просматриваемом нами уровне
+        current_level_a = current_level_a_s[0]
+        is_current_found = True
+        break
+
+    # Если иекущий уровень почему-то не найден
+    if not is_current_found:
+        print("Ошибка: текущий уровень не найден!")
+        return False, details
+
+    details.title = current_level_a.text
+    print("Текущий уровень - название: {}".format(details.title))
+
+    current_level_i = current_level_a.parent
+    ind = levels.index(current_level_i) - 1  # предыдущий тег
+    if ind >= 0:
+        details.type = str(levels[ind].text).split(':')[0]  # текст до двоеточия
+        print("Текущий уровень - тип: {}".format(details.type))
+    else:
+        print("Текущий уровень - тип - не найден!")
+
+    # Найдём category, value для предыдущего уровня
+
+    ind = ind - 2  # предпредыдущий тег - пропускаем тег <br>
+    if ind >= 0:
+        prev_level_a_s = levels[ind].find_elements_by_xpath("./a")
+        if len(prev_level_a_s) > 0:
+            prev_level_a = prev_level_a_s[0]
+            details.parent_title = prev_level_a.text
+            print("Предыдущий уровень - название: {}".format(details.parent_title))
         else:
-            is_level_self = False  # Самим текущим элементом может быть только самый нижний
+            print("Предыдущий уровень - название - ссылка не найдена!")
+    else:
+        print("Предыдущий уровень - название - не найдено!")
 
-        if is_level_self:
-            print("Сам этот элемент: " + parsed_level.category + " " + parsed_level.value +
-                  " (изначально: " + details.title + ")")
-            details.type = parsed_level.category
-            details.title = parsed_level.value  # Поправляем название самого этого элемента. Страница может быть названа
-            # не так, как элемент называется в infobox. Чтобы его можно было найти как родителя, надо иметь
-            # именно тот вариант его имени, который в infobox. Его и записываем вместо имени страницы.
-        else:  # Все последующие за ним - кандидаты быть его прямым родителем
-            # Запоминаем имя родителя, чтобы к нему прикрепить текущий элемент - получится дерево.
-            # Пока весь список не распарсен, этот родитель в базе может иметь другое имя
-            # (не из infobox, а из имени страницы, пока его не поправят при парсинге самого родителя).
-            # Поэтому parent_id заполнять ещё рано, а вместо него - parent_title.
-            # Потом после парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
-            try:
-                a = level.find_element_by_xpath(".//a[1]")
-                parsed_level.html_class = a.get_attribute("class")
-                if str(parsed_level.html_class).find("new") >= 0:
-                    print(" - это ссылка на несозданную страницу, ищем родителя на более высоком уровне...")
-                else:
-                    b_arr = level.find_elements_by_xpath(".//b")
-                    if len(b_arr) > 0:
-                        print(" - похоже, тут нет ссылки на страницу, ищем родителя на более высоком уровне...")
-                    else:
-                        print(" - это родитель")
-                        details.parent_type = parsed_level.category
-                        details.parent_title = parsed_level.value
-                        is_parent_found = True
-                        break  # Не считываем дальнейшую иерархию - это долго и не нужно
-            except WebDriverException:
-                print(" - ссылки не найдено, ищем родителя на более высоком уровне...")
-    return is_parent_found, details
+    ind = ind - 1  # предыдущий тег
+    if ind >= 0:
+        details.parent_type = str(levels[ind].text).split(':')[0]  # текст до двоеточия
+        print("Предыдущий уровень - тип: {}".format(details.parent_type))
+    else:
+        print("Предыдущий уровень - тип - не найден!")
+
+    return True, details
 
 
-def correct_parents(kingdom_title=None, kingdom_id=None):
+def correct_parents(where: str = None):  # TODO rework
     """
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
     При None обрабатывает все царства.
@@ -317,9 +308,9 @@ def correct_parents(kingdom_title=None, kingdom_id=None):
     query = "SELECT id, kingdom_id, parent_type, parent_title " \
             "FROM public.list " \
             "WHERE "
-    if kingdom_id is not None:
-        query += "kingdom_id = '" + str(kingdom_id) + "' " \
-                  "AND "
+    if where is not None:
+        query += where + \
+                 "AND "
     query += " parent_title IS NOT NULL AND parent_id IS NULL;"  # Только у которых уже заполнен текст родителя, но ещё не привязаны
     list_iterator = DbListItemsIterator('parse_details:list_to_parse', query)
 
@@ -364,12 +355,6 @@ def correct_parents(kingdom_title=None, kingdom_id=None):
         print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ВО ВСЕХ ЦАРСТВАХ ОКОНЧЕНО!")
     print("Добавлены родители к " + str(item_counter) + " элементам.")
     print("Не найдены родители для " + str(without_parents) + " элементов.")
-
-
-class ParsedLevel:
-    def __init__(self):
-        self.category = ""
-        self.value = ""
 
 
 if __name__ == "__main__":
