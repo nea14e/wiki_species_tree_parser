@@ -10,9 +10,11 @@ from selenium import webdriver
 import time
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.firefox.options import Options
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
+IS_HEADLESS = True
 
 BROWSER_LOAD_TIMEOUT = 1
 PAGE_LOAD_TIMEOUT = 1
@@ -22,6 +24,7 @@ NEXT_PAGE_DELAY = 3
 # Скачать его можно отсюда: https://ftp.mozilla.org/pub/firefox/releases/66.0.5/
 
 URL_START = "https://species.wikimedia.org/wiki/"
+
 
 def main():
     if len(sys.argv) < 2:
@@ -34,7 +37,10 @@ def main():
     else:
         geckodriver_name = 'geckodriver.exe'
     geckodriver_path = os.path.join(os.getcwd(), geckodriver_name)
-    driver = webdriver.Firefox(executable_path=geckodriver_path)
+    options = Options()
+    if IS_HEADLESS:
+        options.headless = True
+    driver = webdriver.Firefox(executable_path=geckodriver_path, options=options)
     time.sleep(BROWSER_LOAD_TIMEOUT)
 
     DbFunctions.init_db()
