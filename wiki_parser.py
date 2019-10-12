@@ -16,8 +16,8 @@ from selenium.webdriver.firefox.options import Options
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
-IS_DEBUG = True
-IS_HEADLESS = False
+IS_DEBUG = False
+IS_HEADLESS = False  # Можно ещё для ускорения сделать через requests.
 
 BROWSER_LOAD_TIMEOUT = 1
 PAGE_LOAD_TIMEOUT = 1
@@ -65,7 +65,7 @@ def main():
     elif stage_number == '2':
         if len(sys.argv) >= 3:
             if sys.argv[2] == "True":
-                not_parsed_only = True  # TODO не работает not_parsed_only
+                not_parsed_only = True
             elif sys.argv[2] == "False":
                 not_parsed_only = False
             else:
@@ -155,7 +155,7 @@ def populate_list(driver, from_title: str = "", to_title: str = ""):
             return
 
 
-def parse_details(driver, not_parsed_only, where=""):  # TODO parse_details() rework
+def parse_details(driver, not_parsed_only, where=""):
     query = """
       SELECT id, title, page_url
       FROM public.list
@@ -169,7 +169,7 @@ def parse_details(driver, not_parsed_only, where=""):  # TODO parse_details() re
     print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_details:list_to_parse", query)
 
-    # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
+    # Цикл по элементам из списка, подготовленного с помощью populate_list()
     item_counter = 0
     without_parents = 0
     errors = 0
@@ -366,7 +366,7 @@ def correct_parents(where: str = None):
     query += ";"
     list_iterator = DbListItemsIterator('correct_parents:list', query)
 
-    # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
+    # Цикл по элементам из списка, подготовленного с помощью populate_list()
     item_counter = 0
     without_parents = 0
     while True:
