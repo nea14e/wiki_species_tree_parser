@@ -77,6 +77,12 @@ def main():
         else:
             where = ""
         parse_details(driver, not_parsed_only, where)  # 2 этап
+    elif stage_number == '3':
+        if len(sys.argv) >= 3:
+            where = sys.argv[2]
+        else:
+            where = ""
+        correct_parents(where)  # 3 этап
     else:
         print_usage()
 
@@ -92,6 +98,8 @@ def print_usage():
     print("1 from_title to_title")
     print("Для 2 этапа - получения деталей по списку:")
     print("2 [bool(True только ещё не распарсенные, False для перезаписи)=True] [where_фильтр_на_список=\"\"]")
+    print("Для 3 этапа - построения древовидной структуры:")
+    print("2 [where_фильтр_на_список=\"\"]")
 
 
 def populate_list(driver, from_title: str = "", to_title: str = ""):
@@ -343,20 +351,20 @@ def parse_wikipedias(driver, details: ListItemDetails):
     return details
 
 
-def correct_parents(where: str = None):  # TODO rework
+def correct_parents(where: str = None):  # TODO test
     """
-    После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
-    При None обрабатывает все царства.
+    После парсинга списка пройдёмся по базе и заполним parent_id по parent_page_url.
     """
     print("Поправляем ссылки на родителей (построение дерева)...")
-    query = "SELECT id, kingdom_id, parent_type, parent_title " \
-            "FROM public.list " \
-            "WHERE "
-    if where is not None:
-        query += where + \
-                 "AND "
-    query += " parent_title IS NOT NULL AND parent_id IS NULL;"  # Только у которых уже заполнен текст родителя, но ещё не привязаны
-    list_iterator = DbListItemsIterator('parse_details:list_to_parse', query)
+    query = """
+        SELECT id, parent_page_url
+        FROM public.list
+        WHERE parent_page_url IS NOT NULL AND parent_id IS NULL  # Только у которых уже заполнен текст родителя, но ещё не привязаны
+    """
+    if where is not None and where != "":
+        query += " AND " + where
+    query += ";"
+    list_iterator = DbListItemsIterator('correct_parents:list', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list_for_kingdom()
     item_counter = 0
@@ -365,38 +373,31 @@ def correct_parents(where: str = None):  # TODO rework
         list_item = list_iterator.fetchone()
         if not list_item:
             break
-        # Ищем родителя в базе по parent_title.
-        # Проверим, есть ли такой элемент среди public.list,
-        # используя level.value и kingdom_id - они уникальны в таблице list
-        # (одно level.value может повторяться - есть растение и животное с одинаковым именем;
-        # тип и имя использовать нельзя, т.к. тип level.category у родителя заполняется при парсинге родителя,
-        # а он может быть ещё не распарсен).
-        # Чтобы вершина дерева царства подцепилась к самому элементу Царство, надо, чтобы он в корне дерева имел
-        # такой же kingdom_id, как само царство (потому что здесь при поиске родителя в WHERE подставляется
-        # kingdom_id текущего элемента, а не самого родителя, т.е. считается, что они совпадают)
-        #  - это примечание важно для заполнения файла db_init/list.csv.
-        query = "SELECT id " \
-                "FROM public.list " \
-                "WHERE kingdom_id = " + str(list_item[1]) + \
-                "  AND (type = " + quote_nullable(list_item[2]) + " OR type = '?' OR " + quote_nullable(list_item[2]) + " IS NULL) " \
-                "  AND title = " + quote_nullable(list_item[3]) + \
-                                                        "LIMIT 1;"
+        cur_id = list_item[0]
+        cur_parent_url = list_item[1]
+        # Ищем родителя в базе по parent_page_url
+        query = """
+            SELECT id
+            FROM public.list
+            WHERE page_url = '{}'
+            LIMIT 1;
+        """.format(cur_parent_url)
         parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
         if parent_in_db_iter.rowcount() > 0:
             # Нашли в базе данных запись о родителе
             parent_in_db = parent_in_db_iter.fetchone()[0]
-            query = "UPDATE public.list " \
-                    "SET parent_id = " + str(parent_in_db) + \
-                    "WHERE id = " + str(list_item[0]) + ";"
+            query = """
+              UPDATE public.list
+              SET parent_id = '{}'
+              WHERE id = '{}';
+            """.format(parent_in_db, cur_id)
             DbExecuteNonQuery.execute('parse_details:set_parent_id', query)
             item_counter += 1
         else:
+            # Не нашли
             without_parents += 1
     print("\n")
-    if kingdom_title is not None:
-        print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ В ЦАРСТВЕ " + str(kingdom_title) + " ОКОНЧЕНО!")
-    else:
-        print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ВО ВСЕХ ЦАРСТВАХ ОКОНЧЕНО!")
+    print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ОКОНЧЕНО!")
     print("Добавлены родители к " + str(item_counter) + " элементам.")
     print("Не найдены родители для " + str(without_parents) + " элементов.")
 
