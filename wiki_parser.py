@@ -351,7 +351,7 @@ def parse_wikipedias(driver, details: ListItemDetails):
     return details
 
 
-def correct_parents(where: str = None):  # TODO test
+def correct_parents(where: str = None):
     """
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_page_url.
     """
@@ -359,7 +359,7 @@ def correct_parents(where: str = None):  # TODO test
     query = """
         SELECT id, parent_page_url
         FROM public.list
-        WHERE parent_page_url IS NOT NULL AND parent_id IS NULL  # Только у которых уже заполнен текст родителя, но ещё не привязаны
+        WHERE parent_page_url IS NOT NULL AND parent_id IS NULL  -- Только у которых уже заполнен текст родителя, но ещё не привязаны
     """
     if where is not None and where != "":
         query += " AND " + where
