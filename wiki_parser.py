@@ -7,7 +7,9 @@ import traceback
 
 import os
 
+import requests
 from requests.utils import requote_uri
+from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
 
@@ -16,7 +18,7 @@ from selenium.webdriver.firefox.options import Options
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
-IS_DEBUG = False
+IS_DEBUG = True
 IS_HEADLESS = False  # Можно ещё для ускорения сделать через requests.
 
 BROWSER_LOAD_TIMEOUT = 1
@@ -28,6 +30,7 @@ NEXT_PAGE_DELAY = 3
 
 URL_START = "https://species.wikimedia.org/wiki/"
 WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"
+WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"
 
 
 def main():
@@ -213,6 +216,7 @@ def parse_details(driver, not_parsed_only, where=""):
                     , image_url = {}
                     , parent_page_url = {}
                     , wikipedias_by_languages = '{}'
+                    , titles_by_languages = '{}'
                   WHERE id = '{}';
                 """.format(
                     str(details.title)
@@ -220,6 +224,7 @@ def parse_details(driver, not_parsed_only, where=""):
                     , quote_nullable(details.image_url)
                     , quote_nullable(details.parent_page_url)
                     , json.dumps(details.wikipedias_by_languages)
+                    , json.dumps(details.titles_by_languages)
                     , str(details.id)
                 )
                 DbExecuteNonQuery.execute('parse_details:update_details', query)
@@ -254,6 +259,7 @@ class ListItemDetails:
         self.parent_title = None
         self.parent_type = None
         self.wikipedias_by_languages = {}
+        self.titles_by_languages = {}
 
 
 def parse_image(main_content, details: ListItemDetails):
@@ -363,9 +369,20 @@ def parse_wikipedias(driver, details: ListItemDetails):
                 if IS_DEBUG:
                     print("Ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, href))
                 details.wikipedias_by_languages[hreflang] = href
+                wikipedia_page_url = WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
+                title = parse_one_wikipedia(wikipedia_page_url)
+                if IS_DEBUG:
+                    print("Ссылка на Википедию: язык: {} заголовок: {}".format(hreflang, title))
+                details.titles_by_languages[hreflang] = title
     except WebDriverException:
         print("Ошибка: Ссылки на Википедию НЕ НАЙДЕНЫ")
     return details
+
+
+def parse_one_wikipedia(wikipedia_page_url):
+    html = requests.get(wikipedia_page_url).content
+    wiki_html = BeautifulSoup(html, "html.parser")
+    return wiki_html.select_one("div#content > h1").text
 
 
 def correct_parents(where: str = None):

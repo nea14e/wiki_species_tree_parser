@@ -51,7 +51,8 @@ class DbFunctions:
                     , page_url text NOT NULL
                     , type text
                     , image_url text
-                    , wikipedias_by_languages json DEFAULT '{}'
+                    , wikipedias_by_languages jsonb DEFAULT '{}'::jsonb
+                    , titles_by_languages jsonb DEFAULT '{}'::jsonb
                     , parent_page_url text
                     , parent_id bigint
                     , CONSTRAINT pk_list PRIMARY KEY (id)
@@ -64,12 +65,22 @@ class DbFunctions:
         else:
             print("Таблица public.list уже существует, пропускаем этап создания.")
 
+        DbFunctions.add_language("en")
+        DbFunctions.add_language("ru")
+
         # Просто так
         cur = DbFunctions.conn.cursor()
         sql = "SELECT COUNT(1) FROM public.list;"
         cur.execute(sql)
         list_count = cur.fetchone()[0]
         print("В таблице public.list сейчас {} записей.".format(list_count))
+
+    @staticmethod
+    def add_language(lang_key: str):
+        cur = DbFunctions.conn.cursor()
+        sql = "CREATE INDEX IF NOT EXISTS ix_list_{} ON public.list ((titles_by_languages->>'{}'));" \
+                .format(lang_key, lang_key)
+        cur.execute(sql)
 
     @staticmethod
     def add_list_item(title, page_url):
@@ -89,7 +100,7 @@ class DbFunctions:
         cur.execute(sql)
 
     @staticmethod
-    def add_details_to_item(title, page_url, _type, image_url, wikipedias_by_languages, parent_page_url):
+    def add_details_to_item(title, page_url, _type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url):
         if not DbFunctions.conn:
             raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
 
@@ -102,6 +113,7 @@ class DbFunctions:
                   , type = '{}'
                   , image_url = '{}'
                   , wikipedias_by_languages = '{}'
+                  , titles_by_languages = '{}'
                   , parent_page_url = '{}'
                 WHERE page_url = '{}';
             """.format(
@@ -109,6 +121,7 @@ class DbFunctions:
                 , str(_type)
                 , str(image_url)
                 , json.dumps(wikipedias_by_languages)
+                , json.dumps(titles_by_languages)
                 , str(parent_page_url)
                 , str(page_url)
             )
