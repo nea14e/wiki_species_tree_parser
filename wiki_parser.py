@@ -99,7 +99,7 @@ def print_usage():
     print("Для 2 этапа - получения деталей по списку:")
     print("2 [bool(True только ещё не распарсенные, False для перезаписи)=True] [where_фильтр_на_список=\"\"]")
     print("Для 3 этапа - построения древовидной структуры:")
-    print("2 [where_фильтр_на_список=\"\"]")
+    print("3 [where_фильтр_на_список=\"\"]")
 
 
 def populate_list(driver, from_title: str = "", to_title: str = ""):
@@ -162,10 +162,23 @@ def parse_details(driver, not_parsed_only, where=""):
       WHERE 1 = 1
       """
     if not_parsed_only:
-        query += "AND type IS NULL "
+        query += """AND type IS NULL 
+            AND id > (SELECT MAX(id)
+                      FROM public.list
+                      WHERE type IS NOT NULL
+            """
+        if where is not None and where != "":
+            query += """
+                        AND {}
+            """.format(where)
+        query += ")"
     if where is not None and where != "":
-        query += "AND " + str(where) + " "
-    query += "ORDER BY title;"
+        query += """
+        AND {}
+        """.format(where)
+    query += """
+      ORDER BY title;
+    """
     print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_details:list_to_parse", query)
 
@@ -315,7 +328,11 @@ def parse_levels(tree_box, details: ListItemDetails):
     if ind >= 0:
         prev_level_a = levels_tags[ind]
         prev_href = str(prev_level_a.get_attribute("href"))
+        if prev_href == "None":
+            prev_href = str(prev_level_a.find_element_by_xpath("./a").get_attribute("href"))
         details.parent_page_url = prev_href[len(URL_START):]
+        if details.parent_page_url is None:
+            details.parent_page_url = prev_href[len("/wiki/"):]
         print("Предыдущий уровень - ссылка: {}".format(details.parent_page_url))
 
         if IS_DEBUG:
