@@ -19,7 +19,7 @@ from selenium.webdriver.firefox.options import Options
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
 IS_DEBUG = False
-IS_HEADLESS = False  # Можно ещё для ускорения сделать через requests.
+IS_HEADLESS = True  # Можно ещё для ускорения сделать через requests.
 
 BROWSER_LOAD_TIMEOUT = 1
 PAGE_LOAD_TIMEOUT = 1
@@ -166,7 +166,7 @@ def parse_details(driver, not_parsed_only, where=""):
       """
     if not_parsed_only:
         query += """AND type IS NULL 
-            AND id > (SELECT MAX(id)
+            AND title > (SELECT COALESCE(MAX(title), '')
                       FROM public.list
                       WHERE type IS NOT NULL
             """
