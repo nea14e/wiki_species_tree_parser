@@ -18,7 +18,7 @@ from selenium.webdriver.firefox.options import Options
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
-IS_DEBUG = True
+IS_DEBUG = False
 IS_HEADLESS = False  # Можно ещё для ускорения сделать через requests.
 
 BROWSER_LOAD_TIMEOUT = 1
@@ -337,7 +337,7 @@ def parse_levels(tree_box, details: ListItemDetails):
         if prev_href == "None":
             prev_href = str(prev_level_a.find_element_by_xpath("./a").get_attribute("href"))
         details.parent_page_url = prev_href[len(URL_START):]
-        if details.parent_page_url is None:
+        if details.parent_page_url is None or details.parent_page_url == "None":
             details.parent_page_url = prev_href[len("/wiki/"):]
         print("Предыдущий уровень - ссылка: {}".format(details.parent_page_url))
 
