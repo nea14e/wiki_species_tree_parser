@@ -8,7 +8,8 @@ import csv
 
 class DbFunctions:
     user = str("postgres")
-    host = str("127.0.0.1")
+    host = str("192.168.33.147")
+    # host = str("127.0.0.1")
     password = str("12345")
     conn = None
 
