@@ -68,18 +68,18 @@ def main():
     elif stage_number == '2':
         if len(sys.argv) >= 3:
             if sys.argv[2] == "True":
-                not_parsed_only = True
+                skip_parsed_interval = True
             elif sys.argv[2] == "False":
-                not_parsed_only = False
+                skip_parsed_interval = False
             else:
                 raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[2]))
         else:
-            not_parsed_only = True
+            skip_parsed_interval = True
         if len(sys.argv) >= 4:
             where = sys.argv[3]
         else:
             where = ""
-        parse_details(driver, not_parsed_only, where)  # 2 этап
+        parse_details(driver, skip_parsed_interval, where)  # 2 этап
     elif stage_number == '3':
         if len(sys.argv) >= 3:
             where = sys.argv[2]
@@ -100,7 +100,7 @@ def print_usage():
     print("Для 1 этапа - составления списка:")
     print("1 from_title to_title")
     print("Для 2 этапа - получения деталей по списку:")
-    print("2 [bool(True только ещё не распарсенные, False для перезаписи)=True] [where_фильтр_на_список=\"\"]")
+    print("2 [bool(True начать от последнего распарсенного)=True] [where_фильтр_на_список=\"\"]")
     print("Для 3 этапа - построения древовидной структуры:")
     print("3 [where_фильтр_на_список=\"\"]")
 
@@ -158,14 +158,14 @@ def populate_list(driver, from_title: str = "", to_title: str = ""):
             return
 
 
-def parse_details(driver, not_parsed_only, where=""):
+def parse_details(driver, skip_parsed_interval, where=""):
     query = """
       SELECT id, title, page_url
       FROM public.list
-      WHERE 1 = 1
+      WHERE type IS NULL
       """
-    if not_parsed_only:
-        query += """AND type IS NULL 
+    if skip_parsed_interval:
+        query += """
             AND title > (SELECT COALESCE(MAX(title), '')
                       FROM public.list
                       WHERE type IS NOT NULL
