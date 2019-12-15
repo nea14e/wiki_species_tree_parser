@@ -205,35 +205,35 @@ def parse_details(driver, skip_parsed_interval, where=""):
 
             # Парсинг информации
             all_content = driver.find_element_by_xpath("//div[@class='mw-parser-output']")
-            details = parse_image_wikispecies(all_content, details)
             is_parent_found, details = parse_levels(all_content, details)
+            if not is_parent_found:
+                without_parents += 1
+                continue
+            details = parse_image_wikispecies(all_content, details)
             details = parse_wikipedias(all_content, details)
 
             # Запись всех подробностей в базу
             # (только если нашли родителя - без родителей в дереве элементы не нужны)
-            if is_parent_found:
-                query = """
-                  UPDATE public.list
-                  SET title = '{}'
-                    , type = '{}'
-                    , image_url = {}
-                    , parent_page_url = {}
-                    , wikipedias_by_languages = '{}'
-                    , titles_by_languages = '{}'
-                  WHERE id = '{}';
-                """.format(
-                    str(details.title)
-                    , str(details.type)
-                    , quote_nullable(details.image_url)
-                    , quote_nullable(details.parent_page_url)
-                    , json.dumps(details.wikipedias_by_languages)
-                    , json.dumps(details.titles_by_languages)
-                    , str(details.id)
-                )
-                DbExecuteNonQuery.execute('parse_details:update_details', query)
-                item_counter += 1
-            else:
-                without_parents += 1
+            query = """
+              UPDATE public.list
+              SET title = '{}'
+                , type = '{}'
+                , image_url = {}
+                , parent_page_url = {}
+                , wikipedias_by_languages = '{}'
+                , titles_by_languages = '{}'
+              WHERE id = '{}';
+            """.format(
+                str(details.title)
+                , str(details.type)
+                , quote_nullable(details.image_url)
+                , quote_nullable(details.parent_page_url)
+                , json.dumps(details.wikipedias_by_languages)
+                , json.dumps(details.titles_by_languages)
+                , str(details.id)
+            )
+            DbExecuteNonQuery.execute('parse_details:update_details', query)
+            item_counter += 1
 
         except WebDriverException:
             print('Ошибка:\n', traceback.format_exc())
