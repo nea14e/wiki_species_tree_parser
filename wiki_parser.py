@@ -150,11 +150,14 @@ def populate_list(driver, from_title: str = "", to_title: str = ""):
                 print('Ошибка:\n', traceback.format_exc())
 
         if next_page_url:
-            print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(next_page_elem.text, succeeds, skipped, errors))
+            print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
+                next_page_elem.text, succeeds, skipped, errors))
             driver.get(next_page_url)  # Переходим на след страницу
             time.sleep(NEXT_PAGE_DELAY)
         else:
-            print("ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок.".format(succeeds, skipped, errors))
+            print(
+                "ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок.".format(succeeds, skipped,
+                                                                                                     errors))
             return
 
 
@@ -202,7 +205,7 @@ def parse_details(driver, skip_parsed_interval, where=""):
 
             # Парсинг информации
             all_content = driver.find_element_by_xpath("//div[@class='mw-parser-output']")
-            details = parse_image(all_content, details)
+            details = parse_image_wikispecies(all_content, details)
             is_parent_found, details = parse_levels(all_content, details)
             details = parse_wikipedias(all_content, details)
 
@@ -262,14 +265,15 @@ class ListItemDetails:
         self.titles_by_languages = {}
 
 
-def parse_image(main_content, details: ListItemDetails):
+def parse_image_wikispecies(main_content, details: ListItemDetails):
     try:
-        image = main_content.find_element_by_xpath(".//div[@class='thumb tright']//img")  # Просто любая картинка справа в основном содержимом
+        image = main_content.find_element_by_xpath(
+            ".//div[@class='thumb tright']//img")  # Просто любая картинка справа в основном содержимом
         src = image.get_attribute('src')
-        print("Картинка: " + str(src))
+        print("Картинка в Викивидах: " + str(src))
         details.image_url = src
     except WebDriverException:  # Картинки может не быть - всё равно обрабатывать эту страницу дальше
-        print("Картинка НЕ НАЙДЕНА")
+        print("Картинка в Викивидах НЕ НАЙДЕНА")
         details.image_url = None
     return details
 
@@ -294,7 +298,8 @@ def parse_levels(tree_box, details: ListItemDetails):
         ...
     """
     levels_p = tree_box.find_element_by_xpath("./p[1]")
-    levels_p_text = str(levels_p.text)  # Напр., "Familia: Euconulidae\nSubfamilia: Microcystinae\nGenus: Philonesia\nSubgenus: Aa\n..."
+    levels_p_text = str(
+        levels_p.text)  # Напр., "Familia: Euconulidae\nSubfamilia: Microcystinae\nGenus: Philonesia\nSubgenus: Aa\n..."
     levels_tags = levels_p.find_elements_by_xpath("./*")
 
     # Найдём category, value для текущего уровня
@@ -323,7 +328,7 @@ def parse_levels(tree_box, details: ListItemDetails):
     print("Текущий уровень - название: {}".format(details.title))
 
     # текст на текущем уровне до названия (напр., для уровня "Genus: Philonesia" это будет "Genus: ")
-    text_before_title = levels_p_text[0 : levels_p_text.index(current_level_a.text)].split('\n')[-1]
+    text_before_title = levels_p_text[0: levels_p_text.index(current_level_a.text)].split('\n')[-1]
     # текст на текущем уровне до двоеточия
     details.type = text_before_title.split(':')[0]
     print("Текущий уровень - тип: {}".format(details.type))
@@ -370,20 +375,35 @@ def parse_wikipedias(driver, details: ListItemDetails):
                     print("Ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, href))
                 details.wikipedias_by_languages[hreflang] = href
                 wikipedia_page_url = WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
-                title = parse_one_wikipedia(wikipedia_page_url)
-                if IS_DEBUG:
-                    print("Ссылка на Википедию: язык: {} заголовок: {}".format(hreflang, title))
-                details.titles_by_languages[hreflang] = title
+
+                html = requests.get(wikipedia_page_url).content  # Парсим саму страницу Википедии
+                wiki_html = BeautifulSoup(html, "html.parser")
+                details = parse_one_wikipedia(hreflang, wiki_html, details)
+                if details.image_url is None:
+                    details = parse_image_wikipedia(hreflang, wiki_html, details)
     except WebDriverException:
         print("Ошибка: Ссылки на Википедию НЕ НАЙДЕНЫ")
     return details
 
 
-def parse_one_wikipedia(wikipedia_page_url):
-    html = requests.get(wikipedia_page_url).content
-    wiki_html = BeautifulSoup(html, "html.parser")
-    return wiki_html.select_one("div#content > h1").text
+def parse_one_wikipedia(hreflang, wiki_html, details: ListItemDetails):
+    title = wiki_html.select_one("div#content > h1").text
+    if IS_DEBUG:
+        print("Ссылка на Википедию: язык: {} заголовок: {}".format(hreflang, title))
+    details.titles_by_languages[hreflang] = title
+    return details
 
+
+def parse_image_wikipedia(hreflang, wiki_html, details: ListItemDetails):
+    image = wiki_html.select_one(
+        "#mw-content-text > div > table.infobox > tbody > tr:nth-child(2) img"
+    )
+    # Картинка в карточке вида (при этом не карта распространения)
+    if image is not None:
+        src = "https:" + str(image['src'])
+        print("Картинка в Википедии: язык: {} картинка: {}".format(hreflang, src))
+        details.image_url = src
+    return details
 
 def correct_parents(where: str = None):
     """
