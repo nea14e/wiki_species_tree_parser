@@ -1,29 +1,19 @@
 # -*- coding: utf-8 -*-
 import json
-import platform
 import re
 import sys
 import traceback
 
-import os
-
 import requests
 from requests.utils import requote_uri
 from bs4 import BeautifulSoup
-from selenium import webdriver
 import time
-
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.firefox.options import Options
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 
 IS_DEBUG = False
-IS_HEADLESS = True  # Можно ещё для ускорения сделать через requests.
 
-BROWSER_LOAD_TIMEOUT = 1
-PAGE_LOAD_TIMEOUT = 1
-NEXT_PAGE_DELAY = 3
+NEXT_PAGE_DELAY = 0.2
 
 # ! Внимание! Чтобы использовать Selenium, нужен Firefox версии не выше 66.
 # Скачать его можно отсюда: https://ftp.mozilla.org/pub/firefox/releases/66.0.5/
@@ -39,17 +29,6 @@ def main():
         return
     stage_number = sys.argv[1]
 
-    if platform.system() == 'Linux':
-        geckodriver_name = 'geckodriver'
-    else:
-        geckodriver_name = 'geckodriver.exe'
-    geckodriver_path = os.path.join(os.getcwd(), geckodriver_name)
-    options = Options()
-    if IS_HEADLESS:
-        options.headless = True
-    driver = webdriver.Firefox(executable_path=geckodriver_path, options=options)
-    time.sleep(BROWSER_LOAD_TIMEOUT)
-
     DbFunctions.init_db()
 
     # Выберите нужное и подставьте сюда перед запуском
@@ -64,7 +43,7 @@ def main():
             to_title = sys.argv[3]
         else:
             to_title = ""
-        populate_list(driver, from_title, to_title)  # 1 этап
+        populate_list(from_title, to_title)  # 1 этап
     elif stage_number == '2':
         if len(sys.argv) >= 3:
             if sys.argv[2] == "True":
@@ -79,7 +58,7 @@ def main():
             where = sys.argv[3]
         else:
             where = ""
-        parse_details(driver, skip_parsed_interval, where)  # 2 этап
+        parse_details(skip_parsed_interval, where)  # 2 этап
     elif stage_number == '3':
         if len(sys.argv) >= 3:
             where = sys.argv[2]
@@ -88,8 +67,6 @@ def main():
         correct_parents(where)  # 3 этап
     else:
         print_usage()
-
-    driver.quit()
 
 
 def print_usage():
@@ -105,21 +82,21 @@ def print_usage():
     print("3 [where_фильтр_на_список=\"\"]")
 
 
-def populate_list(driver, from_title: str = "", to_title: str = ""):
+def populate_list(from_title: str = "", to_title: str = ""):
     print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
-    driver.get(
+    html = requests.get(
         "https://species.wikimedia.org/wiki/Special:AllPages?from={}&to={}&namespace=0" \
             .format(requote_uri(from_title), requote_uri(to_title))
-    )
-    time.sleep(PAGE_LOAD_TIMEOUT)
+    ).content  # Парсим саму страницу Википедии
+    wiki_html = BeautifulSoup(html, "html.parser")
 
     succeeds = 0
     skipped = 0
     errors = 0
     while True:  # Цикл перехода на след. страницу
         # Cсылка на следующую страницу
-        navigate_page_elems = driver.find_elements_by_xpath("//div[@class='mw-allpages-nav']/a")
+        navigate_page_elems = wiki_html.select("div.mw-allpages-nav > a")
         next_page_elem = None
         for el in navigate_page_elems:
             if "Next page" in el.text:
@@ -128,31 +105,32 @@ def populate_list(driver, from_title: str = "", to_title: str = ""):
 
         # Адрес из ссылки на следующую страницу
         if next_page_elem:
-            next_page_url = next_page_elem.get_attribute("href")
+            next_page_url = next_page_elem["href"]
         else:
             next_page_url = None
 
         # Сохраем в базу ссылки, чтобы потом по ним переходить
-        for link in driver.find_elements_by_xpath("//ul[@class='mw-allpages-chunk']/li/a"):
+        for link in wiki_html.select("ul.mw-allpages-chunk > li > a"):
             try:
                 item_title = link.text
                 if "." in item_title:  # Пропускаем имена учёных (с инициалами, поэтому у них точки)
                     skipped += 1
                     continue
                 item_title = item_title.replace("'", "''")  # Экранирование для базы
-                item_details_href = str(link.get_attribute("href"))
+                item_details_href = str(link["href"])
                 item_details_href = item_details_href[len(URL_START):]  # Ссылка (без начала)
                 # print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # debug only
                 DbFunctions.add_list_item(item_title, item_details_href)
                 succeeds += 1
-            except WebDriverException:
+            except BaseException:
                 errors += 1
                 print('Ошибка:\n', traceback.format_exc())
 
         if next_page_url:
             print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
                 next_page_elem.text, succeeds, skipped, errors))
-            driver.get(next_page_url)  # Переходим на след страницу
+            html = requests.get(next_page_url).content  # Переходим на след страницу
+            wiki_html = BeautifulSoup(html, "html.parser")
             time.sleep(NEXT_PAGE_DELAY)
         else:
             print(
@@ -161,7 +139,7 @@ def populate_list(driver, from_title: str = "", to_title: str = ""):
             return
 
 
-def parse_details(driver, skip_parsed_interval, where=""):
+def parse_details(skip_parsed_interval, where=""):
     query = """
       SELECT id, title, page_url
       FROM public.list
@@ -200,17 +178,17 @@ def parse_details(driver, skip_parsed_interval, where=""):
             details = ListItemDetails(list_item[0], list_item[1], list_item[2])
             print('===========================================')
             print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + details.page_url)
-            driver.get(URL_START + details.page_url)
-            time.sleep(PAGE_LOAD_TIMEOUT)
+            html = requests.get(URL_START + details.page_url).content
+            wiki_html = BeautifulSoup(html, "html.parser")
 
             # Парсинг информации
-            all_content = driver.find_element_by_xpath("//div[@class='mw-parser-output']")
+            all_content = wiki_html.select_one("div.mw-parser-output")
             is_parent_found, details = parse_levels(all_content, details)
             if not is_parent_found:
                 without_parents += 1
                 continue
             details = parse_image_wikispecies(all_content, details)
-            details = parse_wikipedias(all_content, details)
+            details = parse_wikipedias(wiki_html, details)
 
             # Запись всех подробностей в базу
             # (только если нашли родителя - без родителей в дереве элементы не нужны)
@@ -235,9 +213,9 @@ def parse_details(driver, skip_parsed_interval, where=""):
             DbExecuteNonQuery.execute('parse_details:update_details', query)
             item_counter += 1
 
-        except WebDriverException:
-            print('Ошибка:\n', traceback.format_exc())
-            errors += 1
+        # except WebDriverException:  TODO
+        #     print('Ошибка:\n', traceback.format_exc())
+        #     errors += 1
         except:  # Ошибки базы могут разных видов. Ловим вообще все
             print('Ошибка:\n', traceback.format_exc())
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
@@ -266,13 +244,13 @@ class ListItemDetails:
 
 
 def parse_image_wikispecies(main_content, details: ListItemDetails):
-    try:
-        image = main_content.find_element_by_xpath(
-            ".//div[@class='thumb tright']//img")  # Просто любая картинка справа в основном содержимом
-        src = image.get_attribute('src')
+    div = main_content.select_one("div.thumb.tright")
+    if div is not None:
+        image = div.select_one("img")  # Просто любая картинка справа в основном содержимом
+        src = image['src']
         print("Картинка в Викивидах: " + str(src))
         details.image_url = src
-    except WebDriverException:  # Картинки может не быть - всё равно обрабатывать эту страницу дальше
+    else:  # Картинки может не быть - всё равно обрабатывать эту страницу дальше
         print("Картинка в Викивидах НЕ НАЙДЕНА")
         details.image_url = None
     return details
@@ -286,110 +264,107 @@ def parse_levels(tree_box, details: ListItemDetails):
             Вытаскивает: тип текущего элемента (Отряд),
               название и тип ближайшего имеющегося в базе родителя (Класс: Пресмыкающиеся)
 
-    Или вот пример:
-    <p>
-        Familia: <a href="https://species.wikimedia.org/wiki/Heliconiaceae" title="Heliconiaceae">Heliconiaceae</a>
-        <br>
-        Genus:
-        <i>
-            <a class="mw-selflink selflink">Heliconia</a>
-        </i>
-        <br>
+    Например, для https://species.wikimedia.org/wiki/Aaptos
+    в раскрывающейся таблице
+    [
+        'Superregnum: <a href="/wiki/Eukaryota" title="Eukaryota">Eukaryota</a>',
         ...
-    """
-    levels_p = tree_box.find_element_by_xpath("./p[1]")
-    levels_p_text = str(
-        levels_p.text)  # Напр., "Familia: Euconulidae\nSubfamilia: Microcystinae\nGenus: Philonesia\nSubgenus: Aa\n..."
-    levels_tags = levels_p.find_elements_by_xpath("./*")
+        'Ordo: <a href="/wiki/Suberitida" title="Suberitida">Suberitida</a> ',
+        ''
+    ]
+    а вне таблицы содержатся
+    [
+        'Familia: <a href="/wiki/Suberitidae" title="Suberitidae">Suberitidae</a>',
+        'Genus: <i><a href="/wiki/Aaptos" title="Aaptos">Aaptos</a></i>',     <--- предыдущий перед mw-selflink - родитель. Он может быть внутри таблицы.
+        'Species: <i><a class="mw-selflink selflink">Aaptos rosacea</a></i>'  <--- mw-selflink указывает, что это текущий элемент, которому посвящена страница
 
-    # Найдём category, value для текущего уровня
+    ]
+    """
+
+
+    levels_p = tree_box.select_one("p:nth-child(3)")
+    levels = str(levels_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
+
+    # Текущий уровень
 
     is_current_found = False
     current_level_ind = None
-    current_level_a = None
-    for ind, level in enumerate(levels_tags):
-        # Найдём сначала сам текущий уровень - у него value написано особой ссылкой:
-        current_level_a_s = level.find_elements_by_xpath("./a[@class='mw-selflink selflink']")
-        if len(current_level_a_s) == 0:
-            continue  # эта ссылка НЕ в просматриваемом нами уровне, пропускаем
-
-        # эта ссылка ЕСТЬ в просматриваемом нами уровне
-        current_level_ind = ind
-        current_level_a = current_level_a_s[0]
-        is_current_found = True
-        break
+    for ind, level in enumerate(levels):
+        matches = re.match(r"(.+?):.+?<a.+?mw-selflink.+?>(.+?)</a>.*", level, re.DOTALL)
+        if matches is not None:
+            # эта ссылка ЕСТЬ в просматриваемом нами уровне
+            is_current_found = True
+            current_level_ind = ind
+            details.type = matches.group(1)  # текст до двоеточия
+            details.title = matches.group(2)  # текст внутри <a>...</a>
+            print("Текущий уровень: тип: {} название: {}".format(details.type, details.title))
+            break
 
     # Если текущий уровень почему-то не найден
     if not is_current_found:
         print("Ошибка: текущий уровень не найден!")
         return False, details
 
-    details.title = current_level_a.text
-    print("Текущий уровень - название: {}".format(details.title))
+    # Предыдущий уровень
 
-    # текст на текущем уровне до названия (напр., для уровня "Genus: Philonesia" это будет "Genus: ")
-    text_before_title = levels_p_text[0: levels_p_text.index(current_level_a.text)].split('\n')[-1]
-    # текст на текущем уровне до двоеточия
-    details.type = text_before_title.split(':')[0]
-    print("Текущий уровень - тип: {}".format(details.type))
-
-    # Найдём category, value для предыдущего уровня
-
-    ind = current_level_ind - 2  # предпредыдущий тег - пропускаем тег <br>
+    ind = current_level_ind - 1
     if ind >= 0:
-        prev_level_a = levels_tags[ind]
-        prev_href = str(prev_level_a.get_attribute("href"))
-        if prev_href == "None":
-            prev_href = str(prev_level_a.find_element_by_xpath("./a").get_attribute("href"))
-        details.parent_page_url = prev_href[len(URL_START):]
-        if details.parent_page_url is None or details.parent_page_url == "None":
-            details.parent_page_url = prev_href[len("/wiki/"):]
-        print("Предыдущий уровень - ссылка: {}".format(details.parent_page_url))
-
-        if IS_DEBUG:
-            details.parent_title = prev_level_a.text
-            print("Предыдущий уровень - название: {}".format(details.parent_title))
-
-            # текст на предыдущем уровне до названия (напр., для уровня "Genus: Philonesia" это будет "Genus: ")
-            text_before_title = levels_p_text[0: levels_p_text.index(prev_level_a.text)].split('\n')[-1]
-            # текст на предыдущем уровне до двоеточия
-            details.parent_type = text_before_title.split(':')[0]
-            print("Предыдущий уровень - тип: {}".format(details.parent_type))
-
-        return True, details
+        parent_level = levels[ind]
+        matches = re.match(r"""(.+?):.+?<a.+?href="(.+?)".*?>(.+?)</a>.*""", parent_level, re.DOTALL)
+        if matches is not None:
+            details.parent_type = matches.group(1)
+            details.parent_title = matches.group(3)
+            details.parent_page_url = matches.group(2)[len("/wiki/"):]
+            print("Предыдущий уровень: основной: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
+            return True, details
+        else:
+            print("Предыдущий уровень: основной: не найден!")
+            return False, details
     else:
-        print("Предыдущий уровень - не найден!")
-        return False, details
+        levels_collapsible_p = tree_box.select_one("table:nth-child(2).wikitable.mw-collapsible > tbody > tr:nth-child(2) > td > p")
+        levels_collapsible = str(levels_collapsible_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
+        if len(levels_collapsible) >= 2:
+            parent_level = levels_collapsible[-2]
+            matches = re.match(r"""(.+?):.+?<a.+?href="(.+?)".*?>(.+?)</a>.*""", parent_level, re.DOTALL)
+            if matches is not None:
+                details.parent_type = matches.group(1)
+                details.parent_title = matches.group(3)
+                details.parent_page_url = matches.group(2)[len("/wiki/"):]
+                print("Предыдущий уровень: в таблице: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
+                return True, details
+            else:
+                print("Предыдущий уровень: в таблице: не найден!")
+                return False, details
+        else:
+            print("Предыдущий уровень: в таблице: не найден - уровней мало!")
+            return False, details
 
 
-def parse_wikipedias(driver, details: ListItemDetails):
+def parse_wikipedias(wiki_html, details: ListItemDetails):
     # Ссылки на Википедии разных языков
-    try:
-        a_s = driver.find_elements_by_xpath("//div[@id='p-lang']/div/ul/li/a")
-        for a in a_s:
-            if a.text != "":
-                match = re.search(WIKIPEDIAS_URL_MASK, a.get_attribute("href"))
-                hreflang = match[1]
-                href = match[2]
-                if IS_DEBUG:
-                    print("Ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, href))
-                details.wikipedias_by_languages[hreflang] = href
-                wikipedia_page_url = WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
+    a_s = wiki_html.select("div#p-lang > div > ul > li > a")
+    for a in a_s:
+        if a.text != "":
+            match = re.search(WIKIPEDIAS_URL_MASK, a["href"])
+            hreflang = match[1]
+            href = match[2]
+            if IS_DEBUG:
+                print("Ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, href))
+            details.wikipedias_by_languages[hreflang] = href
+            wikipedia_page_url = WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
 
-                html = requests.get(wikipedia_page_url).content  # Парсим саму страницу Википедии
-                wiki_html = BeautifulSoup(html, "html.parser")
-                details = parse_one_wikipedia(hreflang, wiki_html, details)
-                if details.image_url is None:
-                    details = parse_image_wikipedia(hreflang, wiki_html, details)
-    except WebDriverException:
-        print("Ошибка: Ссылки на Википедию НЕ НАЙДЕНЫ")
+            html = requests.get(wikipedia_page_url).content  # Парсим саму страницу Википедии
+            wiki_html = BeautifulSoup(html, "html.parser")
+            details = parse_one_wikipedia(hreflang, wiki_html, details)
+            if details.image_url is None:
+                details = parse_image_wikipedia(hreflang, wiki_html, details)
     return details
 
 
 def parse_one_wikipedia(hreflang, wiki_html, details: ListItemDetails):
     title = wiki_html.select_one("div#content > h1").text
     if IS_DEBUG:
-        print("Ссылка на Википедию: язык: {} заголовок: {}".format(hreflang, title))
+        print("Ссылка на Википедию: Язык: {} Заголовок: {}".format(hreflang, title))
     details.titles_by_languages[hreflang] = title
     return details
 
@@ -401,9 +376,10 @@ def parse_image_wikipedia(hreflang, wiki_html, details: ListItemDetails):
     # Картинка в карточке вида (при этом не карта распространения)
     if image is not None:
         src = "https:" + str(image['src'])
-        print("Картинка в Википедии: язык: {} картинка: {}".format(hreflang, src))
+        print("Картинка в Википедии: Язык: {} Картинка: {}".format(hreflang, src))
         details.image_url = src
     return details
+
 
 def correct_parents(where: str = None):
     """
