@@ -375,6 +375,8 @@ def parse_image_wikipedia(hreflang, wiki_html, details: ListItemDetails):
     )
     # Картинка в карточке вида (при этом не карта распространения)
     if image is not None:
+        if image.get("alt", None) == "edit":
+            return details  # картинка карандаша
         src = "https:" + str(image['src'])
         print("Картинка в Википедии: Язык: {} Картинка: {}".format(hreflang, src))
         details.image_url = src
