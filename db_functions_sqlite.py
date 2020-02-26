@@ -1,67 +1,44 @@
 import json
+import sqlite3
 
 
-
-class DbFunctionsSqlite:
+class DbFunctions:
+    DB_FILE_PATH = "db.sqlite"
     conn = None
 
     @staticmethod
     def init_db():
-        # Подключаемся к базе данных по умолчанию, чтобы создать нашу базу, если надо
-        general_conn = sqlite3
-        general_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur = general_conn.cursor()
-        sql = "SELECT 1 FROM pg_database WHERE datname = 'lifetree';"
-        cur.execute(sql)
-        if cur.rowcount == 0:  # Если база данных ещё не создана
-            sql = "CREATE DATABASE lifetree;"
-            print(str(sql))
-            cur.execute(sql)
-        else:
-            print("База lifetree уже существует, пропускаем этап создания.")
-        general_conn.close()
-
-        # Подключаемся к нашей базе
-        if not DbFunctions.conn:
-            DbFunctions.conn = psycopg2.connect(
-                "dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
-            DbFunctions.conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-
-        # Создаём в ней таблицы, если надо
-        # Наполняем их данными, если надо
+        DbFunctions.conn = sqlite3.connect(DbFunctions.DB_FILE_PATH)
+        # Создаём в ней таблицы
+        # Наполняем их данными
 
         # Таблица со списком
         cur = DbFunctions.conn.cursor()
-        sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list';"
+        sql = """
+            CREATE TABLE list (
+                id bigserial NOT NULL
+                , title text NOT NULL
+                , page_url text NOT NULL
+                , type text
+                , image_url text
+                , wikipedias_by_languages json DEFAULT '{}'
+                , parent_page_url text
+                , parent_id bigint
+                , titles_by_languages json DEFAULT '{}'
+                , CONSTRAINT pk_list PRIMARY KEY (id) ON CONFLICT REPLACE
+                , CONSTRAINT uq_page_url UNIQUE (page_url) ON CONFLICT REPLACE
+                , CONSTRAINT fk_list_parent_id FOREIGN KEY (parent_id) REFERENCES list (id)
+            );
+            """
+        print(str(sql))
         cur.execute(sql)
-        if cur.rowcount == 0:
-            cur = DbFunctions.conn.cursor()
-            sql = """
-                CREATE TABLE public.list (
-                    id bigserial NOT NULL
-                    , title text NOT NULL
-                    , page_url text NOT NULL
-                    , type text
-                    , image_url text
-                    , wikipedias_by_languages json DEFAULT '{}'
-                    , parent_page_url text
-                    , parent_id bigint
-                    , CONSTRAINT pk_list PRIMARY KEY (id)
-                    , CONSTRAINT uq_page_url UNIQUE (page_url)
-                    , CONSTRAINT fk_list_parent_id FOREIGN KEY (parent_id) REFERENCES public.list (id)
-                );
-                """
-            print(str(sql))
-            cur.execute(sql)
-        else:
-            print("Таблица public.list уже существует, пропускаем этап создания.")
 
         # Просто так
         cur = DbFunctions.conn.cursor()
-        sql = "SELECT COUNT(1) FROM public.list;"
+        sql = "SELECT COUNT(1) FROM list;"
         cur.execute(sql)
         list_count = cur.fetchone()[0]
-        print("В таблице public.list сейчас {} записей.".format(list_count))
+        print("В таблице list сейчас {} записей.".format(list_count))
 
     @staticmethod
     def add_list_item(title, page_url):
@@ -71,7 +48,7 @@ class DbFunctionsSqlite:
         # Добавляем новый элемент в список или обновляем уже существующий
         cur = DbFunctions.conn.cursor()
         sql = """
-                INSERT INTO public.list (title, page_url)
+                INSERT INTO list (title, page_url)
                   VALUES ('{}', '{}')
                 ON CONFLICT ON CONSTRAINT uq_page_url 
                   DO UPDATE 
@@ -123,7 +100,7 @@ class DbConnectionsHandler():
         if tag in cls.connections_pool.keys():
             return cls.connections_pool[str(tag)]
         else:
-            new_conn = psycopg2.connect("dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
+            new_conn = sqlite3.connect(DbFunctions.DB_FILE_PATH)
             cls.connections_pool[str(tag)] = new_conn
             return new_conn
 
@@ -154,4 +131,10 @@ def quote_nullable(val):
     if val is None:
         return "null"
     else:
-        return "'" + str(val) + "'"
+        return "'" + str(val).replace("'", "''") + "'"
+
+def nonquoted_nullable(val):
+    if val is None:
+        return "null"
+    else:
+        return str(val)
