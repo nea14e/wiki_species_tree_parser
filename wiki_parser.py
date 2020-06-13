@@ -17,9 +17,6 @@ IS_DEBUG = False
 
 NEXT_PAGE_DELAY = 0.2
 
-# ! Внимание! Чтобы использовать Selenium, нужен Firefox версии не выше 66.
-# Скачать его можно отсюда: https://ftp.mozilla.org/pub/firefox/releases/66.0.5/
-
 URL_START = "https://species.wikimedia.org/wiki/"
 WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"
 WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"
