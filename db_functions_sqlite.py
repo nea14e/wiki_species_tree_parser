@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 
 
@@ -13,7 +14,6 @@ class DbFunctions:
         # Наполняем их данными
 
         # Таблица со списком
-        cur = DbFunctions.conn.cursor()
         sql = """
             CREATE TABLE list (
                 id bigserial NOT NULL
@@ -31,14 +31,15 @@ class DbFunctions:
             );
             """
         print(str(sql))
-        cur.execute(sql)
+        DbExecuteNonQuery.execute("init_db", sql)
 
         # Просто так
-        cur = DbFunctions.conn.cursor()
         sql = "SELECT COUNT(1) FROM list;"
-        cur.execute(sql)
-        list_count = cur.fetchone()[0]
+        list_count = DbListItemsIterator("init_db", sql).fetchone()[0]
         print("В таблице list сейчас {} записей.".format(list_count))
+
+        # Хранимки
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("db_init", "functions", "get_tree.sql"))
 
     @staticmethod
     def add_list_item(title, page_url):
@@ -121,6 +122,15 @@ class DbListItemsIterator:
 class DbExecuteNonQuery:
     @staticmethod
     def execute(connection_tag, query):
+        conn1 = DbConnectionsHandler.get_connection(connection_tag)
+        cur1 = conn1.cursor()
+        cur1.execute(query)
+        conn1.commit()
+
+    @staticmethod
+    def execute_file(connection_tag, path):
+        with open(path, "r") as f:
+            query = f.read()
         conn1 = DbConnectionsHandler.get_connection(connection_tag)
         cur1 = conn1.cursor()
         cur1.execute(query)

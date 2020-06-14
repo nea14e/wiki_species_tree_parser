@@ -1,4 +1,5 @@
 import json
+import os
 
 import psycopg2
 import psycopg2.extras
@@ -40,11 +41,9 @@ class DbFunctions:
         # Наполняем их данными, если надо
 
         # Таблица со списком
-        cur = DbFunctions.conn.cursor()
         sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list';"
-        cur.execute(sql)
-        if cur.rowcount == 0:
-            cur = DbFunctions.conn.cursor()
+        list_tables_count = int(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if list_tables_count == 0:
             sql = """
                 CREATE TABLE public.list (
                     id bigserial NOT NULL
@@ -62,7 +61,7 @@ class DbFunctions:
                 );
                 """
             print(str(sql))
-            cur.execute(sql)
+            DbExecuteNonQuery.execute("init_db", sql)
         else:
             print("Таблица public.list уже существует, пропускаем этап создания.")
 
@@ -70,18 +69,19 @@ class DbFunctions:
         DbFunctions.add_language("ru")
 
         # Просто так
-        cur = DbFunctions.conn.cursor()
         sql = "SELECT COUNT(1) FROM public.list;"
-        cur.execute(sql)
-        list_count = cur.fetchone()[0]
-        print("В таблице public.list сейчас {} записей.".format(list_count))
+        list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
+        print("В таблице public.list сейчас {} записей.".format(list_records_count))
+
+        # Хранимки
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("db_init", "functions", "get_tree.sql"))
 
     @staticmethod
     def add_language(lang_key: str):
-        cur = DbFunctions.conn.cursor()
         sql = "CREATE INDEX IF NOT EXISTS ix_list_{} ON public.list ((titles_by_languages->>'{}'));" \
                 .format(lang_key, lang_key)
-        cur.execute(sql)
+        print(str(sql))
+        DbExecuteNonQuery.execute("add_language", sql)
 
     @staticmethod
     def add_list_item(title, page_url):
@@ -166,6 +166,16 @@ class DbListItemsIterator:
 class DbExecuteNonQuery:
     @staticmethod
     def execute(connection_tag, query):
+        conn1 = DbConnectionsHandler.get_connection(connection_tag)
+        cur1 = conn1.cursor()
+        cur1.execute(query)
+        conn1.commit()
+
+    @staticmethod
+    def execute_file(connection_tag, path):
+        print("execute_file(): ", path)
+        with open(path, "r") as f:
+            query = f.read()
         conn1 = DbConnectionsHandler.get_connection(connection_tag)
         cur1 = conn1.cursor()
         cur1.execute(query)
