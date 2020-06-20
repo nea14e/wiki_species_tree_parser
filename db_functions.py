@@ -76,7 +76,7 @@ class DbFunctions:
 
         # Таблица с рангами
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'ranks');"
-        is_ranks_table_exists = DbListItemsIterator("init_db", sql).rowcount()
+        is_ranks_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_ranks_table_exists:
             sql = """
             CREATE TABLE public.ranks
