@@ -11,7 +11,6 @@ import time
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
 # from db_functions_sqlite import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable   # TODO перейти полностью на использование SQLite
-import db_functions_sqlite
 
 IS_DEBUG = False
 
@@ -64,14 +63,6 @@ def main():
         else:
             where = ""
         correct_parents(where)  # 3 этап
-    elif stage_number == 'create_sqlite':
-        db_functions_sqlite.DbFunctions.init_db()
-    elif stage_number == 'copy_db_to_sqlite':
-        if len(sys.argv) >= 3:
-            where = sys.argv[2]
-        else:
-            where = ""
-        copy_db_to_sqlite(where)
     else:
         print_usage()
 
@@ -439,66 +430,6 @@ def correct_parents(where: str = None):
     print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ОКОНЧЕНО!")
     print("Добавлены родители к " + str(item_counter) + " элементам.")
     print("Не найдены родители для " + str(without_parents) + " элементов.")
-
-
-def copy_db_to_sqlite(where: str = None):
-    """
-    Скопируем базу Postgres в файл SQLite
-    """
-    print("Скопируем базу Postgres в файл SQLite")
-    query = """
-        SELECT id,
-           title,
-           page_url,
-           type,
-           image_url,
-           wikipedias_by_languages,
-           parent_page_url,
-           parent_id,
-           titles_by_languages
-        FROM public.list
-    """
-    if where is not None and where != "":
-        query += "WHERE " + where
-    query += "\nORDER BY title;"
-    list_iterator = DbListItemsIterator('copy_db_to_sqlite:list', query)
-
-    item_counter = 0
-    while True:
-        list_item = list_iterator.fetchone()
-        if not list_item:
-            break
-
-        print("Копирование в SQLite: {}".format(db_functions_sqlite.quote_nullable(list_item[1])))
-        sql = """
-            INSERT INTO list(id, title, page_url, type, image_url, wikipedias_by_languages, parent_page_url, parent_id, titles_by_languages)
-            VALUES ({id}, {title}, {page_url}, {type}, {image_url}, {wikipedias_by_languages}, {parent_page_url}, {parent_id}, {titles_by_languages})
-            /*ON CONFLICT(page_url) DO UPDATE
-              SET title = excluded.title,
-                page_url = excluded.page_url,
-                type = excluded.type,
-                image_url = excluded.image_url,
-                wikipedias_by_languages = excluded.wikipedias_by_languages,
-                parent_page_url = excluded.parent_page_url,
-                parent_id = excluded.parent_id,
-                titles_by_languages = excluded.titles_by_languages*/
-            ;
-        """.format(
-            id=list_item[0],
-            title=db_functions_sqlite.quote_nullable(list_item[1]),
-            page_url=db_functions_sqlite.quote_nullable(list_item[2]),
-            type=db_functions_sqlite.quote_nullable(list_item[3]),
-            image_url=db_functions_sqlite.quote_nullable(list_item[4]),
-            wikipedias_by_languages=db_functions_sqlite.quote_nullable(list_item[5]),
-            parent_page_url=db_functions_sqlite.quote_nullable(list_item[6]),
-            parent_id=db_functions_sqlite.nonquoted_nullable(list_item[7]),
-            titles_by_languages=db_functions_sqlite.quote_nullable(list_item[8])
-        )
-        db_functions_sqlite.DbExecuteNonQuery.execute("copy_db_to_sqlite:insert", sql)
-
-        item_counter += 1
-
-    print("Копирование в SQLite закончено! Всего скопировано {} записей.".format(item_counter))
 
 
 

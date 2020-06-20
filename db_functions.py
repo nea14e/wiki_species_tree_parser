@@ -21,9 +21,10 @@ class DbFunctions:
             "dbname='postgres' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
         general_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = general_conn.cursor()
-        sql = "SELECT 1 FROM pg_database WHERE datname = 'lifetree';"
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = 'lifetree');"
         cur.execute(sql)
-        if cur.rowcount == 0:  # Если база данных ещё не создана
+        is_db_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_db_exists:  # Если база данных ещё не создана
             sql = "CREATE DATABASE lifetree;"
             print(str(sql))
             cur.execute(sql)
@@ -41,9 +42,9 @@ class DbFunctions:
         # Наполняем их данными, если надо
 
         # Таблица со списком
-        sql = "SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list';"
-        list_tables_count = int(DbListItemsIterator("init_db", sql).fetchone()[0])
-        if list_tables_count == 0:
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list');"
+        is_list_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_list_table_exists:
             sql = """
                 CREATE TABLE public.list (
                     id bigserial NOT NULL
@@ -72,6 +73,26 @@ class DbFunctions:
         sql = "SELECT COUNT(1) FROM public.list;"
         list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
         print("В таблице public.list сейчас {} записей.".format(list_records_count))
+
+        # Таблица с рангами
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'ranks');"
+        is_ranks_table_exists = DbListItemsIterator("init_db", sql).rowcount()
+        if not is_ranks_table_exists:
+            sql = """
+            CREATE TABLE public.ranks
+            (
+                   type    text NOT NULL
+                          CONSTRAINT ranks_pk PRIMARY KEY,
+                   "order" int  NOT NULL
+            );
+            
+            CREATE UNIQUE INDEX ranks_order_uindex
+                   ON ranks ("order");
+            """
+            print(str(sql))
+            DbExecuteNonQuery.execute("init_db", sql)
+        else:
+            print("Таблица public.ranks уже существует, пропускаем этап создания.")
 
         # Хранимки
         DbExecuteNonQuery.execute_file("init_db", os.path.join("db_init", "functions", "get_tree.sql"))
