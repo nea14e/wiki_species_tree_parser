@@ -15,7 +15,7 @@ class DbFunctions:
     conn = None
 
     @staticmethod
-    def init_db():
+    def init_db(is_use_test_data: bool = False):
         # Подключаемся к базе данных по умолчанию, чтобы создать нашу базу, если надо
         general_conn = psycopg2.connect(
             "dbname='postgres' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
@@ -66,6 +66,10 @@ class DbFunctions:
         else:
             print("Таблица public.list уже существует, пропускаем этап создания.")
 
+        # Заполняем данными
+        if is_use_test_data:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "list_TEST.sql"))
+
         DbFunctions.add_language("en")
         DbFunctions.add_language("ru")
 
@@ -94,8 +98,14 @@ class DbFunctions:
         else:
             print("Таблица public.ranks уже существует, пропускаем этап создания.")
 
+        # Заполняем данными
+        if is_use_test_data:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
+        else:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks.sql"))
+
         # Хранимки
-        DbExecuteNonQuery.execute_file("init_db", os.path.join("db_init", "functions", "get_tree.sql"))
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree.sql"))
 
     @staticmethod
     def add_language(lang_key: str):

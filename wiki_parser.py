@@ -27,11 +27,13 @@ def main():
         return
     stage_number = sys.argv[1]
 
-    DbFunctions.init_db()
-
     # Выберите нужное и подставьте сюда перед запуском
     if stage_number == '0':
-        pass  # Только инициализация базы (написана вне if)
+        if len(sys.argv) >= 3:
+            is_use_test_data = sys.argv[2]
+        else:
+            is_use_test_data = False
+        DbFunctions.init_db(is_use_test_data)
     elif stage_number == '1':
         if len(sys.argv) >= 3:
             from_title = sys.argv[2]
@@ -71,13 +73,13 @@ def print_usage():
     print("ОШИБКА: неизвестные параметры.")
     print("Запускайте через параметры командной строки")
     print("Для 0 этапа - инициализации базы:")
-    print("0")
+    print("0 [bool(is_use_test_data)=False]")
     print("Для 1 этапа - составления списка:")
     print("1 from_title to_title")
     print("Для 2 этапа - получения деталей по списку:")
-    print("2 [bool(True начать от последнего распарсенного)=True] [where_фильтр_на_список=\"\"]")
+    print("2 [bool(True начать от последнего распарсенного)=True] [where_фильтр_на_список_как_в_SQL=\"\"]")
     print("Для 3 этапа - построения древовидной структуры:")
-    print("3 [where_фильтр_на_список=\"\"]")
+    print("3 [where_фильтр_на_список_как_в_SQL=\"\"]")
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
