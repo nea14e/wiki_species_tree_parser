@@ -30,7 +30,7 @@ def main():
     # Выберите нужное и подставьте сюда перед запуском
     if stage_number == '0':
         if len(sys.argv) >= 3:
-            is_use_test_data = sys.argv[2]
+            is_use_test_data = bool(str(sys.argv[2]).lower() == "test")
         else:
             is_use_test_data = False
         DbFunctions.init_db(is_use_test_data)
@@ -70,16 +70,15 @@ def main():
 
 
 def print_usage():
-    print("ОШИБКА: неизвестные параметры.")
     print("Запускайте через параметры командной строки")
     print("Для 0 этапа - инициализации базы:")
-    print("0 [bool(is_use_test_data)=False]")
+    print("python3.6 wiki_parser.py 0 [\"test\" для тестового наполнения]")
     print("Для 1 этапа - составления списка:")
-    print("1 from_title to_title")
+    print("python3.6 wiki_parser.py 1 from_title to_title")
     print("Для 2 этапа - получения деталей по списку:")
-    print("2 [bool(True начать от последнего распарсенного)=True] [where_фильтр_на_список_как_в_SQL=\"\"]")
+    print("python3.6 wiki_parser.py 2 [bool(True начать от последнего распарсенного/False)=True] [where_фильтр_на_список_как_в_SQL]")
     print("Для 3 этапа - построения древовидной структуры:")
-    print("3 [where_фильтр_на_список_как_в_SQL=\"\"]")
+    print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
