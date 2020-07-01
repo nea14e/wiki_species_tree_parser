@@ -60,6 +60,9 @@ class DbFunctions:
                     , CONSTRAINT uq_page_url UNIQUE (page_url)
                     , CONSTRAINT fk_list_parent_id FOREIGN KEY (parent_id) REFERENCES public.list (id)
                 );
+            
+                CREATE INDEX list_index
+                  ON public.list (parent_id, "type");
                 """
             print(str(sql))
             DbExecuteNonQuery.execute("init_db", sql)
