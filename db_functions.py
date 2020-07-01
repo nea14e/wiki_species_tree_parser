@@ -92,7 +92,8 @@ class DbFunctions:
             (
                    type    text NOT NULL
                           CONSTRAINT ranks_pk PRIMARY KEY,
-                   "order" int  NOT NULL
+                   "order" int  NOT NULL,
+                   titles_by_languages jsonb DEFAULT '{}'::jsonb
             );
             
             CREATE UNIQUE INDEX ranks_order_uindex

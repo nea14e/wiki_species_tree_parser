@@ -1,44 +1,53 @@
-CREATE OR REPLACE FUNCTION public.get_tree(_id bigint DEFAULT NULL::bigint) RETURNS json
+CREATE OR REPLACE FUNCTION public.get_tree(_id bigint DEFAULT NULL::bigint, _language_key text DEFAULT NULL::text) RETURNS json
   LANGUAGE plpgsql
 AS
 $$
 DECLARE
   _answer_json       jsonb = '[]'::jsonb; -- jsonb is stored in pre-parsed way so operations with him are more faster
   _level_items_json  jsonb = '[]'::jsonb;
-  _level_object_json jsonb = '[]'::jsonb;
+  _level_object_json jsonb = '{}'::jsonb;
   _next_parent_id    bigint;
   _cur_parent_id     bigint;
   _prev_parent_id    bigint;
   _level_max_order   int;
   _level_min_order   int;
-  _cur_level_type    text;
+  _cur_rank          record;
 BEGIN
   IF _id IS NULL THEN
     -- When page is opened with default routing, show first 3 levels fully
 
     -- Cycle by _cur_level_type:
-    FOR _cur_level_type IN (
-      SELECT "type"
+    FOR _cur_rank IN
+      SELECT "type"                                                  AS "type",
+             COALESCE(titles_by_languages ->> _language_key, "type") AS title_for_language
       FROM public.ranks
       ORDER BY "order" DESC -- we are going from top level to bottom
       LIMIT 3 -- show 3 highest levels
-    )
       LOOP
 
         -- RAISE NOTICE 'NEXT _cur_level_type: ''%''.', _cur_level_type;
 
-        SELECT jsonb_agg(t) INTO _level_items_json
+        SELECT jsonb_agg(t ORDER BY title_for_language) INTO _level_items_json
         FROM (
-               SELECT *, FALSE AS is_expanded, FALSE AS is_selected
+               SELECT id,
+                      COALESCE(titles_by_languages ->> _language_key, title)                                AS title_for_language,
+                      page_url,
+                      image_url,
+                      COALESCE(wikipedias_by_languages ->> _language_key,
+                               wikipedias_by_languages ->> 'en')                                            AS wiki_url_for_language,
+                      parent_id,
+                      FALSE                                                                                 AS is_expanded,
+                      FALSE                                                                                 AS is_selected
                FROM public.list
-               WHERE "type" = _cur_level_type
+               WHERE "type" = _cur_rank."type"
              ) t;
 
         -- RAISE NOTICE '_level_json: array: ''%''.', _level_json;
         -- RAISE NOTICE 'jsonb_array_length(_level_json): ''%''.', jsonb_array_length(_level_json);
 
         _level_object_json = jsonb_build_object(
-            'type', _cur_level_type,
+            'type', _cur_rank."type",
+            'title_on_language', _cur_rank.title_for_language,
             'items', _level_items_json
           );
         -- RAISE NOTICE '_level_json: object: ''%''.', _level_json;
@@ -74,25 +83,33 @@ BEGIN
 
         -- One parent may have childes on multiple levels and we want to put them separately. So, we have to use inner cycle:
         -- Cycle by _cur_level_type:
-        FOR _cur_level_type IN (
-          SELECT "type"
+        FOR _cur_rank IN
+          SELECT "type"                                                  AS "type",
+                 COALESCE(titles_by_languages ->> _language_key, "type") AS title_for_language
           FROM public.ranks
           WHERE ("order" < _level_max_order OR _level_max_order IS NULL) -- load items with all highest levels when current level's "_cur_parent_id IS NULL"
             AND "order" >= _level_min_order
           ORDER BY "order" ASC -- we are going from bottom level to top (each time we do up to next parent)
-        )
           LOOP
 
             -- RAISE NOTICE 'NEXT _cur_level_type: ''%''.', _cur_level_type;
 
-            SELECT jsonb_agg(t) INTO _level_items_json
+            SELECT jsonb_agg(t ORDER BY title_for_language) INTO _level_items_json
             FROM (
-                   SELECT *,
-                          COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean, FALSE) AS is_expanded,
-                          COALESCE((id = _id)::boolean, FALSE)                                    AS is_selected
+                   SELECT id,
+                          COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,
+                          page_url,
+                          image_url,
+                          COALESCE(wikipedias_by_languages ->> _language_key,
+                                   wikipedias_by_languages ->> 'en')             AS wiki_url_for_language,
+                          parent_id,
+                          COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,
+                                   FALSE)                                        AS is_expanded,
+                          COALESCE((id = _id)::boolean,
+                                   FALSE)                                        AS is_selected
                    FROM public.list
                    WHERE parent_id IS NOT DISTINCT FROM _cur_parent_id -- which parents are current parent (note: "=" does not work for level 1 since one has _parent_id = NULL)
-                     AND "type" = _cur_level_type -- only childes on current level. One parent may have childes on multiple levels and we want to put them separately
+                     AND "type" = _cur_rank."type" -- only childes on current level. One parent may have childes on multiple levels and we want to put them separately
                  ) t;
 
             -- RAISE NOTICE '_level_json: array: ''%''.', _level_json;
@@ -102,7 +119,8 @@ BEGIN
             IF _level_items_json IS NOT NULL THEN -- if requested item does not have any childes then _level will be NULL which would lead to NULL entire _answer otherwise
 
               _level_object_json = jsonb_build_object(
-                  'type', _cur_level_type,
+                  'type', _cur_rank."type",
+                  'title_on_language', _cur_rank.title_for_language,
                   'items', _level_items_json
                 );
 
@@ -140,3 +158,6 @@ BEGIN
   RETURN _answer_json::json;
 END;
 $$;
+
+ALTER FUNCTION get_tree(bigint, text) OWNER TO postgres;
+
