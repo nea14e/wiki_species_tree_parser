@@ -29,10 +29,10 @@ def main():
     # Выберите нужное и подставьте сюда перед запуском
     if stage_number == '0':
         if len(sys.argv) >= 3:
-            is_use_test_data = bool(str(sys.argv[2]).lower() == "test")
+            is_test = bool(str(sys.argv[2]).lower() == "test")
         else:
-            is_use_test_data = False
-        DbFunctions.init_db(is_use_test_data)
+            is_test = False
+        DbFunctions.init_db(is_test)
     elif stage_number == '1':
         if len(sys.argv) >= 3:
             from_title = sys.argv[2]

@@ -14,7 +14,7 @@ class DbFunctions:
     conn = None
 
     @staticmethod
-    def init_db(is_use_test_data: bool = False):
+    def init_db(is_test: bool = False):
         # Подключаемся к базе данных по умолчанию, чтобы создать нашу базу, если надо
         general_conn = psycopg2.connect(
             "dbname='postgres' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
@@ -76,7 +76,7 @@ class DbFunctions:
         # Заполняем данными
         print("\n\n===================================================")
         print("Заполняем данными:")
-        if is_use_test_data:
+        if is_test:
             print("\nТаблица public.list (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "list_TEST.sql"))
             print("\nТаблица public.ranks (для теста)...")
@@ -106,7 +106,7 @@ class DbFunctions:
         sql = """
             INSERT INTO public.known_languages(lang_key, "comment")
             VALUES ('{}', '{}')
-            ON CONFLICT DO UPDATE
+            ON CONFLICT ON CONSTRAINT pk_known_languages DO UPDATE
               SET "comment" = EXCLUDED."comment";
         """.format(lang_key, comment)
         print(str(sql))

@@ -1,7 +1,7 @@
-create table public.known_languages
+CREATE TABLE public.known_languages
 (
-	lang_key text
-		constraint pk_known_languages
-			primary key,
-	"comment" text
+  lang_key text
+    CONSTRAINT pk_known_languages
+      PRIMARY KEY,
+  "comment" text NOT NULL DEFAULT ''
 );
