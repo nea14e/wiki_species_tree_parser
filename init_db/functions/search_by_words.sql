@@ -11,13 +11,13 @@ FROM (
               ranks."order"                                                       AS rank_order
        FROM public.list
               LEFT JOIN public.ranks ON list."type" = ranks."type"
-       WHERE list.id IN (
-         SELECT w.list_item_id
-         FROM public.titles_by_languages_by_words w
-         WHERE (w.language_key = _language_key OR _language_key IS NULL) -- use chosen or any language
-           AND w.word LIKE (upper(_query) || '%')
-       )
-          OR upper(list.title) LIKE (upper(_query) || '%') -- support Latin for any _language_key (Note: here can be used "ix_list_for_latin_search" functional index)
+       WHERE (
+             upper(list.titles_by_languages ->> _language_key) LIKE (upper(_query) || '%')
+           AND _language_key IS NOT NULL
+         )
+          OR (
+         upper(list.title) LIKE (upper(_query) || '%') -- support Latin for any _language_key (Note: here can be used "ix_list_for_latin_search" functional index)
+         )
      ) t;
 $$;
 

@@ -4,7 +4,6 @@ import os
 import psycopg2
 import psycopg2.extras
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-import csv
 
 
 class DbFunctions:
@@ -59,14 +58,20 @@ class DbFunctions:
         else:
             print("Таблица public.ranks уже существует, пропускаем этап создания.")
 
-        # Таблица с индексом слов
-        print("\nТаблица с индексом слов")
-        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'titles_by_languages_by_words');"
-        is_list_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
-        if not is_list_table_exists:
-            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "titles_by_languages_by_words.sql"))
+        # Таблица с языками
+        print("\nТаблица с языками:")
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'known_languages');"
+        is_ranks_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_ranks_table_exists:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages.sql"))
         else:
-            print("Таблица public.titles_by_languages_by_words уже существует, пропускаем этап создания.")
+            print("Таблица public.known_languages уже существует, пропускаем этап создания.")
+
+        # Языки
+        print("\n\n===================================================")
+        print("Добавляем языки по умолчанию:")
+        DbFunctions.add_language("en")
+        DbFunctions.add_language("ru")
 
         # Заполняем данными
         print("\n\n===================================================")
@@ -81,10 +86,8 @@ class DbFunctions:
         # (триггерные функции надо писать в скрипте создания их таблицы)
         print("\n\n===================================================")
         print("Хранимки и прочие скрипты:")
-
         print("\nГлавная хранимка - для выдачи дерева: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree.sql"))
-
         print("\nХранимка по поиску: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
 
@@ -94,6 +97,26 @@ class DbFunctions:
         sql = "SELECT COUNT(1) FROM public.list;"
         list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
         print("В таблице public.list сейчас {} записей.".format(list_records_count))
+
+    @staticmethod
+    def add_language(lang_key: str, comment: str = ""):
+        print("\nadd_language(): добавляем язык, если его ещё нет: lang_key = '{}', comment = '{}'...".format(lang_key, comment))
+
+        # Добавляем язык в таблицу языков
+        sql = """
+            INSERT INTO public.known_languages(lang_key, "comment")
+            VALUES ('{}', '{}')
+            ON CONFLICT DO UPDATE
+              SET "comment" = EXCLUDED."comment";
+        """.format(lang_key, comment)
+        print(str(sql))
+        DbExecuteNonQuery.execute("add_language", sql)
+
+        # Добавляем индекс по новому языку
+        sql = "CREATE INDEX IF NOT EXISTS ix_list_titles_by_languages_{} ON public.list ((titles_by_languages->>'{}'));" \
+                .format(lang_key, lang_key)
+        print(str(sql))
+        DbExecuteNonQuery.execute("add_language", sql)
 
     @staticmethod
     def add_list_item(title, page_url):

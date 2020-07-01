@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 import time
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
-# from db_functions_sqlite import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable   # TODO перейти полностью на использование SQLite
 
 IS_DEBUG = False
 
@@ -25,7 +24,7 @@ def main():
     if len(sys.argv) < 2:
         print_usage()
         return
-    stage_number = sys.argv[1]
+    stage_number = str(sys.argv[1])
 
     # Выберите нужное и подставьте сюда перед запуском
     if stage_number == '0':
@@ -65,6 +64,17 @@ def main():
         else:
             where = ""
         correct_parents(where)  # 3 этап
+    elif stage_number == 'add_language':
+        if len(sys.argv) >= 3:
+            lang_key = str(sys.argv[2])
+        else:
+            print_usage()
+            return
+        if len(sys.argv) >= 4:
+            lang_comment = str(sys.argv[3])
+        else:
+            lang_comment = ""
+        DbFunctions.add_language(lang_key, lang_comment)  # 4 этап
     else:
         print_usage()
 
@@ -79,6 +89,8 @@ def print_usage():
     print("python3.6 wiki_parser.py 2 [bool(True начать от последнего распарсенного/False)=True] [where_фильтр_на_список_как_в_SQL]")
     print("Для 3 этапа - построения древовидной структуры:")
     print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
+    print("Для добавления одного языка к индексу для быстрого поиска:")
+    print("python3.6 wiki_parser.py add_language lang_key_как_в_доменном_имени_Википедии")
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
