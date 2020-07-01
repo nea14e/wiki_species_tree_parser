@@ -11,7 +11,7 @@ class DbFunctions:
     # host = str("192.168.33.147")
     host = str("127.0.0.1")
     password = str("12345")
-    conn = None
+    default_conn_tag = "default_conn"
 
     @staticmethod
     def init_db(is_test: bool = False):
@@ -31,11 +31,6 @@ class DbFunctions:
             print("База lifetree уже существует, пропускаем этап создания.")
         general_conn.close()
 
-        # Подключаемся к нашей базе
-        if not DbFunctions.conn:
-            DbFunctions.conn = psycopg2.connect(
-                "dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
-            DbFunctions.conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
         print("\n\n===================================================")
         print("Создаём таблицы:")
@@ -120,11 +115,7 @@ class DbFunctions:
 
     @staticmethod
     def add_list_item(title, page_url):
-        if not DbFunctions.conn:
-            raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
-
         # Добавляем новый элемент в список или обновляем уже существующий
-        cur = DbFunctions.conn.cursor()
         sql = """
                 INSERT INTO public.list (title, page_url)
                   VALUES ('{}', '{}')
@@ -132,16 +123,11 @@ class DbFunctions:
                   DO UPDATE 
                   SET title = EXCLUDED.title;
             """.format(str(title), str(page_url))
-        # print(str(sql))    # debug only
-        cur.execute(sql)
+        DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 
     @staticmethod
     def add_details_to_item(title, page_url, _type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url):
-        if not DbFunctions.conn:
-            raise Exception("Сначала вызовите метод DbFunctions.init_db()!")
-
         # Добавляем новый элемент в список или обновляем уже существующий
-        cur = DbFunctions.conn.cursor()
         sql = """
                 UPDATE public.list
                 SET
@@ -161,27 +147,26 @@ class DbFunctions:
                 , str(parent_page_url)
                 , str(page_url)
             )
-        # print(str(sql))    # debug only
-        cur.execute(sql)
+        DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 
 
-class DbConnectionsHandler():
+class DbConnectionsHandler:
     connections_pool = {}
 
     @classmethod
-    def get_connection(cls, tag):
+    def get_connection(cls, tag: str = "default_conn"):
         """
                 Выдаёт соединение, соответствующее тегу.
                 Запоминает его для переиспользования - для одного и того же тега всегда выдаётся одно и то же соединение.
                 При необходимости создаёт новый элемент (для нового тега).
-                :param tag: некий тег для различения соединений
+                :param tag: str: некий тег для различения соединений
                 :return: соединение, соответствующее тегу.
                 """
         if tag in cls.connections_pool.keys():
-            return cls.connections_pool[str(tag)]
+            return cls.connections_pool[tag]
         else:
             new_conn = psycopg2.connect("dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
-            cls.connections_pool[str(tag)] = new_conn
+            cls.connections_pool[tag] = new_conn
             return new_conn
 
 

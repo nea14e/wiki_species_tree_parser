@@ -13,9 +13,11 @@ from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, qu
 
 IS_DEBUG = False
 
-NEXT_PAGE_DELAY = 0.2
+NEXT_PAGE_DELAY = 0.01
 
+URL_DOMAIN = "https://species.wikimedia.org/"
 URL_START = "https://species.wikimedia.org/wiki/"
+URL_START_RELATIVE = "/wiki/"
 WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"
 WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"
 
@@ -33,7 +35,10 @@ def main():
         else:
             is_test = False
         DbFunctions.init_db(is_test)
-    elif stage_number == '1':
+        return
+
+    DbFunctions.init_db(is_test=False)
+    if stage_number == '1':
         if len(sys.argv) >= 3:
             from_title = sys.argv[2]
         else:
@@ -84,9 +89,9 @@ def print_usage():
     print("Для 0 этапа - инициализации базы:")
     print("python3.6 wiki_parser.py 0 [\"test\" для тестового наполнения]")
     print("Для 1 этапа - составления списка:")
-    print("python3.6 wiki_parser.py 1 from_title to_title")
+    print("python3.6 wiki_parser.py 1 [from_title] [to_title]")
     print("Для 2 этапа - получения деталей по списку:")
-    print("python3.6 wiki_parser.py 2 [bool(True начать от последнего распарсенного/False)=True] [where_фильтр_на_список_как_в_SQL]")
+    print("python3.6 wiki_parser.py 2 [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL]")
     print("Для 3 этапа - построения древовидной структуры:")
     print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
     print("Для добавления одного языка к индексу для быстрого поиска:")
@@ -129,7 +134,8 @@ def populate_list(from_title: str = "", to_title: str = ""):
                     continue
                 item_title = item_title.replace("'", "''")  # Экранирование для базы
                 item_details_href = str(link["href"])
-                item_details_href = item_details_href[len(URL_START):]  # Ссылка (без начала)
+                if URL_START_RELATIVE in item_details_href:
+                    item_details_href = item_details_href[len(URL_START_RELATIVE):]  # Ссылка (без начала)
                 # print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # debug only
                 DbFunctions.add_list_item(item_title, item_details_href)
                 succeeds += 1
@@ -140,7 +146,7 @@ def populate_list(from_title: str = "", to_title: str = ""):
         if next_page_url:
             print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
                 next_page_elem.text, succeeds, skipped, errors))
-            html = requests.get(next_page_url).content  # Переходим на след страницу
+            html = requests.get(URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
             wiki_html = BeautifulSoup(html, "html.parser")
             time.sleep(NEXT_PAGE_DELAY)
         else:
