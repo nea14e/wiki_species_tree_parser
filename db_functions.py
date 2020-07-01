@@ -9,8 +9,8 @@ import csv
 
 class DbFunctions:
     user = str("postgres")
-    host = str("192.168.33.147")
-    # host = str("127.0.0.1")
+    # host = str("192.168.33.147")
+    host = str("127.0.0.1")
     password = str("12345")
     conn = None
 
@@ -38,101 +38,58 @@ class DbFunctions:
                 "dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
             DbFunctions.conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
-        # Создаём в ней таблицы, если надо
-        # Наполняем их данными, если надо
+        print("\n\n===================================================")
+        print("Создаём таблицы:")
 
         # Таблица со списком
-        print("\n\n===================================================")
-        print("Таблица со списком:")
+        print("\nТаблица со списком:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list');"
         is_list_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_list_table_exists:
-            sql = """
-                CREATE TABLE public.list (
-                    id bigserial NOT NULL
-                    , title text NOT NULL
-                    , page_url text NOT NULL
-                    , type text
-                    , image_url text
-                    , wikipedias_by_languages jsonb DEFAULT '{}'::jsonb
-                    , titles_by_languages jsonb DEFAULT '{}'::jsonb
-                    , parent_page_url text
-                    , parent_id bigint
-                    , CONSTRAINT pk_list PRIMARY KEY (id)
-                    , CONSTRAINT uq_page_url UNIQUE (page_url)
-                    , CONSTRAINT fk_list_parent_id FOREIGN KEY (parent_id) REFERENCES public.list (id)
-                );
-            
-                CREATE INDEX list_index
-                  ON public.list (parent_id, "type");
-                """
-            print(str(sql))
-            DbExecuteNonQuery.execute("init_db", sql)
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list.sql"))
         else:
             print("Таблица public.list уже существует, пропускаем этап создания.")
 
-        # Заполняем данными
-        if is_use_test_data:
-            print("Таблица public.list: заполняем данными (для теста)...")
-            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "list_TEST.sql"))
-
-        # Просто так
-        sql = "SELECT COUNT(1) FROM public.list;"
-        list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
-        print("В таблице public.list сейчас {} записей.".format(list_records_count))
-
         # Таблица с рангами
-        print("\n\n===================================================")
-        print("Таблица с рангами:")
+        print("\nТаблица с рангами:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'ranks');"
         is_ranks_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_ranks_table_exists:
-            sql = """
-            CREATE TABLE public.ranks
-            (
-                   type    text NOT NULL
-                          CONSTRAINT ranks_pk PRIMARY KEY,
-                   "order" int  NOT NULL,
-                   titles_by_languages jsonb DEFAULT '{}'::jsonb
-            );
-            
-            CREATE UNIQUE INDEX ranks_order_uindex
-                   ON public.ranks ("order");
-            """
-            print(str(sql))
-            DbExecuteNonQuery.execute("init_db", sql)
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "ranks.sql"))
         else:
             print("Таблица public.ranks уже существует, пропускаем этап создания.")
 
-        # Заполняем данными
-        if is_use_test_data:
-            print("Таблица public.ranks: заполняем данными (для теста)...")
-            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
+        # Таблица с индексом слов
+        print("\nТаблица с индексом слов")
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'titles_by_languages_by_words');"
+        is_list_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_list_table_exists:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "titles_by_languages_by_words.sql"))
         else:
-            print("Таблица public.ranks: заполняем данными (для прода)...")
-            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks.sql"))
+            print("Таблица public.titles_by_languages_by_words уже существует, пропускаем этап создания.")
 
-        # Языки
+        # Заполняем данными
         print("\n\n===================================================")
-        print("Языки:")
-        DbFunctions.add_language("en")
-        DbFunctions.add_language("ru")
+        print("Заполняем данными:")
+        if is_use_test_data:
+            print("\nТаблица public.list (для теста)...")
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "list_TEST.sql"))
+            print("\nТаблица public.ranks (для теста)...")
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
 
-        # Хранимки
+        # Хранимки для выдачи данных
+        # (триггерные функции надо писать в скрипте создания их таблицы)
         print("\n\n===================================================")
         print("Хранимки и прочие скрипты:")
         print("\nГлавная хранимка - для выдачи дерева: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree.sql"))
 
-    @staticmethod
-    def add_language(lang_key: str):
-        print("add_language(): добавляем язык, если его ещё нет: lang_key = '{}'...".format(lang_key))
-
-        # В таблицу со списком
-        sql = "CREATE INDEX IF NOT EXISTS ix_list_{} ON public.list ((titles_by_languages->>'{}'));" \
-                .format(lang_key, lang_key)
-        print(str(sql))
-        DbExecuteNonQuery.execute("add_language", sql)
+        # Просто так
+        print("\n\n===================================================")
+        print("Просто так:")
+        sql = "SELECT COUNT(1) FROM public.list;"
+        list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
+        print("В таблице public.list сейчас {} записей.".format(list_records_count))
 
     @staticmethod
     def add_list_item(title, page_url):
