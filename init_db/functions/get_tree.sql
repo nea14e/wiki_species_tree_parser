@@ -19,7 +19,7 @@ BEGIN
     -- Cycle by _cur_level_type:
     FOR _cur_rank IN
       SELECT "type"                                                  AS "type",
-             COALESCE(titles_by_languages ->> _language_key, "type") AS title_for_language
+             COALESCE(titles_by_languages ->> _language_key, "type") AS title_for_language  -- Latin type if not present
       FROM public.ranks
       ORDER BY "order" DESC -- we are going from top level to bottom
       LIMIT 3 -- show 3 highest levels
@@ -30,14 +30,14 @@ BEGIN
         SELECT jsonb_agg(t ORDER BY title_for_language) INTO _level_items_json
         FROM (
                SELECT id,
-                      COALESCE(titles_by_languages ->> _language_key, title)                                AS title_for_language,
+                      COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language, -- Latin name if not present
                       page_url,
                       image_url,
                       COALESCE(wikipedias_by_languages ->> _language_key,
-                               wikipedias_by_languages ->> 'en')                                            AS wiki_url_for_language,
+                               wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wikipedia if not present
                       parent_id,
-                      FALSE                                                                                 AS is_expanded,
-                      FALSE                                                                                 AS is_selected
+                      FALSE                                                  AS is_expanded,
+                      FALSE                                                  AS is_selected
                FROM public.list
                WHERE "type" = _cur_rank."type"
              ) t;
@@ -85,7 +85,7 @@ BEGIN
         -- Cycle by _cur_level_type:
         FOR _cur_rank IN
           SELECT "type"                                                  AS "type",
-                 COALESCE(titles_by_languages ->> _language_key, "type") AS title_for_language
+                 COALESCE(titles_by_languages ->> _language_key, "type") AS title_for_language  -- Latin type if not present
           FROM public.ranks
           WHERE ("order" < _level_max_order OR _level_max_order IS NULL) -- load items with all highest levels when current level's "_cur_parent_id IS NULL"
             AND "order" >= _level_min_order
@@ -97,11 +97,11 @@ BEGIN
             SELECT jsonb_agg(t ORDER BY title_for_language) INTO _level_items_json
             FROM (
                    SELECT id,
-                          COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,
+                          COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,  -- Latin name if not present
                           page_url,
                           image_url,
                           COALESCE(wikipedias_by_languages ->> _language_key,
-                                   wikipedias_by_languages ->> 'en')             AS wiki_url_for_language,
+                                   wikipedias_by_languages ->> 'en')             AS wiki_url_for_language,  -- English type if not present
                           parent_id,
                           COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,
                                    FALSE)                                        AS is_expanded,
@@ -114,7 +114,6 @@ BEGIN
 
             -- RAISE NOTICE '_level_json: array: ''%''.', _level_json;
             -- RAISE NOTICE 'jsonb_array_length(_level_json): ''%''.', jsonb_array_length(_level_json);
-
 
             IF _level_items_json IS NOT NULL THEN -- if requested item does not have any childes then _level will be NULL which would lead to NULL entire _answer otherwise
 
