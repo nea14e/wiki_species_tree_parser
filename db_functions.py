@@ -42,6 +42,8 @@ class DbFunctions:
         # Наполняем их данными, если надо
 
         # Таблица со списком
+        print("\n\n===================================================")
+        print("Таблица со списком:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list');"
         is_list_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_list_table_exists:
@@ -71,10 +73,8 @@ class DbFunctions:
 
         # Заполняем данными
         if is_use_test_data:
+            print("Таблица public.list: заполняем данными (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "list_TEST.sql"))
-
-        DbFunctions.add_language("en")
-        DbFunctions.add_language("ru")
 
         # Просто так
         sql = "SELECT COUNT(1) FROM public.list;"
@@ -82,6 +82,8 @@ class DbFunctions:
         print("В таблице public.list сейчас {} записей.".format(list_records_count))
 
         # Таблица с рангами
+        print("\n\n===================================================")
+        print("Таблица с рангами:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'ranks');"
         is_ranks_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_ranks_table_exists:
@@ -94,7 +96,7 @@ class DbFunctions:
             );
             
             CREATE UNIQUE INDEX ranks_order_uindex
-                   ON ranks ("order");
+                   ON public.ranks ("order");
             """
             print(str(sql))
             DbExecuteNonQuery.execute("init_db", sql)
@@ -103,15 +105,29 @@ class DbFunctions:
 
         # Заполняем данными
         if is_use_test_data:
+            print("Таблица public.ranks: заполняем данными (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
         else:
+            print("Таблица public.ranks: заполняем данными (для прода)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks.sql"))
 
+        # Языки
+        print("\n\n===================================================")
+        print("Языки:")
+        DbFunctions.add_language("en")
+        DbFunctions.add_language("ru")
+
         # Хранимки
+        print("\n\n===================================================")
+        print("Хранимки и прочие скрипты:")
+        print("\nГлавная хранимка - для выдачи дерева: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree.sql"))
 
     @staticmethod
     def add_language(lang_key: str):
+        print("add_language(): добавляем язык, если его ещё нет: lang_key = '{}'...".format(lang_key))
+
+        # В таблицу со списком
         sql = "CREATE INDEX IF NOT EXISTS ix_list_{} ON public.list ((titles_by_languages->>'{}'));" \
                 .format(lang_key, lang_key)
         print(str(sql))
