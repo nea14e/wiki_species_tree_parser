@@ -23,7 +23,7 @@ class DbFunctions:
         cur = general_conn.cursor()
         sql = "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = 'lifetree');"
         cur.execute(sql)
-        is_db_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        is_db_exists = bool(cur.fetchone()[0])
         if not is_db_exists:  # Если база данных ещё не создана
             sql = "CREATE DATABASE lifetree;"
             print(str(sql))
