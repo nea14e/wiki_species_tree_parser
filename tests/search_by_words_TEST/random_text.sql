@@ -11,7 +11,7 @@ DECLARE
 BEGIN
   _possible_chars = CASE _language_key
                       WHEN 'en' THEN '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                      WHEN 'ru' THEN '0123456789ФБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ'
+                      WHEN 'ru' THEN '0123456789АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ'
     END;
 
   output = '';
