@@ -209,7 +209,7 @@ class DbExecuteNonQuery:
     @staticmethod
     def execute_file(connection_tag, path):
         print("execute_file(): ", path)
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             query = f.read()
         conn1 = DbConnectionsHandler.get_connection(connection_tag)
         cur1 = conn1.cursor()
