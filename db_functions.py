@@ -81,8 +81,12 @@ class DbFunctions:
         # (триггерные функции надо писать в скрипте создания их таблицы)
         print("\n\n===================================================")
         print("Хранимки и прочие скрипты:")
+
         print("\nГлавная хранимка - для выдачи дерева: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree.sql"))
+
+        print("\nХранимка по поиску: перенакатываем...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
 
         # Просто так
         print("\n\n===================================================")

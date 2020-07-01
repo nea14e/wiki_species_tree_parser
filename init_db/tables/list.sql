@@ -14,5 +14,8 @@ CREATE TABLE public.list
   CONSTRAINT fk_list_parent_id FOREIGN KEY (parent_id) REFERENCES public.list (id)
 );
 
-CREATE INDEX ix_list
+CREATE INDEX ix_list_for_get_tree
   ON public.list (parent_id, "type");
+
+CREATE INDEX ix_list_for_latin_search
+  ON public.list ((upper(title)));

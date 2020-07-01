@@ -14,15 +14,24 @@ CREATE INDEX ix_titles_by_words
 CREATE INDEX ix_titles_by_languages_by_words
   ON public.titles_by_languages_by_words (language_key, word, list_item_id);  -- include list_item_id to the index to speed up select
 
-CREATE OR REPLACE FUNCTION public.tg_titles_by_languages_by_words()
-  RETURNS trigger AS
+
+
+-- =============================================================================================================================================
+-- =============================================================================================================================================
+-- =============================================================================================================================================
+
+
+
+CREATE FUNCTION tg_titles_by_languages_by_words() RETURNS trigger
+  LANGUAGE plpgsql
+AS
 $$
 BEGIN
   IF tg_op = 'INSERT' THEN
     INSERT INTO public.titles_by_languages_by_words(list_item_id, language_key, word)
     SELECT NEW.id,
            language_key,
-           unnest(string_to_array(langs.title, ' ')) AS word -- split each language to separate words (then convert array -> table with "unnest()")
+           unnest(string_to_array(upper(langs.title), ' ')) AS word -- split each language to separate words (then convert array -> table with "unnest()")
     FROM jsonb_each_text(NEW.titles_by_languages) langs(language_key, title); -- split to languages
 
     RETURN NEW;
@@ -40,7 +49,7 @@ BEGIN
       INSERT INTO public.titles_by_languages_by_words(list_item_id, language_key, word)
       SELECT NEW.id,
              language_key,
-             unnest(string_to_array(langs.title, ' ')) AS word -- split each language to separate words (then convert array -> table with "unnest()")
+             unnest(string_to_array(upper(langs.title), ' ')) AS word -- split each language to separate words (then convert array -> table with "unnest()")
       FROM jsonb_each_text(NEW.titles_by_languages) langs(language_key, title); -- split to separate languages
 
       RETURN NEW;
@@ -53,7 +62,17 @@ BEGIN
     END IF;
   END IF;
 END;
-$$ LANGUAGE 'plpgsql';
+$$;
+
+ALTER FUNCTION tg_titles_by_languages_by_words() OWNER TO postgres;
+
+
+
+-- =============================================================================================================================================
+-- =============================================================================================================================================
+-- =============================================================================================================================================
+
+
 
 CREATE TRIGGER trig_titles_by_languages_by_words
   AFTER INSERT OR UPDATE OR DELETE -- after insertion! Otherwise will be foreign key error in public.titles_by_languages_by_words!
