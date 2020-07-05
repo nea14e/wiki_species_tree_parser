@@ -26,6 +26,7 @@
         }
       ],
       "title_on_language": "Первый уровень",
+      "level_parent_title": null,
       "is_level_has_selected_item": false
     },
     {
@@ -83,6 +84,7 @@
         }
       ],
       "title_on_language": "Второй уровень",
+      "level_parent_title": null,
       "is_level_has_selected_item": false
     },
     {
@@ -180,6 +182,7 @@
         }
       ],
       "title_on_language": "Третий уровень",
+      "level_parent_title": null,
       "is_level_has_selected_item": false
     }
   ],

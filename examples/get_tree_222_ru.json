@@ -26,6 +26,7 @@
         }
       ],
       "title_on_language": "Первый уровень",
+      "level_parent_title": null,
       "is_level_has_selected_item": false
     },
     {
@@ -53,6 +54,7 @@
         }
       ],
       "title_on_language": "Второй уровень",
+      "level_parent_title": "B_ru",
       "is_level_has_selected_item": false
     },
     {
@@ -80,6 +82,7 @@
         }
       ],
       "title_on_language": "Третий уровень",
+      "level_parent_title": "Bb_without_languages",
       "is_level_has_selected_item": true
     },
     {
@@ -107,6 +110,7 @@
         }
       ],
       "title_on_language": "Четвёртый уровень",
+      "level_parent_title": "Bb2_en_only",
       "is_level_has_selected_item": false
     },
     {
@@ -134,6 +138,7 @@
         }
       ],
       "title_on_language": "Пятый уровень",
+      "level_parent_title": "Bb2_en_only",
       "is_level_has_selected_item": false
     }
   ],

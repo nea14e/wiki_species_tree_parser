@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION public.get_tree(_id bigint DEFAULT NULL::bigint, _language_key text DEFAULT NULL::text) RETURNS json
+CREATE OR REPLACE FUNCTION public.get_tree(_id bigint DEFAULT NULL::bigint,
+                                           _language_key text DEFAULT NULL::text) RETURNS json
   LANGUAGE plpgsql
 AS
 $$
@@ -10,6 +11,7 @@ DECLARE
   _has_level_selected_item boolean;
   _next_parent_id          bigint;
   _cur_parent_id           bigint;
+  _cur_parent_title        text;
   _prev_parent_id          bigint;
   _level_max_order         int;
   _level_min_order         int;
@@ -51,6 +53,7 @@ BEGIN
             'type', _cur_rank."type",
             'title_on_language', _cur_rank.title_for_language,
             'items', _level_items_json,
+            'level_parent_title', NULL,
             'is_level_has_selected_item', FALSE
           );
         -- RAISE NOTICE '_level_json: object: ''%''.', _level_json;
@@ -76,8 +79,9 @@ BEGIN
 
         -- For cycle borders and future level up (select parent item of current level and set it's parent as next parent to find all items on it's level)
         SELECT parent_id,
+               COALESCE(list.titles_by_languages ->> _language_key, list.title),
                "order"
-               INTO _next_parent_id, _level_max_order
+               INTO _next_parent_id, _cur_parent_title, _level_max_order
         FROM public.list
                LEFT JOIN public.ranks ON ranks.type = list.type
         WHERE id = _cur_parent_id;
@@ -126,6 +130,7 @@ BEGIN
                   'type', _cur_rank."type",
                   'title_on_language', _cur_rank.title_for_language,
                   'items', _level_items_json,
+                  'level_parent_title', _cur_parent_title,
                   'is_level_has_selected_item', _has_level_selected_item
                 );
 
