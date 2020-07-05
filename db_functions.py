@@ -81,6 +81,8 @@ class DbFunctions:
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree.sql"))
         print("\nХранимка по поиску: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
+        print("\nХранимка по подсчёту листов в дереве: перенакатываем...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "service_update_leaves_count.sql"))
 
         # Просто так
         print("\n\n===================================================")
@@ -88,6 +90,9 @@ class DbFunctions:
         sql = "SELECT COUNT(1) FROM public.list;"
         list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
         print("В таблице public.list сейчас {} записей.".format(list_records_count))
+
+        print("\n\n===================================================")
+        print("\n\n")
 
     @staticmethod
     def add_list_item(title, page_url):
@@ -125,6 +130,17 @@ class DbFunctions:
             )
         DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 
+    @staticmethod
+    def update_leaves_count():
+        # Обновление количества видов в каждом узле дерева
+        sql = """
+                SELECT public.service_update_leaves_count();
+            """
+        db_list_iter = DbListItemsIterator(DbFunctions.default_conn_tag, sql)
+        result_message = str(db_list_iter.fetchone()[0])
+        db_list_iter.commit()  # Обязательно сохранить изменения, сделанные в этом соединении
+        print("Обновление количества видов в каждом узле дерева успешно завершено. Сообщение из БД:")
+        print(result_message)
 
 class DbConnectionsHandler:
     connections_pool = {}
@@ -157,6 +173,9 @@ class DbListItemsIterator:
 
     def fetchone(self):
         return self.cur1.fetchone()
+
+    def commit(self):
+        self.conn1.commit()
 
 
 class DbExecuteNonQuery:

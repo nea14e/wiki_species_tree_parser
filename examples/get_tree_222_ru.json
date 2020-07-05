@@ -11,6 +11,7 @@
           "parent_id": null,
           "is_expanded": false,
           "is_selected": false,
+          "leaves_count": 5,
           "title_for_language": "A_ru",
           "wiki_url_for_language": "A_ru_url"
         },
@@ -21,6 +22,7 @@
           "parent_id": null,
           "is_expanded": true,
           "is_selected": false,
+          "leaves_count": 9,
           "title_for_language": "B_ru",
           "wiki_url_for_language": "B_ru_url"
         }
@@ -39,6 +41,7 @@
           "parent_id": 2,
           "is_expanded": false,
           "is_selected": false,
+          "leaves_count": 2,
           "title_for_language": "Ba_ru",
           "wiki_url_for_language": "Ba_ru_url"
         },
@@ -49,6 +52,7 @@
           "parent_id": 2,
           "is_expanded": true,
           "is_selected": false,
+          "leaves_count": 7,
           "title_for_language": "Bb_without_languages",
           "wiki_url_for_language": null
         }
@@ -67,6 +71,7 @@
           "parent_id": 22,
           "is_expanded": false,
           "is_selected": false,
+          "leaves_count": 0,
           "title_for_language": "Bb1_ru",
           "wiki_url_for_language": "Bb1_ru_url"
         },
@@ -77,6 +82,7 @@
           "parent_id": 22,
           "is_expanded": true,
           "is_selected": true,
+          "leaves_count": 4,
           "title_for_language": "Bb2_en_only",
           "wiki_url_for_language": "Bb2_en_url"
         }
@@ -95,6 +101,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "leaves_count": 0,
           "title_for_language": "Bb21_ru",
           "wiki_url_for_language": "Bb21_ru_url"
         },
@@ -105,6 +112,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "leaves_count": 1,
           "title_for_language": "Bb22_ru",
           "wiki_url_for_language": "Bb22_ru_url"
         }
@@ -123,6 +131,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "leaves_count": 0,
           "title_for_language": "Bb2x1_ru",
           "wiki_url_for_language": "Bb2x1_ru_url"
         },
@@ -133,6 +142,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "leaves_count": 0,
           "title_for_language": "Bb2x2_ru",
           "wiki_url_for_language": "Bb2x2_ru_url"
         }

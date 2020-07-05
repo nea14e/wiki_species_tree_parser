@@ -8,7 +8,8 @@ FROM (
               COALESCE(ranks.titles_by_languages ->> _language_key, ranks."type") AS rank_for_language,  -- Latin name if not present
               COALESCE(list.titles_by_languages ->> _language_key, list.title)    AS title_for_language, -- Latin name if not present
               list.image_url,
-              ranks."order"                                                       AS rank_order
+              ranks."order"                                                       AS rank_order,
+              list.leaves_count
        FROM public.list
               LEFT JOIN public.ranks ON list."type" = ranks."type"
        WHERE (

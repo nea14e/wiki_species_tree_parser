@@ -40,6 +40,7 @@ BEGIN
                       COALESCE(wikipedias_by_languages ->> _language_key,
                                wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wikipedia if not present
                       parent_id,
+                      leaves_count,
                       FALSE                                                  AS is_expanded,
                       FALSE                                                  AS is_selected
                FROM public.list
@@ -112,6 +113,7 @@ BEGIN
                           COALESCE(wikipedias_by_languages ->> _language_key,
                                    wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English type if not present
                           parent_id,
+                          leaves_count,
                           COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,
                                    FALSE)                                        AS is_expanded,
                           COALESCE((id = _id)::boolean,

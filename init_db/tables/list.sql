@@ -9,6 +9,7 @@ CREATE TABLE public.list
   titles_by_languages     jsonb DEFAULT '{}'::jsonb,
   parent_page_url         text,
   parent_id               bigint,
+  leaves_count            bigint,
   CONSTRAINT pk_list PRIMARY KEY (id),
   CONSTRAINT uq_page_url UNIQUE (page_url),
   CONSTRAINT fk_list_parent_id FOREIGN KEY (parent_id) REFERENCES public.list (id)

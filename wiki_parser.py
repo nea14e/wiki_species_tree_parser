@@ -69,6 +69,8 @@ def main():
         else:
             where = ""
         correct_parents(where)  # 3 этап
+    elif stage_number == '4':
+        DbFunctions.update_leaves_count()
     else:
         print_usage()
 
@@ -83,6 +85,8 @@ def print_usage():
     print("python3.6 wiki_parser.py 2 [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL]")
     print("Для 3 этапа - построения древовидной структуры:")
     print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
+    print("Для 4 этапа - подсчёта количества видов в каждом узле дерева:")
+    print("python3.6 wiki_parser.py 4")
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
