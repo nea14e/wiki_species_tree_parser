@@ -9,7 +9,7 @@ from requests.utils import requote_uri
 from bs4 import BeautifulSoup
 import time
 
-from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable
+from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
 IS_DEBUG = False
 
@@ -104,7 +104,7 @@ def populate_list(from_title: str = "", to_title: str = ""):
     html = requests.get(
         "https://species.wikimedia.org/wiki/Special:AllPages?from={}&to={}&namespace=0" \
             .format(requote_uri(from_title), requote_uri(to_title))
-    ).content  # Парсим саму страницу Википедии
+    ).content  # Парсим саму страницу
     wiki_html = BeautifulSoup(html, "html.parser")
 
     succeeds = 0
@@ -192,7 +192,7 @@ def parse_details(skip_parsed_interval, where=""):
         if not list_item:
             break
         try:
-            details = ListItemDetails(list_item[0], list_item[1], list_item[2])
+            details = ListItemDetails(id=list_item[0], title=list_item[1], page_url=list_item[2])
             print('===========================================')
             print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + details.page_url)
             html = requests.get(URL_START + details.page_url).content
@@ -211,28 +211,25 @@ def parse_details(skip_parsed_interval, where=""):
             # (только если нашли родителя - без родителей в дереве элементы не нужны)
             query = """
               UPDATE public.list
-              SET title = '{}'
-                , type = '{}'
+              SET title = {}
+                , type = {}
                 , image_url = {}
                 , parent_page_url = {}
-                , wikipedias_by_languages = '{}'
-                , titles_by_languages = '{}'
-              WHERE id = '{}';
+                , wikipedias_by_languages = {}
+                , titles_by_languages = {}
+              WHERE id = {};
             """.format(
-                str(details.title)
-                , str(details.type)
+                quote_string(details.title)
+                , quote_string(details.type)
                 , quote_nullable(details.image_url)
                 , quote_nullable(details.parent_page_url)
-                , json.dumps(details.wikipedias_by_languages)
-                , json.dumps(details.titles_by_languages)
-                , str(details.id)
+                , quote_string(json.dumps(details.wikipedias_by_languages))
+                , quote_string(json.dumps(details.titles_by_languages))
+                , quote_string(details.id)
             )
             DbExecuteNonQuery.execute('parse_details:update_details', query)
             item_counter += 1
 
-        # except WebDriverException:  TODO
-        #     print('Ошибка:\n', traceback.format_exc())
-        #     errors += 1
         except:  # Ошибки базы могут разных видов. Ловим вообще все
             print('Ошибка:\n', traceback.format_exc())
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
@@ -263,13 +260,17 @@ class ListItemDetails:
 def parse_image_wikispecies(main_content, details: ListItemDetails):
     div = main_content.select_one("div.thumb.tright")
     if div is not None:
-        image = div.select_one("img")  # Просто любая картинка справа в основном содержимом
-        src = image['src']
-        print("Картинка в Викивидах: " + str(src))
-        details.image_url = src
-    else:  # Картинки может не быть - всё равно обрабатывать эту страницу дальше
-        print("Картинка в Викивидах НЕ НАЙДЕНА")
-        details.image_url = None
+        images = div.select("img")  # Перебираем все картинки справа в основном содержимом
+        for img in images:
+            if img is not None:
+                if img.get("alt", None) != "edit":  # не картинка карандаша
+                    src = img['src']
+                    print("Картинка в Викивидах: " + str(src))
+                    details.image_url = src
+                    return details
+    # Картинки может не быть - всё равно обрабатывать эту страницу дальше
+    print("Картинка в Викивидах НЕ НАЙДЕНА")
+    details.image_url = None
     return details
 
 
@@ -299,7 +300,7 @@ def parse_levels(tree_box, details: ListItemDetails):
     """
 
 
-    levels_p = tree_box.select_one("p:nth-child(3)")
+    levels_p = tree_box.find("p", recursive=False)
     levels = str(levels_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
 
     # Текущий уровень
@@ -359,7 +360,7 @@ def parse_levels(tree_box, details: ListItemDetails):
 
 def parse_wikipedias(wiki_html, details: ListItemDetails):
     # Ссылки на Википедии разных языков
-    a_s = wiki_html.select("div#p-lang > div > ul > li > a")
+    a_s = wiki_html.select("#p-lang > div > ul > li > a")
     for a in a_s:
         if a.text != "":
             match = re.search(WIKIPEDIAS_URL_MASK, a["href"])
@@ -375,6 +376,7 @@ def parse_wikipedias(wiki_html, details: ListItemDetails):
             details = parse_one_wikipedia(hreflang, wiki_html, details)
             if details.image_url is None:
                 details = parse_image_wikipedia(hreflang, wiki_html, details)
+    print("Найдены языки: {}".format(details.titles_by_languages.keys()))
     return details
 
 
@@ -392,9 +394,9 @@ def parse_image_wikipedia(hreflang, wiki_html, details: ListItemDetails):
     )
     # Картинка в карточке вида (при этом не карта распространения)
     if image is not None:
-        if image.get("alt", None) == "edit":
+        if image.get("alt", None) == "edit" or image.get("alt", None) == "e":
             return details  # картинка карандаша
-        src = "https:" + str(image['src'])
+        src = str(image['src'])
         print("Картинка в Википедии: Язык: {} Картинка: {}".format(hreflang, src))
         details.image_url = src
     return details
