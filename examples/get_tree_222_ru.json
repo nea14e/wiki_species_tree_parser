@@ -23,7 +23,8 @@
         "wiki_url_for_language": "B_ru_url"
       }
     ],
-    "title_on_language": "Первый уровень"
+    "title_on_language": "Первый уровень",
+    "is_level_has_selected_item": false
   },
   {
     "type": "2nd",
@@ -49,7 +50,8 @@
         "wiki_url_for_language": null
       }
     ],
-    "title_on_language": "Второй уровень"
+    "title_on_language": "Второй уровень",
+    "is_level_has_selected_item": false
   },
   {
     "type": "3rd",
@@ -75,7 +77,8 @@
         "wiki_url_for_language": "Bb2_en_url"
       }
     ],
-    "title_on_language": "Третий уровень"
+    "title_on_language": "Третий уровень",
+    "is_level_has_selected_item": true
   },
   {
     "type": "4th",
@@ -101,7 +104,8 @@
         "wiki_url_for_language": "Bb22_ru_url"
       }
     ],
-    "title_on_language": "Четвёртый уровень"
+    "title_on_language": "Четвёртый уровень",
+    "is_level_has_selected_item": false
   },
   {
     "type": "5th",
@@ -127,6 +131,7 @@
         "wiki_url_for_language": "Bb2x2_ru_url"
       }
     ],
-    "title_on_language": "Пятый уровень"
+    "title_on_language": "Пятый уровень",
+    "is_level_has_selected_item": false
   }
 ]

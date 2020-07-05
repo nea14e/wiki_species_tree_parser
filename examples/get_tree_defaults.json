@@ -23,7 +23,8 @@
         "wiki_url_for_language": "B_en_url"
       }
     ],
-    "title_on_language": "1st"
+    "title_on_language": "1st",
+    "is_level_has_selected_item": false
   },
   {
     "type": "2nd",
@@ -79,7 +80,8 @@
         "wiki_url_for_language": "xc_en_url"
       }
     ],
-    "title_on_language": "2nd"
+    "title_on_language": "2nd",
+    "is_level_has_selected_item": false
   },
   {
     "type": "3rd",
@@ -175,6 +177,7 @@
         "wiki_url_for_language": "xc1_en_url"
       }
     ],
-    "title_on_language": "3rd"
+    "title_on_language": "3rd",
+    "is_level_has_selected_item": false
   }
 ]
