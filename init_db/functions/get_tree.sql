@@ -3,9 +3,10 @@ CREATE OR REPLACE FUNCTION public.get_tree(_id bigint DEFAULT NULL::bigint, _lan
 AS
 $$
 DECLARE
-  _answer_json             jsonb = '[]'::jsonb; -- jsonb is stored in pre-parsed way so operations with him are more faster
-  _level_items_json        jsonb = '[]'::jsonb;
+  _translation_object_json jsonb = '{}'::jsonb; -- jsonb is stored in pre-parsed way so operations with him are more faster
+  _levels_json             jsonb = '[]'::jsonb;
   _level_object_json       jsonb = '{}'::jsonb;
+  _level_items_json        jsonb = '[]'::jsonb;
   _has_level_selected_item boolean;
   _next_parent_id          bigint;
   _cur_parent_id           bigint;
@@ -54,8 +55,8 @@ BEGIN
           );
         -- RAISE NOTICE '_level_json: object: ''%''.', _level_json;
 
-        _answer_json = jsonb_insert(
-            jsonb_in := _answer_json,
+        _levels_json = jsonb_insert(
+            jsonb_in := _levels_json,
             path := '{-1}', -- put to the end of levels' list
             replacement := _level_object_json,
             insert_after := TRUE
@@ -130,8 +131,8 @@ BEGIN
 
               -- RAISE NOTICE '_level_json: object: ''%''.', _level_json;
 
-              _answer_json = jsonb_insert(
-                  jsonb_in := _answer_json,
+              _levels_json = jsonb_insert(
+                  jsonb_in := _levels_json,
                   path := '{0}', -- put to the beginning of levels' list
                   replacement := _level_object_json,
                   insert_after := FALSE
@@ -159,7 +160,19 @@ BEGIN
 
   END IF;
 
-  RETURN _answer_json::json;
+  SELECT jsonb_agg(t) -> 0 INTO _translation_object_json
+  FROM (
+         SELECT *
+         FROM public.known_languages
+         WHERE lang_key = COALESCE(_language_key, 'en')
+       ) t;
+
+  RETURN jsonb_build_object(
+      '_id', _id,
+      '_language_key', _language_key,
+      'levels', _levels_json,
+      'translation', _translation_object_json
+    )::json;
 END;
 $$;
 

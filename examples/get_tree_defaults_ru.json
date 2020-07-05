@@ -1,183 +1,199 @@
-[
-  {
-    "type": "1st",
-    "items": [
-      {
-        "id": 1,
-        "page_url": "A_url",
-        "image_url": null,
-        "parent_id": null,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "A_ru",
-        "wiki_url_for_language": "A_ru_url"
-      },
-      {
-        "id": 2,
-        "page_url": "B_url",
-        "image_url": null,
-        "parent_id": null,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "B_ru",
-        "wiki_url_for_language": "B_ru_url"
-      }
-    ],
-    "title_on_language": "Первый уровень",
-    "is_level_has_selected_item": false
+{
+  "_id": null,
+  "levels": [
+    {
+      "type": "1st",
+      "items": [
+        {
+          "id": 1,
+          "page_url": "A_url",
+          "image_url": null,
+          "parent_id": null,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "A_ru",
+          "wiki_url_for_language": "A_ru_url"
+        },
+        {
+          "id": 2,
+          "page_url": "B_url",
+          "image_url": null,
+          "parent_id": null,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "B_ru",
+          "wiki_url_for_language": "B_ru_url"
+        }
+      ],
+      "title_on_language": "Первый уровень",
+      "is_level_has_selected_item": false
+    },
+    {
+      "type": "2nd",
+      "items": [
+        {
+          "id": 11,
+          "page_url": "Aa_url",
+          "image_url": null,
+          "parent_id": 1,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Aa_ru",
+          "wiki_url_for_language": "Aa_ru_url"
+        },
+        {
+          "id": 12,
+          "page_url": "Ab_url",
+          "image_url": null,
+          "parent_id": 1,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Ab_ru",
+          "wiki_url_for_language": "Ab_ru_url"
+        },
+        {
+          "id": 21,
+          "page_url": "Ba_url",
+          "image_url": null,
+          "parent_id": 2,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Ba_ru",
+          "wiki_url_for_language": "Ba_ru_url"
+        },
+        {
+          "id": 22,
+          "page_url": "Bb_url",
+          "image_url": null,
+          "parent_id": 2,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Bb_without_languages",
+          "wiki_url_for_language": null
+        },
+        {
+          "id": 3,
+          "page_url": "xc_url",
+          "image_url": null,
+          "parent_id": null,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "xc_ru",
+          "wiki_url_for_language": "xc_ru_url"
+        }
+      ],
+      "title_on_language": "Второй уровень",
+      "is_level_has_selected_item": false
+    },
+    {
+      "type": "3rd",
+      "items": [
+        {
+          "id": 111,
+          "page_url": "Aa1_url",
+          "image_url": null,
+          "parent_id": 11,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Aa1_ru",
+          "wiki_url_for_language": "Aa1_ru_url"
+        },
+        {
+          "id": 112,
+          "page_url": "Aa2_url",
+          "image_url": null,
+          "parent_id": 11,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Aa2_ru",
+          "wiki_url_for_language": "Aa2_ru_url"
+        },
+        {
+          "id": 121,
+          "page_url": "Ab1_url",
+          "image_url": null,
+          "parent_id": 12,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Ab1_ru",
+          "wiki_url_for_language": "Ab1_ru_url"
+        },
+        {
+          "id": 122,
+          "page_url": "Ab2_url",
+          "image_url": null,
+          "parent_id": 12,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Ab2_ru",
+          "wiki_url_for_language": "Ab2_ru_url"
+        },
+        {
+          "id": 211,
+          "page_url": "Ba1_url",
+          "image_url": null,
+          "parent_id": 21,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Ba1_ru",
+          "wiki_url_for_language": "Ba1_ru_url"
+        },
+        {
+          "id": 212,
+          "page_url": "Ba2_url",
+          "image_url": null,
+          "parent_id": 21,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Ba2_ru",
+          "wiki_url_for_language": "Ba2_ru_url"
+        },
+        {
+          "id": 221,
+          "page_url": "Bb1_url",
+          "image_url": null,
+          "parent_id": 22,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Bb1_ru",
+          "wiki_url_for_language": "Bb1_ru_url"
+        },
+        {
+          "id": 222,
+          "page_url": "Bb2_url",
+          "image_url": null,
+          "parent_id": 22,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "Bb2_en_only",
+          "wiki_url_for_language": "Bb2_en_url"
+        },
+        {
+          "id": 31,
+          "page_url": "xc1_url",
+          "image_url": null,
+          "parent_id": 3,
+          "is_expanded": false,
+          "is_selected": false,
+          "title_for_language": "xc1_ru",
+          "wiki_url_for_language": "xc1_ru_url"
+        }
+      ],
+      "title_on_language": "Третий уровень",
+      "is_level_has_selected_item": false
+    }
+  ],
+  "translation": {
+    "comment": "Русский",
+    "lang_key": "ru",
+    "rank_word": "Ранг",
+    "site_title": "Дерево видов",
+    "parent_word": "Родитель",
+    "search_word": "Поиск",
+    "authors_word": "Авторы",
+    "authors_content": "Сделано коллективом добровольцев, в том числе с использованием рабочего времени и ресурсов, щедро предоставленных <a href=\"https://it-avangard.su/\">ООО \"ИТ-Авангард\"</a>.",
+    "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Фотографии и информация для построения дерева взяты из проекта Викивиды",
+    "tip_of_the_day_word": "Совет дня"
   },
-  {
-    "type": "2nd",
-    "items": [
-      {
-        "id": 11,
-        "page_url": "Aa_url",
-        "image_url": null,
-        "parent_id": 1,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Aa_ru",
-        "wiki_url_for_language": "Aa_ru_url"
-      },
-      {
-        "id": 12,
-        "page_url": "Ab_url",
-        "image_url": null,
-        "parent_id": 1,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Ab_ru",
-        "wiki_url_for_language": "Ab_ru_url"
-      },
-      {
-        "id": 21,
-        "page_url": "Ba_url",
-        "image_url": null,
-        "parent_id": 2,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Ba_ru",
-        "wiki_url_for_language": "Ba_ru_url"
-      },
-      {
-        "id": 22,
-        "page_url": "Bb_url",
-        "image_url": null,
-        "parent_id": 2,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Bb_without_languages",
-        "wiki_url_for_language": null
-      },
-      {
-        "id": 3,
-        "page_url": "xc_url",
-        "image_url": null,
-        "parent_id": null,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "xc_ru",
-        "wiki_url_for_language": "xc_ru_url"
-      }
-    ],
-    "title_on_language": "Второй уровень",
-    "is_level_has_selected_item": false
-  },
-  {
-    "type": "3rd",
-    "items": [
-      {
-        "id": 111,
-        "page_url": "Aa1_url",
-        "image_url": null,
-        "parent_id": 11,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Aa1_ru",
-        "wiki_url_for_language": "Aa1_ru_url"
-      },
-      {
-        "id": 112,
-        "page_url": "Aa2_url",
-        "image_url": null,
-        "parent_id": 11,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Aa2_ru",
-        "wiki_url_for_language": "Aa2_ru_url"
-      },
-      {
-        "id": 121,
-        "page_url": "Ab1_url",
-        "image_url": null,
-        "parent_id": 12,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Ab1_ru",
-        "wiki_url_for_language": "Ab1_ru_url"
-      },
-      {
-        "id": 122,
-        "page_url": "Ab2_url",
-        "image_url": null,
-        "parent_id": 12,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Ab2_ru",
-        "wiki_url_for_language": "Ab2_ru_url"
-      },
-      {
-        "id": 211,
-        "page_url": "Ba1_url",
-        "image_url": null,
-        "parent_id": 21,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Ba1_ru",
-        "wiki_url_for_language": "Ba1_ru_url"
-      },
-      {
-        "id": 212,
-        "page_url": "Ba2_url",
-        "image_url": null,
-        "parent_id": 21,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Ba2_ru",
-        "wiki_url_for_language": "Ba2_ru_url"
-      },
-      {
-        "id": 221,
-        "page_url": "Bb1_url",
-        "image_url": null,
-        "parent_id": 22,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Bb1_ru",
-        "wiki_url_for_language": "Bb1_ru_url"
-      },
-      {
-        "id": 222,
-        "page_url": "Bb2_url",
-        "image_url": null,
-        "parent_id": 22,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "Bb2_en_only",
-        "wiki_url_for_language": "Bb2_en_url"
-      },
-      {
-        "id": 31,
-        "page_url": "xc1_url",
-        "image_url": null,
-        "parent_id": 3,
-        "is_expanded": false,
-        "is_selected": false,
-        "title_for_language": "xc1_ru",
-        "wiki_url_for_language": "xc1_ru_url"
-      }
-    ],
-    "title_on_language": "Третий уровень",
-    "is_level_has_selected_item": false
-  }
-]
+  "_language_key": "ru"
+}

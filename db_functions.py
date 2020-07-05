@@ -62,12 +62,6 @@ class DbFunctions:
         else:
             print("Таблица public.known_languages уже существует, пропускаем этап создания.")
 
-        # Языки
-        print("\n\n===================================================")
-        print("Добавляем языки по умолчанию:")
-        DbFunctions.add_language("en")
-        DbFunctions.add_language("ru")
-
         # Заполняем данными
         print("\n\n===================================================")
         print("Заполняем данными:")
@@ -76,6 +70,8 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "list_TEST.sql"))
             print("\nТаблица public.ranks (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
+        print("\nТаблица public.known_languages (для прода/теста)...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "known_languages_ANY.sql"))
 
         # Хранимки для выдачи данных
         # (триггерные функции надо писать в скрипте создания их таблицы)
@@ -92,26 +88,6 @@ class DbFunctions:
         sql = "SELECT COUNT(1) FROM public.list;"
         list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
         print("В таблице public.list сейчас {} записей.".format(list_records_count))
-
-    @staticmethod
-    def add_language(lang_key: str, comment: str = ""):
-        print("\nadd_language(): добавляем язык, если его ещё нет: lang_key = '{}', comment = '{}'...".format(lang_key, comment))
-
-        # Добавляем язык в таблицу языков
-        sql = """
-            INSERT INTO public.known_languages(lang_key, "comment")
-            VALUES ('{}', '{}')
-            ON CONFLICT ON CONSTRAINT pk_known_languages DO UPDATE
-              SET "comment" = EXCLUDED."comment";
-        """.format(lang_key, comment)
-        print(str(sql))
-        DbExecuteNonQuery.execute("add_language", sql)
-
-        # Добавляем индекс по новому языку
-        sql = "CREATE INDEX IF NOT EXISTS ix_list_titles_by_languages_{} ON public.list ((titles_by_languages->>'{}'));" \
-                .format(lang_key, lang_key)
-        print(str(sql))
-        DbExecuteNonQuery.execute("add_language", sql)
 
     @staticmethod
     def add_list_item(title, page_url):
