@@ -13,9 +13,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
+
 from django.contrib import admin
 from django.urls import path
 
+from species_tree_backend.views import admin_get_count, get_tree_default, check
+
+with open(os.path.join("backend", "admin_ulr_prefix.txt"), "r") as fp:
+    PARSER_ADMIN_URL_PREFIX = str(fp.read())
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),  # Стандартная админ-панель Django - просто не нужна
+    path('api/get_tree_default', get_tree_default),
+    path('check', check),
+    path('', check),
+    path(PARSER_ADMIN_URL_PREFIX + '/get_count', admin_get_count),
 ]

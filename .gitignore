@@ -323,3 +323,4 @@ pip-selfcheck.json
 
 
 backend/backend/secret_key.txt
+backend/backend/admin_ulr_prefix.txt
