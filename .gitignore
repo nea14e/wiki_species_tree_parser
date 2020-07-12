@@ -320,3 +320,6 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.gitignore.io/api/python,django,intellij,pycharm
+
+
+backend/backend/secret_key.txt

@@ -6,3 +6,16 @@ psycopg2==2.8.2
 requests==2.22.0
 soupsieve==1.9.5
 urllib3==1.25.2
+asgiref==3.2.10
+beautifulsoup4==4.8.1
+certifi==2019.6.16
+chardet==3.0.4
+Django==3.0.8
+idna==2.8
+psycopg2==2.8.2
+pytz==2020.1
+requests==2.22.0
+selenium==3.141.0
+soupsieve==1.9.5
+sqlparse==0.3.1
+urllib3==1.25.2

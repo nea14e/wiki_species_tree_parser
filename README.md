@@ -15,9 +15,9 @@
 
 `pip3 install -r requirements.txt`
 
-- Установите Django для python
+- Создайте файл с ключом для Python Django по адресу:
 
-TODO
+`backend/backend/secret_key.txt`
 
 - Установите Angular 2+
 
