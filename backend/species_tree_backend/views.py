@@ -31,7 +31,18 @@ def get_tree_default(request):
     return JsonResponse(db_response, safe=False)
 
 
-# TODO search_by_text
+@csrf_exempt
+def search_by_words(request, words: str):
+    accept_language = request.headers['Accept-Language']
+    language_key = get_language_key(accept_language)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.search_by_words(_query := %s, _language_key := %s);
+    """, (words, language_key,))
+    db_response = str(cur.fetchone()[0])
+    return JsonResponse(db_response, safe=False)
+
 
 
 @csrf_exempt

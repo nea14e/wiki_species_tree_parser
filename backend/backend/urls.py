@@ -18,7 +18,7 @@ import os
 from django.contrib import admin
 from django.urls import path
 
-from species_tree_backend.views import admin_get_count, get_tree_default, get_tree_by_id, check
+from species_tree_backend.views import admin_get_count, get_tree_by_id, get_tree_default, search_by_words, check
 
 with open(os.path.join("backend", "admin_ulr_prefix.txt"), "r") as fp:
     PARSER_ADMIN_URL_PREFIX = str(fp.read())
@@ -27,6 +27,7 @@ urlpatterns = [
     # path('admin/', admin.site.urls),  # Стандартная админ-панель Django - просто не нужна
     path('api/get_tree_by_id/<int:_id>', get_tree_by_id),
     path('api/get_tree_default', get_tree_default),
+    path('api/search_by_words/<str:words>', search_by_words),
     path('check', check),
     path('', check),
     path(PARSER_ADMIN_URL_PREFIX + '/get_count', admin_get_count),
