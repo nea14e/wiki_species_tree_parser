@@ -8,7 +8,7 @@ def get_tree_default(request):
     # TODO accept_language = request.headers['Accept-Language']
     conn = connections["default"]
     sql = """
-        SELECT public.get_tree();
+        SELECT public.get_tree_default();
     """
     cur = conn.cursor()
     cur.execute(sql)
