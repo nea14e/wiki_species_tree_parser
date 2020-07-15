@@ -2,18 +2,21 @@ from django.db import connections
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
+from species_tree_backend.http_headers_parser import get_language_key
+
 
 @csrf_exempt
 def get_tree_default(request):
-    # TODO accept_language = request.headers['Accept-Language']
+    accept_language = request.headers['Accept-Language']
+    language_key = get_language_key(accept_language)
     conn = connections["default"]
-    sql = """
-        SELECT public.get_tree_default();
-    """
     cur = conn.cursor()
-    cur.execute(sql)
+    cur.execute("""
+        SELECT public.get_tree_default(_language_key := %s);
+    """, (language_key,))
     db_response = str(cur.fetchone()[0])
     return JsonResponse(db_response, safe=False)
+
 
 # TODO get_tree_by_id
 
@@ -34,6 +37,7 @@ def admin_get_count(request):
         "message": "Count of records in 'public.list' table",
         "count": count
     })
+
 
 # TODO ? Some other admin functions
 
