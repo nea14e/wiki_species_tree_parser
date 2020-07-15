@@ -1,4 +1,5 @@
 CREATE OR REPLACE FUNCTION public.search_by_words(_query text, _language_key text DEFAULT NULL::text) RETURNS json
+  STABLE
   LANGUAGE SQL
 AS
 $$

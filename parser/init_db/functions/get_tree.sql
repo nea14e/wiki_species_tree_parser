@@ -1,5 +1,6 @@
 CREATE OR REPLACE FUNCTION public.get_tree(_id bigint DEFAULT NULL::bigint,
                                            _language_key text DEFAULT NULL::text) RETURNS json
+  STABLE
   LANGUAGE plpgsql
 AS
 $$
