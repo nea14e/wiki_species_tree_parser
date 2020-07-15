@@ -18,7 +18,8 @@ import os
 from django.contrib import admin
 from django.urls import path
 
-from species_tree_backend.views import admin_get_count, get_tree_by_id, get_tree_default, search_by_words, check
+from species_tree_backend.views import get_tree_by_id, get_tree_default, search_by_words, check, \
+        admin_get_count_1, admin_get_count_2, admin_get_count_3
 
 with open(os.path.join("backend", "admin_ulr_prefix.txt"), "r") as fp:
     PARSER_ADMIN_URL_PREFIX = str(fp.read())
@@ -30,5 +31,7 @@ urlpatterns = [
     path('api/search_by_words/<str:words>', search_by_words),
     path('check', check),
     path('', check),
-    path(PARSER_ADMIN_URL_PREFIX + '/get_count', admin_get_count),
+    path(PARSER_ADMIN_URL_PREFIX + '/count_1', admin_get_count_1),
+    path(PARSER_ADMIN_URL_PREFIX + '/count_2', admin_get_count_2),
+    path(PARSER_ADMIN_URL_PREFIX + '/count_3', admin_get_count_3),
 ]

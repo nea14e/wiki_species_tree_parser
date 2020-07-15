@@ -44,35 +44,63 @@ def search_by_words(request, words: str):
     return JsonResponse(db_response, safe=False)
 
 
-
 @csrf_exempt
-def admin_get_count(request):
+def admin_get_count_1(request):
     conn = connections["default"]
-    sql = """
+    cur = conn.cursor()
+    cur.execute("""
         SELECT COUNT(1)
         FROM public.list;
-    """
-    cur = conn.cursor()
-    cur.execute(sql)
+    """)
     count = int(cur.fetchone()[0])
     return JsonResponse({
-        "message": "Count of records in 'public.list' table",
+        "message": "Count of records in 'public.list' table with parsing stage 1 passed",
         "count": count
     })
 
 
-# TODO ? Some other admin functions
+@csrf_exempt
+def admin_get_count_2(request):
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT COUNT(1)
+        FROM public.list
+        WHERE type IS NOT NULL;
+    """)
+    count = int(cur.fetchone()[0])
+    return JsonResponse({
+        "message": "Count of records in 'public.list' table with parsing stage 2 passed",
+        "count": count
+    })
+
+
+@csrf_exempt
+def admin_get_count_3(request):
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT COUNT(1)
+        FROM public.list
+        WHERE parent_id IS NOT NULL;
+    """)
+    count = int(cur.fetchone()[0])
+    return JsonResponse({
+        "message": "Count of records in 'public.list' table with parsing stage 3 passed",
+        "count": count
+    })
+
+
 
 
 @csrf_exempt
 def check(request):
     try:
         conn = connections["default"]
-        sql = """
-            SELECT 'Db is Ok'::text;
-        """
         cur = conn.cursor()
-        cur.execute(sql)
+        cur.execute("""
+            SELECT 'Db is Ok'::text;
+        """)
         db_message = str(cur.fetchone()[0])
     except BaseException as ex:
         db_message = str(ex)
