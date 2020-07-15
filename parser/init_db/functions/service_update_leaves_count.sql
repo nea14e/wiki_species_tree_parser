@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION public.service_update_leaves_count() RETURNS text
-  STABLE
+  VOLATILE
   LANGUAGE plpgsql
 AS
 $$
