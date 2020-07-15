@@ -4,22 +4,38 @@ import re
 import sys
 import traceback
 
-import requests
+# import requests
+from requests import Session
 from requests.utils import requote_uri
 from bs4 import BeautifulSoup
 import time
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
+# Режим отладки для более подробной печати в консоль. Тормозит работу приложения.
 IS_DEBUG = False
 
+# Задаёт интервал отдыха между концом парсинга предыдущей страницы и началом загрузки следующей (в секундах).
+# Поскольку парсинг страницы Викивидов и связанных с ней Википедий по языкам занимают значительное время,
+# реальный интервал между загрузкой предыдущей страницы и следующей будет значительно больше этого числа.
 NEXT_PAGE_DELAY = 0.01
 
+# URL-адреса и маски для них. Иногда надо их править.
 URL_DOMAIN = "https://species.wikimedia.org/"
 URL_START = "https://species.wikimedia.org/wiki/"
 URL_START_RELATIVE = "/wiki/"
 WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"
 WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"
+
+
+class MyRequests:
+    session = None
+
+    @classmethod
+    def get_session(cls):
+        if cls.session is None:
+            cls.session = Session()
+        return cls.session
 
 
 def main():
@@ -38,6 +54,10 @@ def main():
         return
 
     DbFunctions.init_db(is_test=False)
+
+    def apply_proxy(proxy_string: str):
+        MyRequests.get_session().proxies = {"http": proxy_string, "https": proxy_string}
+
     if stage_number == '1':
         if len(sys.argv) >= 3:
             from_title = sys.argv[2]
@@ -47,6 +67,8 @@ def main():
             to_title = sys.argv[3]
         else:
             to_title = ""
+        if len(sys.argv) >= 5:
+            apply_proxy(str(sys.argv[4]))
         populate_list(from_title, to_title)  # 1 этап
     elif stage_number == '2':
         if len(sys.argv) >= 3:
@@ -62,6 +84,8 @@ def main():
             where = sys.argv[3]
         else:
             where = ""
+        if len(sys.argv) >= 5:
+            apply_proxy(str(sys.argv[4]))
         parse_details(skip_parsed_interval, where)  # 2 этап
     elif stage_number == '3':
         if len(sys.argv) >= 3:
@@ -80,19 +104,21 @@ def print_usage():
     print("Для 0 этапа - инициализации базы:")
     print("python3.6 wiki_parser.py 0 [\"test\" для тестового наполнения]")
     print("Для 1 этапа - составления списка:")
-    print("python3.6 wiki_parser.py 1 [from_title] [to_title]")
+    print("python3.6 wiki_parser.py 1 [from_title] [to_title] [proxy_string]")
     print("Для 2 этапа - получения деталей по списку:")
-    print("python3.6 wiki_parser.py 2 [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL]")
+    print("python3.6 wiki_parser.py 2 [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL] [proxy_string]")
     print("Для 3 этапа - построения древовидной структуры:")
     print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
     print("Для 4 этапа - подсчёта количества видов в каждом узле дерева:")
     print("python3.6 wiki_parser.py 4")
+    print()
+    print("Где proxy_string = \"протокол://адрес:порт@логин:пароль\" или \"протокол://адрес:порт\"")
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
     print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
-    html = requests.get(
+    html = MyRequests.get_session().get(
         "https://species.wikimedia.org/wiki/Special:AllPages?from={}&to={}&namespace=0" \
             .format(requote_uri(from_title), requote_uri(to_title))
     ).content  # Парсим саму страницу
@@ -137,7 +163,7 @@ def populate_list(from_title: str = "", to_title: str = ""):
         if next_page_url:
             print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
                 next_page_elem.text, succeeds, skipped, errors))
-            html = requests.get(URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
+            html = MyRequests.get_session().get(URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
             wiki_html = BeautifulSoup(html, "html.parser")
             time.sleep(NEXT_PAGE_DELAY)
         else:
@@ -186,7 +212,7 @@ def parse_details(skip_parsed_interval, where=""):
             details = ListItemDetails(id=list_item[0], title=list_item[1], page_url=list_item[2])
             print('===========================================')
             print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + details.page_url)
-            html = requests.get(URL_START + details.page_url).content
+            html = MyRequests.get_session().get(URL_START + details.page_url).content
             wiki_html = BeautifulSoup(html, "html.parser")
 
             # Парсинг информации
@@ -358,11 +384,11 @@ def parse_wikipedias(wiki_html, details: ListItemDetails):
             hreflang = match[1]
             href = match[2]
             if IS_DEBUG:
-                print("Ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, href))
+                print("Найдена ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, href))
             details.wikipedias_by_languages[hreflang] = href
             wikipedia_page_url = WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
 
-            html = requests.get(wikipedia_page_url).content  # Парсим саму страницу Википедии
+            html = MyRequests.get_session().get(wikipedia_page_url).content  # Парсим саму страницу Википедии
             wiki_html = BeautifulSoup(html, "html.parser")
             details = parse_one_wikipedia(hreflang, wiki_html, details)
             if details.image_url is None:
@@ -374,7 +400,7 @@ def parse_wikipedias(wiki_html, details: ListItemDetails):
 def parse_one_wikipedia(hreflang, wiki_html, details: ListItemDetails):
     title = wiki_html.select_one("div#content > h1").text
     if IS_DEBUG:
-        print("Ссылка на Википедию: Язык: {} Заголовок: {}".format(hreflang, title))
+        print("Парсим страницу Википедии: Язык: {} Заголовок: {}".format(hreflang, title))
     details.titles_by_languages[hreflang] = title
     return details
 
