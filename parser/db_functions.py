@@ -11,24 +11,32 @@ class DbFunctions:
     # host = str("192.168.33.147")
     host = str("127.0.0.1")
     password = str("12345")
+    db_name = None  # Смотрите на пару строк ниже
     default_conn_tag = "default_conn"
 
     @staticmethod
     def init_db(is_test: bool = False):
+        if is_test:
+            print("Инициализация тестовой базы lifetree_test...\n")
+            DbFunctions.db_name = "lifetree_test"
+        else:
+            print("Инициализация основной базы lifetree...\n")
+            DbFunctions.db_name = 'lifetree'
+
         # Подключаемся к базе данных по умолчанию, чтобы создать нашу базу, если надо
         general_conn = psycopg2.connect(
             "dbname='postgres' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
         general_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = general_conn.cursor()
-        sql = "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = 'lifetree');"
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = '{}');".format(DbFunctions.db_name)
         cur.execute(sql)
         is_db_exists = bool(cur.fetchone()[0])
         if not is_db_exists:  # Если база данных ещё не создана
-            sql = "CREATE DATABASE lifetree;"
+            sql = "CREATE DATABASE {};".format(DbFunctions.db_name)
             print(str(sql))
             cur.execute(sql)
         else:
-            print("База lifetree уже существует, пропускаем этап создания.")
+            print("База {} уже существует, пропускаем этап создания.".format(DbFunctions.db_name))
         general_conn.close()
 
 
@@ -161,7 +169,7 @@ class DbConnectionsHandler:
         if tag in cls.connections_pool.keys():
             return cls.connections_pool[tag]
         else:
-            new_conn = psycopg2.connect("dbname='lifetree' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
+            new_conn = psycopg2.connect("dbname='" + DbFunctions.db_name + "' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
             cls.connections_pool[tag] = new_conn
             return new_conn
 
