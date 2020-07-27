@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/get_childes_by_id/<int:_id>', get_childes_by_id),
     path('api/get_tree_by_id/<int:_id>', get_tree_by_id),
     path('api/get_tree_default', get_tree_default),
-    path('api/search_by_words/<str:words>', search_by_words),
+    path('api/search_by_words/<str:words>/<int:offset>', search_by_words),
     path('check', check),
     path('', check),
     path(PARSER_ADMIN_URL_PREFIX + '/count_1', admin_get_count_1),

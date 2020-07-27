@@ -45,14 +45,18 @@ def get_tree_default(request):  # выдаёт дерево с видом по �
 
 
 @csrf_exempt
-def search_by_words(request, words: str):
+def search_by_words(request, words: str, offset: int):
+    if len(words) < 3:
+        return JsonResponse({
+            "Error": "Query for text-search must have at least 3 characters."
+        })
     accept_language = request.headers['Accept-Language']
     language_key = get_language_key(accept_language)
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.search_by_words(_query := %s, _language_key := %s);
-    """, (words, language_key,))
+        SELECT public.search_by_words(_query := %s, _offset := %s, _language_key := %s);
+    """, (words, offset, language_key,))
     db_response = str(cur.fetchone()[0])
     return JsonResponse(db_response, safe=False)
 
@@ -112,7 +116,7 @@ def check(request):
         conn = connections["default"]
         cur = conn.cursor()
         cur.execute("""
-            SELECT 'Db is Ok'::text;
+            SELECT 'Db is Online'::text;
         """)
         db_message = str(cur.fetchone()[0])
     except BaseException as ex:

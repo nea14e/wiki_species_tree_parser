@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.search_by_words(_query text, _language_key text DEFAULT NULL::text) RETURNS json
+CREATE OR REPLACE FUNCTION public.search_by_words(_query text, _offset int, _language_key text DEFAULT NULL::text) RETURNS json
   STABLE
   LANGUAGE SQL
 AS
@@ -20,6 +20,8 @@ FROM (
           OR (
          upper(list.title) LIKE (upper(_query) || '%') -- support Latin for any _language_key (Note: here can be used "ix_list_for_latin_search" functional index)
          )
+       ORDER BY rank_order DESC, title_for_language ASC
+       LIMIT 10 OFFSET _offset
      ) t;
 $$;
 
