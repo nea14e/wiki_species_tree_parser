@@ -118,10 +118,15 @@ def print_usage():
 def populate_list(from_title: str = "", to_title: str = ""):
     print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
-    html = MyRequests.get_session().get(
-        "https://species.wikimedia.org/wiki/Special:AllPages?from={}&to={}&namespace=0" \
-            .format(requote_uri(from_title), requote_uri(to_title))
-    ).content  # Парсим саму страницу
+    url = "https://species.wikimedia.org/wiki/Special:AllPages"
+    if from_title:
+        url += "?from={}".format(requote_uri(from_title))
+    if to_title:
+        url += "&to={}".format(requote_uri(to_title))
+    if from_title or to_title:
+        url += "&namespace=0"
+
+    html = MyRequests.get_session().get(url).content  # Парсим саму страницу
     wiki_html = BeautifulSoup(html, "html.parser")
 
     succeeds = 0
@@ -143,9 +148,14 @@ def populate_list(from_title: str = "", to_title: str = ""):
             next_page_url = None
 
         # Сохраем в базу ссылки, чтобы потом по ним переходить
+        is_go_to_next_page = True
         for link in wiki_html.select("ul.mw-allpages-chunk > li > a"):
             try:
                 item_title = link.text
+                if to_title:
+                    if item_title >= to_title:  # Дошли до верхей границы отрезка имён, заданного для выкачки
+                        is_go_to_next_page = False
+                        break
                 if "." in item_title:  # Пропускаем имена учёных (с инициалами, поэтому у них точки)
                     skipped += 1
                     continue
@@ -160,7 +170,7 @@ def populate_list(from_title: str = "", to_title: str = ""):
                 errors += 1
                 print('Ошибка:\n', traceback.format_exc())
 
-        if next_page_url:
+        if next_page_url and is_go_to_next_page:
             print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
                 next_page_elem.text, succeeds, skipped, errors))
             html = MyRequests.get_session().get(URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
