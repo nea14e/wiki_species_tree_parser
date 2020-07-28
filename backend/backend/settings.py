@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from config import Config
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -20,11 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-with open(os.path.join("backend", "secret_key.txt"), "r") as fp:
-    SECRET_KEY = str(fp.read())
+SECRET_KEY = str(Config.BACKEND_SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = Config.IS_DEBUG
 
 ALLOWED_HOSTS = [
     '*'
@@ -86,14 +87,16 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+db_name = 'lifetree' if not Config.BACKEND_IS_USE_TEST_DB else 'lifetree_test'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'lifetree',
-        'USER' : 'postgres',
-        'PASSWORD' : '12345',
-        'HOST' : '127.0.0.1',
-        'PORT' : '5432',
+        'NAME': db_name,
+        'USER' : Config.DB_USER,
+        'PASSWORD' : Config.DB_PASSWORD,
+        'HOST' : Config.DB_HOST,
+        'PORT' : Config.DB_PORT,
     }
 }
 

@@ -4,13 +4,9 @@ import os
 import psycopg2
 import psycopg2.extras
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-
+from config import Config
 
 class DbFunctions:
-    user = str("postgres")
-    # host = str("192.168.33.147")
-    host = str("127.0.0.1")
-    password = str("12345")
     db_name = None  # Смотрите на пару строк ниже
     default_conn_tag = "default_conn"
 
@@ -24,8 +20,8 @@ class DbFunctions:
             DbFunctions.db_name = 'lifetree'
 
         # Подключаемся к базе данных по умолчанию, чтобы создать нашу базу, если надо
-        general_conn = psycopg2.connect(
-            "dbname='postgres' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
+        general_conn = psycopg2.connect("host='" + Config.DB_HOST + "' port=" + Config.DB_PORT +
+            " dbname='postgres' user='" + Config.DB_USER + "' password='" + Config.DB_PASSWORD + "'")
         general_conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = general_conn.cursor()
         sql = "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = '{}');".format(DbFunctions.db_name)
@@ -169,7 +165,7 @@ class DbConnectionsHandler:
         if tag in cls.connections_pool.keys():
             return cls.connections_pool[tag]
         else:
-            new_conn = psycopg2.connect("dbname='" + DbFunctions.db_name + "' user='" + DbFunctions.user + "' host='" + DbFunctions.host + "' password='" + DbFunctions.password + "'")
+            new_conn = psycopg2.connect("host='" + Config.DB_HOST + "' port=" + Config.DB_PORT + " dbname='" + DbFunctions.db_name + "' user='" + Config.DB_USER + "' password='" + Config.DB_PASSWORD + "'")
             cls.connections_pool[tag] = new_conn
             return new_conn
 

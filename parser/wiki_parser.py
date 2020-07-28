@@ -12,20 +12,7 @@ import time
 
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
-# Режим отладки для более подробной печати в консоль. Тормозит работу приложения.
-IS_DEBUG = False
-
-# Задаёт интервал отдыха между концом парсинга предыдущей страницы и началом загрузки следующей (в секундах).
-# Поскольку парсинг страницы Викивидов и связанных с ней Википедий по языкам занимают значительное время,
-# реальный интервал между загрузкой предыдущей страницы и следующей будет значительно больше этого числа.
-NEXT_PAGE_DELAY = 0.01
-
-# URL-адреса и маски для них. Иногда надо их править.
-URL_DOMAIN = "https://species.wikimedia.org/"
-URL_START = "https://species.wikimedia.org/wiki/"
-URL_START_RELATIVE = "/wiki/"
-WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"
-WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"
+from config import Config
 
 
 class MyRequests:
@@ -161,8 +148,8 @@ def populate_list(from_title: str = "", to_title: str = ""):
                     continue
                 item_title = item_title.replace("'", "''")  # Экранирование для базы
                 item_details_href = str(link["href"])
-                if URL_START_RELATIVE in item_details_href:
-                    item_details_href = item_details_href[len(URL_START_RELATIVE):]  # Ссылка (без начала)
+                if Config.URL_START_RELATIVE in item_details_href:
+                    item_details_href = item_details_href[len(Config.URL_START_RELATIVE):]  # Ссылка (без начала)
                 # print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # debug only
                 DbFunctions.add_list_item(item_title, item_details_href)
                 succeeds += 1
@@ -173,9 +160,9 @@ def populate_list(from_title: str = "", to_title: str = ""):
         if next_page_url and is_go_to_next_page:
             print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
                 next_page_elem.text, succeeds, skipped, errors))
-            html = MyRequests.get_session().get(URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
+            html = MyRequests.get_session().get(Config.URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
             wiki_html = BeautifulSoup(html, "html.parser")
-            time.sleep(NEXT_PAGE_DELAY)
+            time.sleep(Config.NEXT_PAGE_DELAY)
         else:
             print(
                 "ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок.".format(succeeds, skipped,
@@ -222,7 +209,7 @@ def parse_details(skip_parsed_interval, where=""):
             details = ListItemDetails(id=list_item[0], title=list_item[1], page_url=list_item[2])
             print('===========================================')
             print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + details.page_url)
-            html = MyRequests.get_session().get(URL_START + details.page_url).content
+            html = MyRequests.get_session().get(Config.URL_START + details.page_url).content
             wiki_html = BeautifulSoup(html, "html.parser")
 
             # Парсинг информации
@@ -262,7 +249,7 @@ def parse_details(skip_parsed_interval, where=""):
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
             errors += 1
 
-        time.sleep(NEXT_PAGE_DELAY)
+        time.sleep(Config.NEXT_PAGE_DELAY)
     print("\n")
     print("ПАРСИНГ ДЕТАЛЕЙ ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
     print("Добавлены детали о " + str(item_counter) + " элементов.")
@@ -390,13 +377,13 @@ def parse_wikipedias(wiki_html, details: ListItemDetails):
     a_s = wiki_html.select("#p-lang > div > ul > li > a")
     for a in a_s:
         if a.text != "":
-            match = re.search(WIKIPEDIAS_URL_MASK, a["href"])
+            match = re.search(Config.WIKIPEDIAS_URL_MASK, a["href"])
             hreflang = match[1]
             href = match[2]
-            if IS_DEBUG:
-                print("Найдена ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, href))
             details.wikipedias_by_languages[hreflang] = href
-            wikipedia_page_url = WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
+            wikipedia_page_url = Config.WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
+            if Config.IS_DEBUG:
+                print("Найдена ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, wikipedia_page_url))
 
             html = MyRequests.get_session().get(wikipedia_page_url).content  # Парсим саму страницу Википедии
             wiki_html = BeautifulSoup(html, "html.parser")
@@ -408,8 +395,8 @@ def parse_wikipedias(wiki_html, details: ListItemDetails):
 
 
 def parse_one_wikipedia(hreflang, wiki_html, details: ListItemDetails):
-    title = wiki_html.select_one("div#content > h1").text
-    if IS_DEBUG:
+    title = wiki_html.select_one("#content > h1#firstHeading").text
+    if Config.IS_DEBUG:
         print("Парсим страницу Википедии: Язык: {} Заголовок: {}".format(hreflang, title))
     details.titles_by_languages[hreflang] = title
     return details

@@ -21,8 +21,7 @@ from django.urls import path
 from species_tree_backend.views import get_childes_by_id, get_tree_by_id, get_tree_default, search_by_words, check, \
         admin_get_count_1, admin_get_count_2, admin_get_count_3
 
-with open(os.path.join("backend", "admin_ulr_prefix.txt"), "r") as fp:
-    PARSER_ADMIN_URL_PREFIX = str(fp.read())
+from config import Config
 
 urlpatterns = [
     # path('admin/', admin.site.urls),  # Стандартная админ-панель Django - просто не нужна
@@ -32,7 +31,7 @@ urlpatterns = [
     path('api/search_by_words/<str:words>/<int:offset>', search_by_words),
     path('check', check),
     path('', check),
-    path(PARSER_ADMIN_URL_PREFIX + '/count_1', admin_get_count_1),
-    path(PARSER_ADMIN_URL_PREFIX + '/count_2', admin_get_count_2),
-    path(PARSER_ADMIN_URL_PREFIX + '/count_3', admin_get_count_3),
+    path(Config.BACKEND_ADMIN_URL_PREFIX + '/count_1', admin_get_count_1),
+    path(Config.BACKEND_ADMIN_URL_PREFIX + '/count_2', admin_get_count_2),
+    path(Config.BACKEND_ADMIN_URL_PREFIX + '/count_3', admin_get_count_3),
 ]
