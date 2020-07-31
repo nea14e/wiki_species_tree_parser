@@ -24,6 +24,3 @@ FROM (
        LIMIT 10 OFFSET _offset
      ) t;
 $$;
-
-ALTER FUNCTION search_by_words(text, text) OWNER TO postgres;
-

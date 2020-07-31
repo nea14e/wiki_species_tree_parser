@@ -52,6 +52,3 @@ BEGIN
   RETURN 'Updating of leaves completed. Found ' || _leaves_by_themselves::text || ' leaves by themselves.';
 END;
 $$;
-
-ALTER FUNCTION service_update_leaves_count() OWNER TO postgres;
-
