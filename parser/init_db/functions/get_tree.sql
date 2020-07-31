@@ -1,1 +1,0 @@
-DROP FUNCTION IF EXISTS public.get_tree(_id bigint, _language_key text);
