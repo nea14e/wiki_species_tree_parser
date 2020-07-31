@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Wiki Species Tree</string>
     <string name="header_txt_default">Hello World 123!</string>
+    <string name="header_txt_quering">Wait…</string>
     <string name="header_txt_success">Success!</string>
+    <string name="header_txt_error">Error!</string>
+    <string name="header_txt_no_permission">No permissions for Internet!</string>
     <string name="go_btn">Go!</string>
 </resources>
