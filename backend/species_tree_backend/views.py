@@ -14,8 +14,8 @@ def get_childes_by_id(request, _id: int):  # выдаёт дочернюю ча�
     cur.execute("""
         SELECT public.get_childes_by_id(_id := %s, _language_key := %s);
     """, (_id, language_key,))
-    db_response = str(cur.fetchone()[0])
-    return JsonResponse(db_response, safe=False)
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response)
 
 
 @csrf_exempt
@@ -27,8 +27,8 @@ def get_tree_by_id(request, _id: int):  # выдаёт дерево, раскр�
     cur.execute("""
         SELECT public.get_tree_by_id(_id := %s, _language_key := %s);
     """, (_id, language_key,))
-    db_response = str(cur.fetchone()[0])
-    return JsonResponse(db_response, safe=False)
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response)
 
 
 @csrf_exempt
@@ -40,8 +40,8 @@ def get_tree_default(request):  # выдаёт дерево с видом по �
     cur.execute("""
         SELECT public.get_tree_default(_language_key := %s);
     """, (language_key,))
-    db_response = str(cur.fetchone()[0])
-    return JsonResponse(db_response, safe=False)
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response)
 
 
 @csrf_exempt
@@ -57,8 +57,8 @@ def search_by_words(request, words: str, offset: int):
     cur.execute("""
         SELECT public.search_by_words(_query := %s, _offset := %s, _language_key := %s);
     """, (words, offset, language_key,))
-    db_response = str(cur.fetchone()[0])
-    return JsonResponse(db_response, safe=False)
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response)
 
 
 @csrf_exempt
