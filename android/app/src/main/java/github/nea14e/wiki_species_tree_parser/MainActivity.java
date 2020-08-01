@@ -1,25 +1,18 @@
 package github.nea14e.wiki_species_tree_parser;
 
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
+
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import github.nea14e.wiki_species_tree_parser.models.Check;
-import github.nea14e.wiki_species_tree_parser.models.Tree;
-import github.nea14e.wiki_species_tree_parser.network.RetrofitHelper;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private Fragment fragment;
 
     private ViewGroup fragmentContainer;
-    //private ProgressBar progressBar;
+    private ProgressBar progressBar;
 
     private static final String BUNDLE_STATE = "state";
 
@@ -40,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         fragmentContainer = findViewById(R.id.fragment_container);
-        //progressBar = findViewById(R.id.wait_progress_bar);
+        progressBar = findViewById(R.id.wait_progress_bar);
 
 
         if (savedInstanceState != null) {
@@ -62,5 +55,33 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.fragment_container, fragment);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onStartLongOperation(StartLongOperationEvent event) {
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onStopLongOperation(StopLongOperationEvent event) {
+        progressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    public static class StartLongOperationEvent {
+    }
+
+    public static class StopLongOperationEvent {
     }
 }
