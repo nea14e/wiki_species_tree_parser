@@ -15,6 +15,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,8 +27,10 @@ public class MainActivity extends AppCompatActivity {
     private States state;
     private Fragment fragment;
 
-    private ViewGroup fragmentContainer;
-    private ProgressBar progressBar;
+    @BindView(R.id.fragment_container)
+    ViewGroup fragmentContainer;
+    @BindView(R.id.wait_progress_bar)
+    ProgressBar progressBar;
 
     private static final String BUNDLE_STATE = "state";
 
@@ -34,10 +38,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        fragmentContainer = findViewById(R.id.fragment_container);
-        progressBar = findViewById(R.id.wait_progress_bar);
-
+        ButterKnife.bind(this);
 
         if (savedInstanceState != null) {
             state = States.valueOf(savedInstanceState.getString(BUNDLE_STATE));
