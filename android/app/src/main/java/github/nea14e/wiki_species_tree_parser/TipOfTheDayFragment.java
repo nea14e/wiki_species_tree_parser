@@ -28,8 +28,6 @@ import retrofit2.Response;
 
 public class TipOfTheDayFragment extends BaseFragment {
 
-    @BindView(R.id.tip_species_layout)
-    ViewGroup speciesLayout;
     @BindView(R.id.image_view)
     ImageView imageView;
     @BindView(R.id.read_more)
@@ -43,38 +41,61 @@ public class TipOfTheDayFragment extends BaseFragment {
 
     private Unbinder unbinder;
 
+    private TipOfTheDay tipOfTheDay;
+    private static final String BUNDLE_TIP_OF_THE_DAY = "BUNDLE_TIP_OF_THE_DAY";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.tip_of_the_day, container, false);
         unbinder = ButterKnife.bind(this, view);
-        getTipOfTheDay();
+
+        if (savedInstanceState != null) {
+            tipOfTheDay = (TipOfTheDay) savedInstanceState.getSerializable(BUNDLE_TIP_OF_THE_DAY);
+            updateView();
+        } else {
+            getNextTip();
+        }
+
         return view;
     }
 
     @OnClick(R.id.next_tip_btn)
-    public void getTipOfTheDay() {
+    public void getNextTip() {
         retrofitHelper.api.getTipOfTheDay().enqueue(new SmartCallback<TipOfTheDay>(true) {
             @Override
             protected void onData(TipOfTheDay data) {
-                tipMessageTxt.setText(data.tipText);
-                if (data.imageUrl != null) {
-                    speciesLayout.setVisibility(View.VISIBLE);
-                    Glide.with(TipOfTheDayFragment.this)
-                        .load(data.imageUrl)
-                        .centerCrop()
-                        .placeholder(R.color.border)
-                        .into(imageView);
-                } else {
-                    speciesLayout.setVisibility(View.GONE);
-                }
+                tipOfTheDay = data;
+                updateView();
             }
         });
+    }
+
+    private void updateView() {
+        tipMessageTxt.setText(tipOfTheDay.tipText);
+        if (tipOfTheDay.imageUrl != null) {
+            Glide.with(this)
+                    .load(tipOfTheDay.imageUrl)
+                    .centerCrop()
+                    .placeholder(R.color.border)
+                    .into(imageView);
+            readMoreBtn.setEnabled(true);
+        } else {
+            Glide.with(this)
+                    .clear(imageView);
+            readMoreBtn.setEnabled(false);
+        }
     }
 
     @OnClick(R.id.ok_btn)
     public void onOnClick() {
         // TODO okButton.setOnClickListener();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putSerializable(BUNDLE_TIP_OF_THE_DAY, tipOfTheDay);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
