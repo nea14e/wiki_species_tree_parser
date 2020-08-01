@@ -58,7 +58,20 @@ def search_by_words(request, words: str, offset: int):
         SELECT public.search_by_words(_query := %s, _offset := %s, _language_key := %s);
     """, (words, offset, language_key,))
     db_response = cur.fetchone()[0]
-    return JsonResponse(db_response)
+    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
+
+
+@csrf_exempt
+def get_tip_of_the_day(request):
+    accept_language = request.headers['Accept-Language']
+    language_key = get_language_key(accept_language)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_tip_of_the_day(_language_key := %s);
+    """, (language_key,))
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
 
 
 @csrf_exempt

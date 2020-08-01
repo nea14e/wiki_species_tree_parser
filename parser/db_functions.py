@@ -42,8 +42,8 @@ class DbFunctions:
         # Таблица со списком
         print("\nТаблица со списком:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list');"
-        is_list_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
-        if not is_list_table_exists:
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list.sql"))
         else:
             print("Таблица public.list уже существует, пропускаем этап создания.")
@@ -51,8 +51,8 @@ class DbFunctions:
         # Таблица с рангами
         print("\nТаблица с рангами:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'ranks');"
-        is_ranks_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
-        if not is_ranks_table_exists:
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "ranks.sql"))
         else:
             print("Таблица public.ranks уже существует, пропускаем этап создания.")
@@ -60,11 +60,20 @@ class DbFunctions:
         # Таблица с языками
         print("\nТаблица с языками:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'known_languages');"
-        is_ranks_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
-        if not is_ranks_table_exists:
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages.sql"))
         else:
             print("Таблица public.known_languages уже существует, пропускаем этап создания.")
+
+        # Таблица с советами дня
+        print("\nТаблица с советами дня:")
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'tips_of_the_day');"
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day.sql"))
+        else:
+            print("Таблица public.tips_of_the_day уже существует, пропускаем этап создания.")
 
         # Заполняем данными
         print("\n\n===================================================")
@@ -76,6 +85,8 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
         print("\nТаблица public.known_languages (для прода/теста)...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "known_languages_ANY.sql"))
+        print("\nТаблица public.tips_of_the_day (для прода/теста)...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "tips_of_the_day_ANY.sql"))
 
         # Хранимки для выдачи данных
         # (триггерные функции надо писать в скрипте создания их таблицы)
@@ -89,6 +100,8 @@ class DbFunctions:
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_childes_by_id.sql"))
         print("\nХранимка по поиску: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
+        print("\nХранимка по выдаче совета дня...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tip_of_the_day.sql"))
         print("\nХранимка по подсчёту листов в дереве: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "service_update_leaves_count.sql"))
 
