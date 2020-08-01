@@ -71,7 +71,8 @@ def get_tip_of_the_day(request):
         SELECT public.get_tip_of_the_day(_language_key := %s);
     """, (language_key,))
     db_response = cur.fetchone()[0]
-    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
+    tip_object = db_response[0]
+    return JsonResponse(tip_object, safe=False)  # unsafe указывается только для функций БД на языке SQL
 
 
 @csrf_exempt

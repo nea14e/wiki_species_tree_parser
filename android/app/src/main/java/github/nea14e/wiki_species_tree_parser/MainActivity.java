@@ -1,64 +1,118 @@
 package github.nea14e.wiki_species_tree_parser;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
-import github.nea14e.wiki_species_tree_parser.models.Check;
-import github.nea14e.wiki_species_tree_parser.network.RetrofitHelper;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView header_txt;
-    private TextView message_txt;
-    private Button go_btn;
+    private enum State {
+        TipOfTheDay, Tree, Search, Info
+    }
+    private State state;
+    private Fragment fragment;
 
-    private RetrofitHelper retrofitHelper;
+    @BindView(R.id.fragment_container)
+    ViewGroup fragmentContainer;
+    @BindView(R.id.wait_progress_bar)
+    ProgressBar progressBar;
+
+    private static final String BUNDLE_STATE = "BUNDLE_STATE";
+    private static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT_TAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
-        header_txt = findViewById(R.id.header_txt);
-        message_txt = findViewById(R.id.message_txt);
-        go_btn = findViewById(R.id.go_btn);
-
-        retrofitHelper = new RetrofitHelper();
-
-        if (
-                ContextCompat.checkSelfPermission(getApplicationContext(), "android.permission.INTERNET") !=
-                        PackageManager.PERMISSION_GRANTED
-        ) {
-            header_txt.setText(R.string.header_txt_no_permission);
+        if (savedInstanceState != null) {
+            this.state = State.valueOf(savedInstanceState.getString(BUNDLE_STATE));
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            this.fragment = fragmentManager.findFragmentByTag(MAIN_FRAGMENT_TAG);
+        } else {
+            this.state = State.TipOfTheDay;
+            switchFragment(this.state);
         }
+    }
 
-        go_btn.setOnClickListener(view -> {
-            header_txt.setText(R.string.header_txt_quering);
+    private void switchFragment(State state) {
+        this.state = state;
 
-            Call<Check> call = retrofitHelper.api.check();
-            call.enqueue(new Callback<Check>() {
-                @Override
-                public void onResponse(Call<Check> call, Response<Check> response) {
-                    header_txt.setText(R.string.header_txt_success);
-                    Check answer = response.body();
-                    message_txt.setText(answer.toString());
-                }
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (this.fragment != null) {
+            fragmentTransaction.remove(this.fragment);
+        }
+        switch (state) {
+            case TipOfTheDay:
+                fragment = new TipOfTheDayFragment();
+                break;
+            default:
+                fragment = new Fragment();
+                break;
+        }
+        fragmentTransaction.add(R.id.fragment_container, fragment, MAIN_FRAGMENT_TAG);
+        fragmentTransaction.commit();
+    }
 
-                @Override
-                public void onFailure(Call<Check> call, Throwable t) {
-                    header_txt.setText(R.string.header_txt_error);
-                    message_txt.setText(t.getMessage());
-                }
-            });
-        });
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onStartLongOperation(StartLongOperationEvent event) {
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onStopLongOperation(StopLongOperationEvent event) {
+        progressBar.setVisibility(View.GONE);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkErrorEvent(SmartCallback.OnNetworkErrorEvent event) {
+        progressBar.setVisibility(View.GONE);
+        new AlertDialog.Builder(this)
+                .setMessage(event.message)
+                .setPositiveButton(R.string.ok_btn, (dialogInterface, i) -> dialogInterface.dismiss())
+                .create()
+                .show();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(BUNDLE_STATE, state.name());
+        super.onSaveInstanceState(outState);
+    }
+
+    public static class StartLongOperationEvent {
+    }
+
+    public static class StopLongOperationEvent {
     }
 }
