@@ -6,4 +6,6 @@
     <string name="header_txt_error">Error!</string>
     <string name="header_txt_no_permission">No permissions for Internet!</string>
     <string name="go_btn">Go!</string>
+    <string name="next_tip_btn">Next tip</string>
+    <string name="ok_btn">Ok</string>
 </resources>

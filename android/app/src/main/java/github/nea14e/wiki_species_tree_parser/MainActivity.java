@@ -2,11 +2,16 @@ package github.nea14e.wiki_species_tree_parser;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import github.nea14e.wiki_species_tree_parser.models.Check;
@@ -18,48 +23,44 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView header_txt;
-    private TextView message_txt;
-    private Button go_btn;
+    private enum States {
+        TipOfTheDay, Tree, Search, Info
+    }
+    private States state;
+    private Fragment fragment;
 
-    private RetrofitHelper retrofitHelper;
+    private ViewGroup fragmentContainer;
+    //private ProgressBar progressBar;
+
+    private static final String BUNDLE_STATE = "state";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        header_txt = findViewById(R.id.header_txt);
-        message_txt = findViewById(R.id.message_txt);
-        go_btn = findViewById(R.id.go_btn);
+        fragmentContainer = findViewById(R.id.fragment_container);
+        //progressBar = findViewById(R.id.wait_progress_bar);
 
-        retrofitHelper = new RetrofitHelper();
 
-        if (
-                ContextCompat.checkSelfPermission(getApplicationContext(), "android.permission.INTERNET") !=
-                        PackageManager.PERMISSION_GRANTED
-        ) {
-            header_txt.setText(R.string.header_txt_no_permission);
+        if (savedInstanceState != null) {
+            state = States.valueOf(savedInstanceState.getString(BUNDLE_STATE));
+        } else {
+            state = States.TipOfTheDay;
         }
 
-        go_btn.setOnClickListener(view -> {
-            header_txt.setText(R.string.header_txt_quering);
+        switch (state) {
+            case TipOfTheDay:
+                fragment = new TipOfTheDayFragment();
+                break;
+            default:
+                fragment = new Fragment();
+                break;
+        }
 
-            Call<Tree> call = retrofitHelper.api.getTreeDefault();
-            call.enqueue(new Callback<Tree>() {
-                @Override
-                public void onResponse(Call<Tree> call, Response<Tree> response) {
-                    header_txt.setText(R.string.header_txt_success);
-                    Tree answer = response.body();
-                    message_txt.setText(answer.toString());
-                }
-
-                @Override
-                public void onFailure(Call<Tree> call, Throwable t) {
-                    header_txt.setText(R.string.header_txt_error);
-                    message_txt.setText(t.getMessage());
-                }
-            });
-        });
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.fragment_container, fragment);
+        fragmentTransaction.commit();
     }
 }

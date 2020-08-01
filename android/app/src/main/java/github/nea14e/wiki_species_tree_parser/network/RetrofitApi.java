@@ -5,6 +5,7 @@ import java.util.List;
 import github.nea14e.wiki_species_tree_parser.models.Check;
 import github.nea14e.wiki_species_tree_parser.models.Level;
 import github.nea14e.wiki_species_tree_parser.models.SearchItem;
+import github.nea14e.wiki_species_tree_parser.models.TipOfTheDay;
 import github.nea14e.wiki_species_tree_parser.models.Tree;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -24,7 +25,7 @@ public interface RetrofitApi {
     Call<List<SearchItem>> searchByWords(@Path("words") String words, @Path("offset") int offset);
 
     @GET("api/get_tip_of_the_day")
-    Call<Check> getTipOfTheDay();
+    Call<TipOfTheDay> getTipOfTheDay();
 
     @GET("check")
     Call<Check> check();
