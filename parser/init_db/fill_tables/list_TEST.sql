@@ -1,4 +1,6 @@
 -- noinspection SqlWithoutWhere
+DELETE FROM public.tips_of_the_day;  -- foreign key prevents deletion
+-- noinspection SqlWithoutWhere
 DELETE FROM public.list;
 
 INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url, parent_id, leaves_count)

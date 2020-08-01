@@ -74,6 +74,8 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day.sql"))
         else:
             print("Таблица public.tips_of_the_day уже существует, пропускаем этап создания.")
+        print("Миграция public.tips_of_the_day...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day_ADD_page_url.sql"))
 
         # Заполняем данными
         print("\n\n===================================================")
@@ -85,8 +87,12 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
         print("\nТаблица public.known_languages (для прода/теста)...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "known_languages_ANY.sql"))
-        print("\nТаблица public.tips_of_the_day (для прода/теста)...")
-        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "tips_of_the_day_ANY.sql"))
+        if is_test:
+            print("\nТаблица public.tips_of_the_day (для теста)...")
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "tips_of_the_day_TEST.sql"))
+        else:
+            print("\nТаблица public.tips_of_the_day (для прода)...")
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "tips_of_the_day_PROD.sql"))
 
         # Хранимки для выдачи данных
         # (триггерные функции надо писать в скрипте создания их таблицы)
