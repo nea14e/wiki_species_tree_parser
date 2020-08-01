@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -13,6 +14,8 @@ import androidx.fragment.app.FragmentTransaction;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,6 +74,16 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onStopLongOperation(StopLongOperationEvent event) {
         progressBar.setVisibility(View.GONE);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkErrorEvent(SmartCallback.OnNetworkErrorEvent event) {
+        progressBar.setVisibility(View.GONE);
+        new AlertDialog.Builder(this)
+                .setMessage(event.message)
+                .setPositiveButton(R.string.ok_btn, (dialogInterface, i) -> dialogInterface.dismiss())
+                .create()
+                .show();
     }
 
     @Override

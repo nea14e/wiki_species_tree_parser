@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import org.greenrobot.eventbus.EventBus;
 
 import github.nea14e.wiki_species_tree_parser.models.TipOfTheDay;
+import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,21 +42,10 @@ public class TipOfTheDayFragment extends BaseFragment {
     }
 
     private void getTipOfTheDay() {
-        EventBus.getDefault().post(new MainActivity.StartLongOperationEvent());
-        retrofitHelper.api.getTipOfTheDay().enqueue(new Callback<TipOfTheDay>() {
+        retrofitHelper.api.getTipOfTheDay().enqueue(new SmartCallback<TipOfTheDay>(true) {
             @Override
-            public void onResponse(@NonNull Call<TipOfTheDay> call, @NonNull Response<TipOfTheDay> response) {
-                TipOfTheDay data = response.body();
+            protected void onData(TipOfTheDay data) {
                 tipMessageTxt.setText(data.tipText);
-                EventBus.getDefault().post(new MainActivity.StopLongOperationEvent());
-            }
-
-            @Override
-            public void onFailure(Call<TipOfTheDay> call, Throwable t) {
-                TipOfTheDay data = new TipOfTheDay();
-                data.tipText = t.getLocalizedMessage();
-                tipMessageTxt.setText(data.tipText);
-                EventBus.getDefault().post(new MainActivity.StopLongOperationEvent());
             }
         });
     }
