@@ -101,16 +101,19 @@ TODO (Это жесть какая-то... я вроде поставил Node.j
 
 Например,
 
-`python3.6 wiki_parser.py 2 True "title >= 'Aa' AND title < 'E'"`
+`python3.6 wiki_parser.py 2 True "page_url >= 'Aa' AND page_url < 'E'"`
+
+Используйте только `page_url` для задания интервалов. Не используйте `title`, так как он может меняться во время парсинга
+и тогда интервалы парсинга окажутся перемешаны.
 
 Ожидается, что работа в одном потоке на этом этапе займёт несколько месяцев. Поэтому можно запускать несколько экземпляров программы,
 задавая им разные интервалы в том же формате, как пишется `WHERE` в SQL. Например,
 
-`python3.6 wiki_parser.py 2 True "title >= 'Aa' AND title < 'E'" "https://my-proxy-1:8080@login:password"`
+`python3.6 wiki_parser.py 2 True "page_url >= 'Aa' AND page_url < 'E'" "https://my-proxy-1:8080@login:password"`
 
-`python3.6 wiki_parser.py 2 True "title >= 'E' AND title < 'K'" "https://my-proxy-2:8080@login:password"`
+`python3.6 wiki_parser.py 2 True "page_url >= 'E' AND page_url < 'K'" "https://my-proxy-2:8080@login:password"`
 
-`python3.6 wiki_parser.py 2 True "title >= 'K' AND title < 'R'" "https://my-proxy-3:8080@login:password"`
+`python3.6 wiki_parser.py 2 True "page_url >= 'K' AND page_url < 'R'" "https://my-proxy-3:8080@login:password"`
 
 ...
  
@@ -172,7 +175,7 @@ TODO (Это жесть какая-то... я вроде поставил Node.j
 
 Например,
 
-`python3.6 wiki_parser.py parse_language ru True "title >= 'Aa' AND title < 'E'"`
+`python3.6 wiki_parser.py parse_language ru True "page_url >= 'Aa' AND page_url < 'E'"`
 
 На этом этапе также добавляются картинки из Википедий, если ранее не было найдено никакой картинки.
 

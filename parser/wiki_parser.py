@@ -198,7 +198,7 @@ def parse_details(skip_parsed_interval, where=""):
       """
     if skip_parsed_interval:
         query += """
-            AND title > (SELECT COALESCE(MAX(title), '')
+            AND page_url > (SELECT COALESCE(MAX(page_url), '')
                       FROM public.list
                       WHERE type IS NOT NULL
             """
@@ -212,7 +212,7 @@ def parse_details(skip_parsed_interval, where=""):
         AND {}
         """.format(where)
     query += """
-      ORDER BY title;
+      ORDER BY page_url;
     """
     print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_details:list_to_parse", query)
@@ -417,7 +417,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
       """.format(quote_string(lang_key), quote_string(lang_key))
     if skip_parsed_interval:
         query += """
-            AND title > (SELECT COALESCE(MAX(title), '')
+            AND page_url > (SELECT COALESCE(MAX(page_url), '')
                       FROM public.list
                       WHERE (titles_by_languages ? {})
             """.format(quote_string(lang_key), quote_string(lang_key))
@@ -431,7 +431,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
         AND {}
         """.format(where)
     query += """
-      ORDER BY title;
+      ORDER BY page_url;
     """
     print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_language:list_to_parse", query)
