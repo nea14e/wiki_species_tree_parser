@@ -36,4 +36,11 @@ public class Translation {
     @Expose
     public String tipOfTheDayWord;
 
+    @Override
+    public String toString() {
+        return "Translation{" +
+                "comment='" + comment + '\'' +
+                ", langKey='" + langKey + '\'' +
+                '}';
+    }
 }

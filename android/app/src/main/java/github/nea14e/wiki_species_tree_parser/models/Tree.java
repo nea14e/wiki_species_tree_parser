@@ -20,4 +20,12 @@ public class Tree {
     @Expose
     public String languageKey;
 
+    @Override
+    public String toString() {
+        return "Tree{" +
+                "id=" + id +
+                ", translation=" + translation +
+                ", languageKey='" + languageKey + '\'' +
+                '}';
+    }
 }

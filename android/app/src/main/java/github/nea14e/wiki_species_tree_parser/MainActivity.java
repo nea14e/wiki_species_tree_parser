@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import github.nea14e.wiki_species_tree_parser.models.Check;
+import github.nea14e.wiki_species_tree_parser.models.Tree;
 import github.nea14e.wiki_species_tree_parser.network.RetrofitHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,17 +45,17 @@ public class MainActivity extends AppCompatActivity {
         go_btn.setOnClickListener(view -> {
             header_txt.setText(R.string.header_txt_quering);
 
-            Call<Check> call = retrofitHelper.api.check();
-            call.enqueue(new Callback<Check>() {
+            Call<Tree> call = retrofitHelper.api.getTreeDefault();
+            call.enqueue(new Callback<Tree>() {
                 @Override
-                public void onResponse(Call<Check> call, Response<Check> response) {
+                public void onResponse(Call<Tree> call, Response<Tree> response) {
                     header_txt.setText(R.string.header_txt_success);
-                    Check answer = response.body();
+                    Tree answer = response.body();
                     message_txt.setText(answer.toString());
                 }
 
                 @Override
-                public void onFailure(Call<Check> call, Throwable t) {
+                public void onFailure(Call<Tree> call, Throwable t) {
                     header_txt.setText(R.string.header_txt_error);
                     message_txt.setText(t.getMessage());
                 }
