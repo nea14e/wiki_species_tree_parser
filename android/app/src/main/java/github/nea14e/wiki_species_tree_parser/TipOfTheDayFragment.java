@@ -5,10 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.bumptech.glide.Glide;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -24,6 +28,12 @@ import retrofit2.Response;
 
 public class TipOfTheDayFragment extends BaseFragment {
 
+    @BindView(R.id.tip_species_layout)
+    ViewGroup speciesLayout;
+    @BindView(R.id.image_view)
+    ImageView imageView;
+    @BindView(R.id.read_more)
+    Button readMoreBtn;
     @BindView(R.id.tip_message_txt)
     TextView tipMessageTxt;
     @BindView(R.id.next_tip_btn)
@@ -48,6 +58,16 @@ public class TipOfTheDayFragment extends BaseFragment {
             @Override
             protected void onData(TipOfTheDay data) {
                 tipMessageTxt.setText(data.tipText);
+                if (data.imageUrl != null) {
+                    speciesLayout.setVisibility(View.VISIBLE);
+                    Glide.with(TipOfTheDayFragment.this)
+                        .load(data.imageUrl)
+                        .centerCrop()
+                        .placeholder(R.color.border)
+                        .into(imageView);
+                } else {
+                    speciesLayout.setVisibility(View.GONE);
+                }
             }
         });
     }

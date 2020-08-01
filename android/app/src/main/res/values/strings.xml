@@ -8,4 +8,6 @@
     <string name="go_btn">Go!</string>
     <string name="next_tip_btn">Next tip</string>
     <string name="ok_btn">Ok</string>
+    <string name="read_more">Read more...</string>
+    <string name="image_of_species_from_this_tip">Image of species from this tip</string>
 </resources>

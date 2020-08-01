@@ -7,6 +7,31 @@
     android:layout_height="match_parent"
     android:background="@color/layout_background">
 
+    <LinearLayout
+        android:id="@+id/tip_species_layout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="175dp"
+            android:layout_height="175dp"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/image_of_species_from_this_tip"/>
+
+        <Button
+            android:id="@+id/read_more"
+            android:text="@string/read_more"
+            android:textStyle="bold"
+            android:background="@drawable/button_drawable"
+            android:layout_width="175dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            android:layout_gravity="center_vertical"/>
+
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tip_message_txt"
         android:layout_width="match_parent"

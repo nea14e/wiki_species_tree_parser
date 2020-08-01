@@ -11,5 +11,11 @@ public class TipOfTheDay {
     @SerializedName("tip_text")
     @Expose
     public String tipText;
+    @SerializedName("species_id")
+    @Expose
+    public String speciesId;
+    @SerializedName("image_url")
+    @Expose
+    public String imageUrl;
 
 }
