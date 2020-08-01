@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -21,10 +22,10 @@ import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
 public class MainActivity extends AppCompatActivity {
 
-    private enum States {
+    private enum State {
         TipOfTheDay, Tree, Search, Info
     }
-    private States state;
+    private State state;
     private Fragment fragment;
 
     @BindView(R.id.fragment_container)
@@ -32,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.wait_progress_bar)
     ProgressBar progressBar;
 
-    private static final String BUNDLE_STATE = "state";
+    private static final String BUNDLE_STATE = "BUNDLE_STATE";
+    private static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT_TAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +43,23 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         if (savedInstanceState != null) {
-            state = States.valueOf(savedInstanceState.getString(BUNDLE_STATE));
+            this.state = State.valueOf(savedInstanceState.getString(BUNDLE_STATE));
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            this.fragment = fragmentManager.findFragmentByTag(MAIN_FRAGMENT_TAG);
         } else {
-            state = States.TipOfTheDay;
+            this.state = State.TipOfTheDay;
+            switchFragment(this.state);
         }
+    }
 
+    private void switchFragment(State state) {
+        this.state = state;
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (this.fragment != null) {
+            fragmentTransaction.remove(this.fragment);
+        }
         switch (state) {
             case TipOfTheDay:
                 fragment = new TipOfTheDayFragment();
@@ -54,10 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new Fragment();
                 break;
         }
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.fragment_container, fragment);
+        fragmentTransaction.add(R.id.fragment_container, fragment, MAIN_FRAGMENT_TAG);
         fragmentTransaction.commit();
     }
 
@@ -91,6 +102,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(BUNDLE_STATE, state.name());
+        super.onSaveInstanceState(outState);
     }
 
     public static class StartLongOperationEvent {
