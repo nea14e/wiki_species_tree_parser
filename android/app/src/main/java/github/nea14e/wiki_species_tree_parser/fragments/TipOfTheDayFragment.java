@@ -25,7 +25,7 @@ public class TipOfTheDayFragment extends BaseFragment {
 
     @BindView(R.id.image_view)
     ImageView imageView;
-    @BindView(R.id.read_more)
+    @BindView(R.id.view_in_tree)
     Button readMoreBtn;
     @BindView(R.id.tip_message_txt)
     TextView tipMessageTxt;
@@ -82,9 +82,14 @@ public class TipOfTheDayFragment extends BaseFragment {
         }
     }
 
+    @OnClick(R.id.view_in_tree)
+    public void viewInTree() {
+        // TODO view tip in tree
+    }
+
     @OnClick(R.id.ok_btn)
     public void onOnClick() {
-        // TODO okButton.setOnClickListener();
+        // TODO show default tree
     }
 
     @Override

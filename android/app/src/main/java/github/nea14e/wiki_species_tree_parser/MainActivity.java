@@ -24,7 +24,7 @@ import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 public class MainActivity extends AppCompatActivity {
 
     private enum State {
-        TipOfTheDay, Tree, Search, Info, NoNetwork
+        TipOfTheDay, Tree, Search, Authors, NoNetwork
     }
     private State state;
     private Fragment fragment;

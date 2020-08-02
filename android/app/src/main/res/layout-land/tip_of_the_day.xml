@@ -21,14 +21,16 @@
             android:contentDescription="@string/image_of_species_from_this_tip" />
 
         <Button
-            android:id="@+id/read_more"
+            android:id="@+id/view_in_tree"
             android:layout_width="175dp"
             android:layout_height="48dp"
             android:layout_gravity="center_vertical"
             android:layout_margin="16dp"
             android:background="@drawable/button_selector"
-            android:text="@string/read_more"
-            android:textStyle="bold" />
+            android:text="@string/view_in_tree"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_remove_red_eye_black_24dp"
+            android:paddingStart="12dp" />
 
     </LinearLayout>
 
@@ -56,6 +58,8 @@
                 android:layout_width="175dp"
                 android:layout_height="48dp"
                 android:layout_margin="16dp"
+                android:drawableStart="@drawable/ic_chevron_right_black_24dp"
+                android:paddingStart="@dimen/button_drawable_padding"
                 android:background="@drawable/button_selector"
                 android:text="@string/next_tip_btn"
                 android:textStyle="bold" />
@@ -70,6 +74,8 @@
                 android:layout_width="175dp"
                 android:layout_height="48dp"
                 android:layout_margin="16dp"
+                android:drawableStart="@drawable/ic_check_black_24dp"
+                android:paddingStart="@dimen/button_drawable_padding"
                 android:background="@drawable/button_selector"
                 android:text="@string/ok_btn"
                 android:textStyle="bold" />

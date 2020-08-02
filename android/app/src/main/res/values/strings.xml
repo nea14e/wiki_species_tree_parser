@@ -7,11 +7,11 @@
     <string name="header_txt_no_permission">No permissions for Internet!</string>
     <string name="go_btn">Go!</string>
     <string name="next_tip_btn">Next tip</string>
-    <string name="ok_btn">Ok</string>
-    <string name="read_more">Read more...</string>
+    <string name="ok_btn">OK</string>
+    <string name="view_in_tree">View in tree</string>
     <string name="image_of_species_from_this_tip">Image of species from this tip</string>
     <string name="no_network_header">Connection failed.</string>
-    <string name="no_network_description">Please check your Internet connection. If problem remains, please try again after some time.</string>
+    <string name="no_network_description">Please check your Internet connection. If problem remains, the server may be on maintenance. Please try again after some time.</string>
     <string name="retry_btn">Retry now</string>
     <string name="no_network_image">No network connection image.</string>
 </resources>
