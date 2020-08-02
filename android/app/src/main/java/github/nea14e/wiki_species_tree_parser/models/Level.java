@@ -1,5 +1,7 @@
 package github.nea14e.wiki_species_tree_parser.models;
 
+import androidx.annotation.Nullable;
+
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

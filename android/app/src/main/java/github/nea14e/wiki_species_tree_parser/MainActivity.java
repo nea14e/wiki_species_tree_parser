@@ -19,6 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import github.nea14e.wiki_species_tree_parser.fragments.NoNetworkFragment;
 import github.nea14e.wiki_species_tree_parser.fragments.TipOfTheDayFragment;
+import github.nea14e.wiki_species_tree_parser.fragments.TreeFragment;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
 public class MainActivity extends AppCompatActivity {
@@ -65,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
             case TipOfTheDay:
                 fragment = new TipOfTheDayFragment();
                 break;
+            case Tree:
+                fragment = new TreeFragment();
+                break;
             case NoNetwork:
                 fragment = new NoNetworkFragment();
                 break;
@@ -80,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onShowTreeEvent(TreeFragment.ShowTreeEvent event) {
+        switchFragment(State.Tree);
+        // TODO send id to fragment
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -100,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNetworkRestoredEvent(NoNetworkFragment.OnNetworkRestoredEvent event) {
-        switchFragment(State.TipOfTheDay);  // TODO switch to State.Tree
+        switchFragment(State.Tree);  // TODO switch to previous Tree's state
     }
 
     @Override

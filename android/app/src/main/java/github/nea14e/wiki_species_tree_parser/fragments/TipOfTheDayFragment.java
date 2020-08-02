@@ -13,6 +13,8 @@ import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
 
+import org.greenrobot.eventbus.EventBus;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -84,12 +86,12 @@ public class TipOfTheDayFragment extends BaseFragment {
 
     @OnClick(R.id.view_in_tree)
     public void viewInTree() {
-        // TODO view tip in tree
+        EventBus.getDefault().post(new TreeFragment.ShowTreeEvent(tipOfTheDay.speciesId));
     }
 
     @OnClick(R.id.ok_btn)
     public void onOnClick() {
-        // TODO show default tree
+        EventBus.getDefault().post(new TreeFragment.ShowTreeEvent(null));
     }
 
     @Override
