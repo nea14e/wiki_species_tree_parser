@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -18,12 +17,14 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import github.nea14e.wiki_species_tree_parser.fragments.NoNetworkFragment;
+import github.nea14e.wiki_species_tree_parser.fragments.TipOfTheDayFragment;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
 public class MainActivity extends AppCompatActivity {
 
     private enum State {
-        TipOfTheDay, Tree, Search, Info
+        TipOfTheDay, Tree, Search, Info, NoNetwork
     }
     private State state;
     private Fragment fragment;
@@ -64,7 +65,10 @@ public class MainActivity extends AppCompatActivity {
             case TipOfTheDay:
                 fragment = new TipOfTheDayFragment();
                 break;
-            default:
+            case NoNetwork:
+                fragment = new NoNetworkFragment();
+                break;
+            default:  // TODO
                 fragment = new Fragment();
                 break;
         }
@@ -91,11 +95,12 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNetworkErrorEvent(SmartCallback.OnNetworkErrorEvent event) {
         progressBar.setVisibility(View.GONE);
-        new AlertDialog.Builder(this)
-                .setMessage(event.message)
-                .setPositiveButton(R.string.ok_btn, (dialogInterface, i) -> dialogInterface.dismiss())
-                .create()
-                .show();
+        switchFragment(State.NoNetwork);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkRestoredEvent(NoNetworkFragment.OnNetworkRestoredEvent event) {
+        switchFragment(State.TipOfTheDay);  // TODO switch to State.Tree
     }
 
     @Override

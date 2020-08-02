@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser;
+package github.nea14e.wiki_species_tree_parser.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

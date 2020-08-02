@@ -19,6 +19,9 @@ public class Check {
     @SerializedName("info")
     @Expose
     public String info;
+    @SerializedName("all_is_ok")
+    @Expose
+    public boolean allIsOk;
 
     @NonNull
     @Override
@@ -26,7 +29,8 @@ public class Check {
         return "title: " + title +
                 "\ndjango_state: " + djangoState +
                 "\ndb_state: " + dbState +
-                "\ninfo: " + info;
+                "\ninfo: " + info +
+                "\nall_is_ok: " + allIsOk;
     }
 
 }

@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser;
+package github.nea14e.wiki_species_tree_parser.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,17 +13,13 @@ import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
 
-import org.greenrobot.eventbus.EventBus;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.models.TipOfTheDay;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class TipOfTheDayFragment extends BaseFragment {
 

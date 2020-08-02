@@ -133,11 +133,14 @@ def check(request):
             SELECT 'Db is Online'::text;
         """)
         db_message = str(cur.fetchone()[0])
+        all_is_ok = True
     except BaseException as ex:
         db_message = str(ex)
+        all_is_ok = False
     return JsonResponse({
         "title": "This is wiki_species_tree_parser API-backend",
         "django_state": "Ok",
         "db_state": db_message,
-        "info": "Please read README for more abilities."
+        "info": "Please read README for more abilities.",
+        "all_is_ok": all_is_ok
     })
