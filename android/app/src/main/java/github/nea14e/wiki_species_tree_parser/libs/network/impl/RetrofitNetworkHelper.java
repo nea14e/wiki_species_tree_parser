@@ -4,7 +4,7 @@ import java.util.List;
 
 import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.RetrofitApi;
 import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.RetrofitLanguageInterceptor;
-import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.SmartCallback;
+import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
 import github.nea14e.wiki_species_tree_parser.models.Check;
 import github.nea14e.wiki_species_tree_parser.models.Level;
 import github.nea14e.wiki_species_tree_parser.models.SearchItem;

@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.libs.network.retrofit;
+package github.nea14e.wiki_species_tree_parser.libs.network;
 
 import androidx.annotation.NonNull;
 
