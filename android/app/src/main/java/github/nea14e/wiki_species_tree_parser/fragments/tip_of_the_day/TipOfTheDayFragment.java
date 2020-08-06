@@ -20,9 +20,10 @@ import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.fragments.tree.TreeFragment;
-import github.nea14e.wiki_species_tree_parser.lib_handlers.ImageLoadHelper;
+import github.nea14e.wiki_species_tree_parser.libs.image_loading.ImageLoaderHelper;
+import github.nea14e.wiki_species_tree_parser.libs.image_loading.impl.GlideImageLoaderHelper;
 import github.nea14e.wiki_species_tree_parser.models.TipOfTheDay;
-import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
+import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.SmartCallback;
 
 public class TipOfTheDayFragment extends BaseFragment {
 
@@ -38,7 +39,7 @@ public class TipOfTheDayFragment extends BaseFragment {
     Button okButton;
 
     private Unbinder unbinder;
-    private ImageLoadHelper imageLoadHelper = new ImageLoadHelper();
+    private ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
 
     private TipOfTheDay tipOfTheDay;
     private static final String BUNDLE_TIP_OF_THE_DAY = "BUNDLE_TIP_OF_THE_DAY";
@@ -61,7 +62,7 @@ public class TipOfTheDayFragment extends BaseFragment {
 
     @OnClick(R.id.next_tip_btn)
     public void getNextTip() {
-        retrofitHelper.api.getTipOfTheDay().enqueue(new SmartCallback<TipOfTheDay>(true) {
+        networkHelper.getTipOfTheDay(new SmartCallback<TipOfTheDay>(true) {
             @Override
             protected void onData(TipOfTheDay data) {
                 tipOfTheDay = data;

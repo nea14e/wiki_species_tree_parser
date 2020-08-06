@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.lib_handlers;
+package github.nea14e.wiki_species_tree_parser.libs.image_loading.impl;
 
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
@@ -8,7 +8,7 @@ import com.bumptech.glide.RequestBuilder;
 
 import github.nea14e.wiki_species_tree_parser.R;
 
-public class ImageLoadHelper {
+public class GlideImageLoaderHelper extends BaseImageLoaderHelper {
     public void loadImage(String url, boolean isCenterCrop, ImageView imageView) {
 
         // TODO troubles with Wikimedia URL's

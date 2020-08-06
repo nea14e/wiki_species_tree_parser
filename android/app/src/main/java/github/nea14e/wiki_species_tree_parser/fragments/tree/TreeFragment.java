@@ -16,7 +16,7 @@ import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.models.Tree;
-import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
+import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.SmartCallback;
 
 public class TreeFragment extends BaseFragment {
 
@@ -53,7 +53,7 @@ public class TreeFragment extends BaseFragment {
     }
 
     private void loadTreeDefault() {
-        this.retrofitHelper.api.getTreeDefault().enqueue(new SmartCallback<Tree>(true) {
+        this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
             @Override
             protected void onData(Tree data) {
                 tree = data;

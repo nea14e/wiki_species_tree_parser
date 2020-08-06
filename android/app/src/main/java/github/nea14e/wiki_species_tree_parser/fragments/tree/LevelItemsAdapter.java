@@ -16,7 +16,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import github.nea14e.wiki_species_tree_parser.R;
-import github.nea14e.wiki_species_tree_parser.lib_handlers.ImageLoadHelper;
+import github.nea14e.wiki_species_tree_parser.libs.image_loading.ImageLoaderHelper;
+import github.nea14e.wiki_species_tree_parser.libs.image_loading.impl.GlideImageLoaderHelper;
 import github.nea14e.wiki_species_tree_parser.models.Item;
 import github.nea14e.wiki_species_tree_parser.models.Level;
 
@@ -68,7 +69,7 @@ public class LevelItemsAdapter extends RecyclerView.Adapter<LevelItemsAdapter.Li
 
         private boolean hasImage;
 
-        ImageLoadHelper imageLoadHelper = new ImageLoadHelper();
+        ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
 
         public ListItemViewHolder(@NonNull View itemView) {
             super(itemView);

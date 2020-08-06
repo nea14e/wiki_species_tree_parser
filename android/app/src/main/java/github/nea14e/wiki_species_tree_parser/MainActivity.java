@@ -20,7 +20,7 @@ import butterknife.ButterKnife;
 import github.nea14e.wiki_species_tree_parser.fragments.no_network.NoNetworkFragment;
 import github.nea14e.wiki_species_tree_parser.fragments.tip_of_the_day.TipOfTheDayFragment;
 import github.nea14e.wiki_species_tree_parser.fragments.tree.TreeFragment;
-import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
+import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.SmartCallback;
 
 public class MainActivity extends AppCompatActivity {
 

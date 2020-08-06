@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.network;
+package github.nea14e.wiki_species_tree_parser.libs.network.retrofit;
 
 import android.os.Build;
 import android.os.LocaleList;

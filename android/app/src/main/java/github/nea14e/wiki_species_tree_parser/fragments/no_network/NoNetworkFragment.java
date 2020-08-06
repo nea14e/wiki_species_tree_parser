@@ -18,7 +18,7 @@ import github.nea14e.wiki_species_tree_parser.MainActivity;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.models.Check;
-import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
+import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.SmartCallback;
 
 public class NoNetworkFragment extends BaseFragment {
 
@@ -39,7 +39,7 @@ public class NoNetworkFragment extends BaseFragment {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                retrofitHelper.api.check().enqueue(new SmartCallback<Check>(true) {
+                networkHelper.check(new SmartCallback<Check>(true) {
                     @Override
                     protected void onData(Check data) {
                         if (data.allIsOk) {
