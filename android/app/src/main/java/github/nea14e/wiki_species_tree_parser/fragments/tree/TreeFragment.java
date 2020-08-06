@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.fragments;
+package github.nea14e.wiki_species_tree_parser.fragments.tree;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +14,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.models.Tree;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 

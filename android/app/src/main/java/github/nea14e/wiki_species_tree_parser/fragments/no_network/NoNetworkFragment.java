@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.fragments;
+package github.nea14e.wiki_species_tree_parser.fragments.no_network;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +16,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.MainActivity;
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.models.Check;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 

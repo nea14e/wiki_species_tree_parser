@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.fragments;
+package github.nea14e.wiki_species_tree_parser.fragments.tip_of_the_day;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,6 +18,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
+import github.nea14e.wiki_species_tree_parser.fragments.tree.TreeFragment;
 import github.nea14e.wiki_species_tree_parser.lib_handlers.ImageLoadHelper;
 import github.nea14e.wiki_species_tree_parser.models.TipOfTheDay;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;

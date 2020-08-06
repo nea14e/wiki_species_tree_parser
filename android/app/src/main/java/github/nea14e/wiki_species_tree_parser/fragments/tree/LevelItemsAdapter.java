@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.fragments;
+package github.nea14e.wiki_species_tree_parser.fragments.tree;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
