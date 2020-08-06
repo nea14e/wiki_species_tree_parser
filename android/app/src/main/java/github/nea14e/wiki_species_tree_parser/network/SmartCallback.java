@@ -1,16 +1,10 @@
 package github.nea14e.wiki_species_tree_parser.network;
 
-import android.content.Context;
-import android.content.DialogInterface;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 
 import org.greenrobot.eventbus.EventBus;
 
 import github.nea14e.wiki_species_tree_parser.MainActivity;
-import github.nea14e.wiki_species_tree_parser.R;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

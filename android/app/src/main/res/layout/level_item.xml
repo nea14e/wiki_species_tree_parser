@@ -4,8 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:id="@+id/level_item_layout"
-    android:layout_width="@dimen/level_expanded_recycler_view_item_width"
-    android:layout_height="@dimen/level_expanded_recycler_view_height">
+    android:layout_width="158dp"
+    android:layout_marginLeft="4dp"
+    android:layout_marginRight="4dp"
+    android:layout_height="250dp"
+    tools:layout_width="@dimen/level_expanded_recycler_view_item_width"
+    tools:layout_height="@dimen/level_expanded_recycler_view_height" >
 
     <ImageView
         android:id="@+id/image_view"

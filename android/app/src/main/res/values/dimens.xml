@@ -2,5 +2,5 @@
 <resources>
     <dimen name="button_drawable_padding">12dp</dimen>
     <dimen name="level_expanded_recycler_view_height">250dp</dimen>
-    <dimen name="level_expanded_recycler_view_item_width">150</dimen>
+    <dimen name="level_expanded_recycler_view_item_width">158</dimen>
 </resources>

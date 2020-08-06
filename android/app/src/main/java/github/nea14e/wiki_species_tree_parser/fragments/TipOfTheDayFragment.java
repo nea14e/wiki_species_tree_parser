@@ -11,8 +11,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bumptech.glide.Glide;
-
 import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
@@ -20,6 +18,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.lib_handlers.ImageLoadHelper;
 import github.nea14e.wiki_species_tree_parser.models.TipOfTheDay;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
@@ -37,6 +36,7 @@ public class TipOfTheDayFragment extends BaseFragment {
     Button okButton;
 
     private Unbinder unbinder;
+    private ImageLoadHelper imageLoadHelper = new ImageLoadHelper();
 
     private TipOfTheDay tipOfTheDay;
     private static final String BUNDLE_TIP_OF_THE_DAY = "BUNDLE_TIP_OF_THE_DAY";
@@ -71,15 +71,10 @@ public class TipOfTheDayFragment extends BaseFragment {
     private void updateView() {
         tipMessageTxt.setText(tipOfTheDay.tipText);
         if (tipOfTheDay.imageUrl != null) {
-            Glide.with(this)
-                    .load(tipOfTheDay.imageUrl)
-                    .centerCrop()
-                    .placeholder(R.color.border)
-                    .into(imageView);
+            imageLoadHelper.loadImage(tipOfTheDay.imageUrl, true, imageView);
             readMoreBtn.setEnabled(true);
         } else {
-            Glide.with(this)
-                    .clear(imageView);
+            imageLoadHelper.clearImage(imageView);
             readMoreBtn.setEnabled(false);
         }
     }

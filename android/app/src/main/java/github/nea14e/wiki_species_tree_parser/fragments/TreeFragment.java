@@ -14,7 +14,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
-import github.nea14e.wiki_species_tree_parser.models.Level;
 import github.nea14e.wiki_species_tree_parser.models.Tree;
 import github.nea14e.wiki_species_tree_parser.network.SmartCallback;
 
@@ -58,7 +57,6 @@ public class TreeFragment extends BaseFragment {
             protected void onData(Tree data) {
                 tree = data;
                 adapter.setData(tree);
-                recyclerView.invalidate();
             }
         });
     }

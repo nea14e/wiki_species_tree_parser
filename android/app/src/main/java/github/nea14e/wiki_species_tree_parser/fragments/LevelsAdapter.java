@@ -22,6 +22,7 @@ public class LevelsAdapter extends RecyclerView.Adapter<LevelsAdapter.ExpandedLe
 
     public void setData(Tree data) {
         this.tree = data;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -41,6 +42,8 @@ public class LevelsAdapter extends RecyclerView.Adapter<LevelsAdapter.ExpandedLe
 
     @Override
     public int getItemCount() {
+        if (tree == null)
+            return 0;
         return tree.levels.size();
     }
 
@@ -65,7 +68,7 @@ public class LevelsAdapter extends RecyclerView.Adapter<LevelsAdapter.ExpandedLe
             recyclerView.setHasFixedSize(true);
 
             // use a linear layout manager
-            LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
             recyclerView.setLayoutManager(layoutManager);
 
             // specify an adapter (see also next example)
@@ -78,7 +81,6 @@ public class LevelsAdapter extends RecyclerView.Adapter<LevelsAdapter.ExpandedLe
         public void bindData(Level level) {
             levelType.setText(level.titleOnLanguage);
             adapter.setData(level);
-            recyclerView.invalidate();
         }
     }
 }
