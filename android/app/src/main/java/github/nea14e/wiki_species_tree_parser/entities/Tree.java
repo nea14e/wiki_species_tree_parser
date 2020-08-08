@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -13,9 +14,10 @@ import java.util.List;
 
 public class Tree implements Parcelable {
 
+    @Nullable
     @SerializedName("_id")
     @Expose
-    public Object id;
+    public Long id;
     @SerializedName("levels")
     @Expose
     public List<Level> levels = new ArrayList<>();
@@ -49,7 +51,7 @@ public class Tree implements Parcelable {
     };
 
     protected Tree(Parcel in) {
-        this.id = ((Object) in.readValue((Object.class.getClassLoader())));
+        this.id = ((Long) in.readValue((Long.class.getClassLoader())));
         in.readList(this.levels, (Level.class.getClassLoader()));
         this.translation = ((Translation) in.readValue((Translation.class.getClassLoader())));
         this.languageKey = in.readString();

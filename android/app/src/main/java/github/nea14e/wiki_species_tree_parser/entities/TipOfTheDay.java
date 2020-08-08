@@ -3,6 +3,8 @@ package github.nea14e.wiki_species_tree_parser.entities;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -15,9 +17,11 @@ public class TipOfTheDay implements Parcelable
     @SerializedName("tip_text")
     @Expose
     public String tipText;
+    @Nullable
     @SerializedName("species_id")
     @Expose
     public Long speciesId;
+    @Nullable
     @SerializedName("image_url")
     @Expose
     public String imageUrl;
