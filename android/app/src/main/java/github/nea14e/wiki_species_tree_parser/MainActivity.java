@@ -59,9 +59,6 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        if (this.fragment != null) {
-            fragmentTransaction.remove(this.fragment);
-        }
         switch (state) {
             case TipOfTheDay:
                 fragment = new TipOfTheDayFragment();
@@ -76,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new Fragment();
                 break;
         }
-        fragmentTransaction.add(R.id.fragment_container, fragment, MAIN_FRAGMENT_TAG);
+        fragmentTransaction.replace(R.id.fragment_container, fragment, MAIN_FRAGMENT_TAG);
         fragmentTransaction.commit();
     }
 

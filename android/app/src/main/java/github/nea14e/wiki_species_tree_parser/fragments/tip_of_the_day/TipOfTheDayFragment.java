@@ -42,7 +42,6 @@ public class TipOfTheDayFragment extends BaseFragment {
     private ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
 
     private TipOfTheDay tipOfTheDay;
-    private static final String BUNDLE_TIP_OF_THE_DAY = "BUNDLE_TIP_OF_THE_DAY";
 
     @Nullable
     @Override
@@ -50,8 +49,7 @@ public class TipOfTheDayFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.tip_of_the_day, container, false);
         unbinder = ButterKnife.bind(this, view);
 
-        if (savedInstanceState != null) {
-            tipOfTheDay = (TipOfTheDay) savedInstanceState.getSerializable(BUNDLE_TIP_OF_THE_DAY);
+        if (tipOfTheDay != null) {
             updateView();
         } else {
             getNextTip();
@@ -90,12 +88,6 @@ public class TipOfTheDayFragment extends BaseFragment {
     @OnClick(R.id.ok_btn)
     public void onOnClick() {
         EventBus.getDefault().post(new TreeFragment.ShowTreeEvent(null));
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putSerializable(BUNDLE_TIP_OF_THE_DAY, tipOfTheDay);
-        super.onSaveInstanceState(outState);
     }
 
     @Override

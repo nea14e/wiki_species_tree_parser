@@ -15,6 +15,7 @@ public class BaseFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
         networkHelper = new RetrofitNetworkHelper();
     }
 }

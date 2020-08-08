@@ -15,8 +15,8 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
-import github.nea14e.wiki_species_tree_parser.models.Tree;
 import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
+import github.nea14e.wiki_species_tree_parser.models.Tree;
 
 public class TreeFragment extends BaseFragment {
 
@@ -34,7 +34,11 @@ public class TreeFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.tree, container, false);
         unbinder = ButterKnife.bind(this, view);
         setupRecyclerView();
-        loadTreeDefault();
+        if (tree != null) {
+            adapter.setData(tree);
+        } else {
+            loadTreeDefault();
+        }
         return view;
     }
 
