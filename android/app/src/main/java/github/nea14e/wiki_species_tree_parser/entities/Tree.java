@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.models;
+package github.nea14e.wiki_species_tree_parser.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -52,7 +52,7 @@ public class Tree implements Parcelable {
         this.id = ((Object) in.readValue((Object.class.getClassLoader())));
         in.readList(this.levels, (Level.class.getClassLoader()));
         this.translation = ((Translation) in.readValue((Translation.class.getClassLoader())));
-        this.languageKey = ((String) in.readValue((String.class.getClassLoader())));
+        this.languageKey = in.readString();
     }
 
     public Tree() {

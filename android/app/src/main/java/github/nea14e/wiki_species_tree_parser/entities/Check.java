@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.models;
+package github.nea14e.wiki_species_tree_parser.entities;
 
 import androidx.annotation.NonNull;
 

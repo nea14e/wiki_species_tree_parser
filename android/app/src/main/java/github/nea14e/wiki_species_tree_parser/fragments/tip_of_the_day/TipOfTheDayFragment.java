@@ -22,7 +22,7 @@ import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.fragments.tree.TreeFragment;
 import github.nea14e.wiki_species_tree_parser.libs.image_loading.ImageLoaderHelper;
 import github.nea14e.wiki_species_tree_parser.libs.image_loading.impl.GlideImageLoaderHelper;
-import github.nea14e.wiki_species_tree_parser.models.TipOfTheDay;
+import github.nea14e.wiki_species_tree_parser.entities.TipOfTheDay;
 import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
 
 public class TipOfTheDayFragment extends BaseFragment {

@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.models;
+package github.nea14e.wiki_species_tree_parser.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -39,9 +39,9 @@ public class TipOfTheDay implements Parcelable
 
     protected TipOfTheDay(Parcel in) {
         this.id = ((Long) in.readValue((Long.class.getClassLoader())));
-        this.tipText = ((String) in.readValue((String.class.getClassLoader())));
+        this.tipText = in.readString();
         this.speciesId = ((Long) in.readValue((Long.class.getClassLoader())));
-        this.imageUrl = ((String) in.readValue((String.class.getClassLoader())));
+        this.imageUrl = in.readString();
     }
 
     public TipOfTheDay() {

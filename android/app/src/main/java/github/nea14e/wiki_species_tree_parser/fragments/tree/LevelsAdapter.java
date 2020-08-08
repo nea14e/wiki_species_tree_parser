@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import github.nea14e.wiki_species_tree_parser.R;
-import github.nea14e.wiki_species_tree_parser.models.Level;
-import github.nea14e.wiki_species_tree_parser.models.Tree;
+import github.nea14e.wiki_species_tree_parser.entities.Level;
+import github.nea14e.wiki_species_tree_parser.entities.Tree;
 
 public class LevelsAdapter extends RecyclerView.Adapter<LevelsAdapter.ExpandedLevelViewHolder> {
 

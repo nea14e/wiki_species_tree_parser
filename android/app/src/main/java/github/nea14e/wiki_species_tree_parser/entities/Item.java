@@ -1,7 +1,9 @@
-package github.nea14e.wiki_species_tree_parser.models;
+package github.nea14e.wiki_species_tree_parser.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -10,22 +12,25 @@ public class Item implements Parcelable {
 
     @SerializedName("id")
     @Expose
-    public Long id;
+    public long id;
     @SerializedName("page_url")
     @Expose
     public String pageUrl;
+    @Nullable
     @SerializedName("image_url")
     @Expose
     public String imageUrl;
+    @Nullable
     @SerializedName("parent_id")
     @Expose
     public Long parentId;
     @SerializedName("is_expanded")
     @Expose
-    public Boolean isExpanded;
+    public boolean isExpanded;
     @SerializedName("is_selected")
     @Expose
-    public Boolean isSelected;
+    public boolean isSelected;
+    @Nullable
     @SerializedName("leaves_count")
     @Expose
     public Long leavesCount;
@@ -49,15 +54,15 @@ public class Item implements Parcelable {
     };
 
     protected Item(Parcel in) {
-        this.id = ((Long) in.readValue((Long.class.getClassLoader())));
-        this.pageUrl = ((String) in.readValue((String.class.getClassLoader())));
-        this.imageUrl = ((String) in.readValue((String.class.getClassLoader())));
+        this.id = in.readLong();
+        this.pageUrl = in.readString();
+        this.imageUrl = in.readString();
         this.parentId = ((Long) in.readValue((Long.class.getClassLoader())));
-        this.isExpanded = ((Boolean) in.readValue((Boolean.class.getClassLoader())));
-        this.isSelected = ((Boolean) in.readValue((Boolean.class.getClassLoader())));
+        this.isExpanded = ((boolean) in.readValue((boolean.class.getClassLoader())));
+        this.isSelected = ((boolean) in.readValue((boolean.class.getClassLoader())));
         this.leavesCount = ((Long) in.readValue((Long.class.getClassLoader())));
-        this.titleForLanguage = ((String) in.readValue((String.class.getClassLoader())));
-        this.wikiUrlForLanguage = ((String) in.readValue((String.class.getClassLoader())));
+        this.titleForLanguage = in.readString();
+        this.wikiUrlForLanguage = in.readString();
     }
 
     public Item() {

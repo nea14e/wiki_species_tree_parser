@@ -1,4 +1,4 @@
-package github.nea14e.wiki_species_tree_parser.models;
+package github.nea14e.wiki_species_tree_parser.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -67,16 +67,16 @@ public class Translation implements Parcelable {
             ;
 
     protected Translation(Parcel in) {
-        this.comment = ((String) in.readValue((String.class.getClassLoader())));
-        this.langKey = ((String) in.readValue((String.class.getClassLoader())));
-        this.rankWord = ((String) in.readValue((String.class.getClassLoader())));
-        this.siteTitle = ((String) in.readValue((String.class.getClassLoader())));
-        this.parentWord = ((String) in.readValue((String.class.getClassLoader())));
-        this.searchWord = ((String) in.readValue((String.class.getClassLoader())));
-        this.authorsWord = ((String) in.readValue((String.class.getClassLoader())));
-        this.authorsContent = ((String) in.readValue((String.class.getClassLoader())));
-        this.siteDescription = ((String) in.readValue((String.class.getClassLoader())));
-        this.tipOfTheDayWord = ((String) in.readValue((String.class.getClassLoader())));
+        this.comment = in.readString();
+        this.langKey = in.readString();
+        this.rankWord = in.readString();
+        this.siteTitle = in.readString();
+        this.parentWord = in.readString();
+        this.searchWord = in.readString();
+        this.authorsWord = in.readString();
+        this.authorsContent = in.readString();
+        this.siteDescription = in.readString();
+        this.tipOfTheDayWord = in.readString();
     }
 
     public Translation() {

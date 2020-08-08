@@ -16,7 +16,7 @@ import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
-import github.nea14e.wiki_species_tree_parser.models.Tree;
+import github.nea14e.wiki_species_tree_parser.entities.Tree;
 
 public class TreeFragment extends BaseFragment {
 

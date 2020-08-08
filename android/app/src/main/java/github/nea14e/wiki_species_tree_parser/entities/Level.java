@@ -1,7 +1,9 @@
-package github.nea14e.wiki_species_tree_parser.models;
+package github.nea14e.wiki_species_tree_parser.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -15,16 +17,17 @@ public class Level implements Parcelable {
     public String type;
     @SerializedName("items")
     @Expose
-    public List<Item> items = null;
+    public List<Item> items;
     @SerializedName("title_on_language")
     @Expose
     public String titleOnLanguage;
+    @Nullable
     @SerializedName("level_parent_title")
     @Expose
-    public Object levelParentTitle;
+    public String levelParentTitle;
     @SerializedName("is_level_has_selected_item")
     @Expose
-    public Boolean isLevelHasSelectedItem;
+    public boolean isLevelHasSelectedItem;
 
     // Parcelable implementation
 
@@ -44,8 +47,8 @@ public class Level implements Parcelable {
         this.type = ((String) in.readValue((String.class.getClassLoader())));
         in.readList(this.items, (Item.class.getClassLoader()));
         this.titleOnLanguage = ((String) in.readValue((String.class.getClassLoader())));
-        this.levelParentTitle = ((Object) in.readValue((Object.class.getClassLoader())));
-        this.isLevelHasSelectedItem = ((Boolean) in.readValue((Boolean.class.getClassLoader())));
+        this.levelParentTitle = ((String) in.readValue((String.class.getClassLoader())));
+        this.isLevelHasSelectedItem = ((boolean) in.readValue((boolean.class.getClassLoader())));
     }
 
     public Level() {

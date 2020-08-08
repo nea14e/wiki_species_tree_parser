@@ -18,8 +18,8 @@ import butterknife.OnClick;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.libs.image_loading.ImageLoaderHelper;
 import github.nea14e.wiki_species_tree_parser.libs.image_loading.impl.GlideImageLoaderHelper;
-import github.nea14e.wiki_species_tree_parser.models.Item;
-import github.nea14e.wiki_species_tree_parser.models.Level;
+import github.nea14e.wiki_species_tree_parser.entities.Item;
+import github.nea14e.wiki_species_tree_parser.entities.Level;
 
 public class LevelItemsAdapter extends RecyclerView.Adapter<LevelItemsAdapter.ListItemViewHolder> {
 
