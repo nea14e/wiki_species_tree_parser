@@ -22,6 +22,10 @@ public class Level implements Parcelable {
     @Expose
     public String titleOnLanguage;
     @Nullable
+    @SerializedName("level_parent_id")
+    @Expose
+    public Long levelParentId;
+    @Nullable
     @SerializedName("level_parent_title")
     @Expose
     public String levelParentTitle;
@@ -47,6 +51,7 @@ public class Level implements Parcelable {
         this.type = ((String) in.readValue((String.class.getClassLoader())));
         in.readList(this.items, (Item.class.getClassLoader()));
         this.titleOnLanguage = ((String) in.readValue((String.class.getClassLoader())));
+        this.levelParentId = ((Long) in.readValue((Long.class.getClassLoader())));
         this.levelParentTitle = ((String) in.readValue((String.class.getClassLoader())));
         this.isLevelHasSelectedItem = ((boolean) in.readValue((boolean.class.getClassLoader())));
     }
@@ -58,6 +63,7 @@ public class Level implements Parcelable {
         dest.writeValue(type);
         dest.writeList(items);
         dest.writeValue(titleOnLanguage);
+        dest.writeValue(levelParentId);
         dest.writeValue(levelParentTitle);
         dest.writeValue(isLevelHasSelectedItem);
     }
