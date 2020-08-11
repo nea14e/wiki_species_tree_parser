@@ -46,6 +46,7 @@ BEGIN
           'type', _cur_rank."type",
           'title_on_language', _cur_rank.title_for_language,
           'items', _level_items_json,
+          'level_parent_id', NULL,
           'level_parent_title', NULL,
           'is_level_has_selected_item', FALSE
         );
