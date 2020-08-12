@@ -10,15 +10,19 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
-import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
-import github.nea14e.wiki_species_tree_parser.entities.Tree;
+import github.nea14e.wiki_species_tree_parser.fragments.tree.levels.LevelsAdapter;
+import github.nea14e.wiki_species_tree_parser.presenters.tree.ThreeTypesTreePresenter;
+import github.nea14e.wiki_species_tree_parser.presenters.tree.TreePresenter;
+import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.BaseTreeViewLevel;
 
-public class TreeFragment extends BaseFragment {
+public class TreeFragment extends BaseFragment implements TreePresenter.Callback {
 
     @BindView(R.id.levels_recycler_view)
     RecyclerView recyclerView;
@@ -26,7 +30,7 @@ public class TreeFragment extends BaseFragment {
 
     private Unbinder unbinder;
 
-    private Tree tree;
+    private TreePresenter presenter = new ThreeTypesTreePresenter(null, this);
 
     @Nullable
     @Override
@@ -34,11 +38,6 @@ public class TreeFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.tree, container, false);
         unbinder = ButterKnife.bind(this, view);
         setupRecyclerView();
-        if (tree != null) {
-            adapter.setData(tree);
-        } else {
-            loadTreeDefault();
-        }
         return view;
     }
 
@@ -56,22 +55,15 @@ public class TreeFragment extends BaseFragment {
         recyclerView.setAdapter(adapter);
     }
 
-    private void loadTreeDefault() {
-        this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
-            @Override
-            protected void onData(Tree data) {
-                tree = data;
-                adapter.setData(tree);
-            }
-        });
-    }
-
-    // TODO private Tree parseTree(Tree tree) - get selected item on each level to the level.selectedItem
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onNewTree(List<BaseTreeViewLevel> viewLevels) {
+        adapter.setData(viewLevels);
     }
 
     public static class ShowTreeEvent {

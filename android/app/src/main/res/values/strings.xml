@@ -14,4 +14,9 @@
     <string name="no_network_description">Please check your Internet connection. If problem remains, the server may be on maintenance. Please try again after some time.</string>
     <string name="retry_btn">Retry now</string>
     <string name="no_network_image">No network connection image.</string>
+    <string name="read_on_wikipedia">Read on Wikipedia</string>
+    <string name="google_it">Search in internet</string>
+    <string name="species_count">Approximate species count</string>
+    <string name="share">Share with friends</string>
+    <string name="toggle_bookmark">Toggle bookmark for this</string>
 </resources>

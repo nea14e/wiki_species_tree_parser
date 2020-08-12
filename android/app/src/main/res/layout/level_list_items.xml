@@ -6,9 +6,9 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="6dp"
-    android:layout_marginRight="6dp"
-    android:layout_marginBottom="12dp">
+    android:layout_marginLeft="@dimen/level_side_margin"
+    android:layout_marginRight="@dimen/level_side_margin"
+    android:layout_marginBottom="@dimen/level_bottom_margin">
 
     <TextView
         android:id="@+id/level_type"
