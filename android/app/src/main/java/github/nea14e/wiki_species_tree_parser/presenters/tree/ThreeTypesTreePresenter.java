@@ -9,7 +9,7 @@ import java.util.Objects;
 import github.nea14e.wiki_species_tree_parser.entities.Item;
 import github.nea14e.wiki_species_tree_parser.entities.Level;
 import github.nea14e.wiki_species_tree_parser.entities.Tree;
-import github.nea14e.wiki_species_tree_parser.logic.tree.OneSelectionTreeLogic;
+import github.nea14e.wiki_species_tree_parser.logic.tree.SimpleReloadTreeLogic;
 import github.nea14e.wiki_species_tree_parser.logic.tree.TreeLogic;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.BaseTreeViewLevel;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.DetailedTreeViewLevel;
@@ -23,7 +23,7 @@ public class ThreeTypesTreePresenter implements TreePresenter, TreeLogic.Callbac
 
     public ThreeTypesTreePresenter(@Nullable Long initId, TreePresenter.Callback callback) {
         this.callback = callback;
-        treeLogic = new OneSelectionTreeLogic(initId, this);
+        treeLogic = new SimpleReloadTreeLogic(initId, this);
     }
 
     @Override
