@@ -16,13 +16,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.entities.Item;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.fragments.tree.levels.LevelsAdapter;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.ThreeTypesTreePresenter;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.TreePresenter;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.BaseTreeViewLevel;
 
-public class TreeFragment extends BaseFragment implements TreePresenter.Callback {
+public class TreeFragment extends BaseFragment implements TreePresenter.Callback, LevelsAdapter.Callback {
 
     @BindView(R.id.levels_recycler_view)
     RecyclerView recyclerView;
@@ -51,7 +52,7 @@ public class TreeFragment extends BaseFragment implements TreePresenter.Callback
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new LevelsAdapter();
+        adapter = new LevelsAdapter(this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -64,6 +65,16 @@ public class TreeFragment extends BaseFragment implements TreePresenter.Callback
     @Override
     public void onNewTree(List<BaseTreeViewLevel> viewLevels) {
         adapter.setData(viewLevels);
+    }
+
+    @Override
+    public void onItemLayoutClick(Item item) {
+        presenter.onItemExpandCollapseClicked(item.id);
+    }
+
+    @Override
+    public void onItemImageClick(Item item) {
+        // TODO show full-screened image with resize & scrolls
     }
 
     public static class ShowTreeEvent {

@@ -11,10 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.entities.Item;
 import github.nea14e.wiki_species_tree_parser.fragments.tree.level_items.LevelItemsAdapter;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.ListItemsTreeViewLevel;
 
-class ListItemsLevelViewHolder extends BaseLevelViewHolder<ListItemsTreeViewLevel> {
+class ListItemsLevelViewHolder extends BaseLevelViewHolder<ListItemsTreeViewLevel> implements LevelItemsAdapter.Callback {
 
     @BindView(R.id.level_type)
     TextView levelType;
@@ -22,9 +23,11 @@ class ListItemsLevelViewHolder extends BaseLevelViewHolder<ListItemsTreeViewLeve
     RecyclerView recyclerView;
 
     private LevelItemsAdapter adapter;
+    private final BaseLevelViewHolder.Callback callback;
 
-    public ListItemsLevelViewHolder(@NonNull View levelView) {
+    public ListItemsLevelViewHolder(@NonNull View levelView, BaseLevelViewHolder.Callback callback) {
         super(levelView);
+        this.callback = callback;
         ButterKnife.bind(this, levelView);
         setupRecyclerView(levelView.getContext());
     }
@@ -40,7 +43,7 @@ class ListItemsLevelViewHolder extends BaseLevelViewHolder<ListItemsTreeViewLeve
 
         // specify an adapter (see also next example)
         if (adapter == null) {
-            adapter = new LevelItemsAdapter();
+            adapter = new LevelItemsAdapter(this);
         }
         recyclerView.setAdapter(adapter);
     }
@@ -53,5 +56,15 @@ class ListItemsLevelViewHolder extends BaseLevelViewHolder<ListItemsTreeViewLeve
     @Override
     void recycleMe() {
         // Do nothing
+    }
+
+    @Override
+    public void onItemLayoutClick(Item item) {
+        callback.onItemLayoutClick(item);
+    }
+
+    @Override
+    public void onItemImageClick(Item item) {
+        callback.onItemImageClick(item);
     }
 }

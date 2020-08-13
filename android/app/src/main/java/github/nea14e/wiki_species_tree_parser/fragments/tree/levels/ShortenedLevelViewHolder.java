@@ -19,6 +19,8 @@ class ShortenedLevelViewHolder extends BaseLevelViewHolder<ShortenedTreeViewLeve
 
     @BindView(R.id.image_view)
     ImageView imageView;
+    private boolean hasImage = false;
+    ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
     @BindView(R.id.level_type)
     TextView levelType;
     @BindView(R.id.level_item_title)
@@ -26,17 +28,18 @@ class ShortenedLevelViewHolder extends BaseLevelViewHolder<ShortenedTreeViewLeve
     @BindView(R.id.level_item_leaves_count)
     TextView itemLeavesCount;
 
-    private boolean hasImage = false;
+    private ShortenedTreeViewLevel viewLevel;
+    private final Callback callback;
 
-    ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
-
-    public ShortenedLevelViewHolder(@NonNull View levelView) {
+    public ShortenedLevelViewHolder(@NonNull View levelView, BaseLevelViewHolder.Callback callback) {
         super(levelView);
+        this.callback = callback;
         ButterKnife.bind(this, levelView);
     }
 
     @SuppressLint("SetTextI18n")
     public void bindData(ShortenedTreeViewLevel viewLevel) {
+        this.viewLevel = viewLevel;
         imageView.setContentDescription(viewLevel.item.titleForLanguage);
         if (viewLevel.item.imageUrl != null) {
             imageLoadHelper.loadImage(viewLevel.item.imageUrl, true, imageView);
@@ -60,15 +63,20 @@ class ShortenedLevelViewHolder extends BaseLevelViewHolder<ShortenedTreeViewLeve
             imageLoadHelper.clearImage(imageView);
             hasImage = false;
         }
+        viewLevel = null;
     }
 
     @OnClick(R.id.level_item_layout)
     public void onLayoutClick() {
-        // TODO expand/collapse tree
+        if (viewLevel == null)
+            return;
+        callback.onItemLayoutClick(viewLevel.item);
     }
 
     @OnClick(R.id.image_view)
     public void onImageClick() {
-        // TODO show full-screen image
+        if (viewLevel == null)
+            return;
+        callback.onItemImageClick(viewLevel.item);
     }
 }

@@ -5,6 +5,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import github.nea14e.wiki_species_tree_parser.entities.Item;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.BaseTreeViewLevel;
 
 abstract class BaseLevelViewHolder<T extends BaseTreeViewLevel> extends RecyclerView.ViewHolder {
@@ -15,4 +16,9 @@ abstract class BaseLevelViewHolder<T extends BaseTreeViewLevel> extends Recycler
     abstract void bindData(T viewLevel);
 
     abstract void recycleMe();
+
+    public interface Callback {
+        void onItemLayoutClick(Item item);
+        void onItemImageClick(Item item);
+    }
 }

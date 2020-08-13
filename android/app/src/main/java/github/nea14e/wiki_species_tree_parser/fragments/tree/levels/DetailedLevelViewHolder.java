@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,6 +20,8 @@ class DetailedLevelViewHolder extends BaseLevelViewHolder<DetailedTreeViewLevel>
 
     @BindView(R.id.image_view)
     ImageView imageView;
+    private boolean hasImage = false;
+    ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
     @BindView(R.id.level_type)
     TextView levelType;
     @BindView(R.id.level_item_title)
@@ -26,17 +29,19 @@ class DetailedLevelViewHolder extends BaseLevelViewHolder<DetailedTreeViewLevel>
     @BindView(R.id.level_item_leaves_count)
     TextView itemLeavesCount;
 
-    private boolean hasImage = false;
+    @Nullable
+    private DetailedTreeViewLevel viewLevel = null;
+    private final BaseLevelViewHolder.Callback callback;
 
-    ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
-
-    public DetailedLevelViewHolder(@NonNull View levelView) {
+    public DetailedLevelViewHolder(@NonNull View levelView, BaseLevelViewHolder.Callback callback) {
         super(levelView);
+        this.callback = callback;
         ButterKnife.bind(this, levelView);
     }
 
     @SuppressLint("SetTextI18n")
     public void bindData(DetailedTreeViewLevel viewLevel) {
+        this.viewLevel = viewLevel;
         imageView.setContentDescription(viewLevel.item.titleForLanguage);
         if (viewLevel.item.imageUrl != null) {
             imageLoadHelper.loadImage(viewLevel.item.imageUrl, true, imageView);
@@ -60,16 +65,21 @@ class DetailedLevelViewHolder extends BaseLevelViewHolder<DetailedTreeViewLevel>
             imageLoadHelper.clearImage(imageView);
             hasImage = false;
         }
+        viewLevel = null;
     }
 
     @OnClick(R.id.level_item_layout)
     public void onLayoutClick() {
-        // TODO expand/collapse tree
+        if (viewLevel == null)
+            return;
+        callback.onItemLayoutClick(viewLevel.item);
     }
 
     @OnClick(R.id.image_view)
     public void onImageClick() {
-        // TODO show full-screen image
+        if (viewLevel == null)
+            return;
+        callback.onItemImageClick(viewLevel.item);
     }
 
     @OnClick(R.id.wiki_btn)

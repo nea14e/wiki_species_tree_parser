@@ -12,9 +12,14 @@ import java.util.List;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.entities.Item;
 
-public class LevelItemsAdapter extends RecyclerView.Adapter<ListItemViewHolder> {
+public class LevelItemsAdapter extends RecyclerView.Adapter<ListItemViewHolder> implements ListItemViewHolder.Callback {
 
     private List<Item> items;
+    private final LevelItemsAdapter.Callback callback;
+
+    public LevelItemsAdapter(LevelItemsAdapter.Callback callback) {
+        this.callback = callback;
+    }
 
     public void setData(List<Item> items) {
         this.items = items;
@@ -26,7 +31,7 @@ public class LevelItemsAdapter extends RecyclerView.Adapter<ListItemViewHolder> 
     public ListItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.level_item, parent, false);
-        return new ListItemViewHolder(v);
+        return new ListItemViewHolder(v, this);
     }
 
     @Override
@@ -47,4 +52,18 @@ public class LevelItemsAdapter extends RecyclerView.Adapter<ListItemViewHolder> 
         return items.size();
     }
 
+    @Override
+    public void onItemLayoutClick(Item item) {
+        callback.onItemLayoutClick(item);
+    }
+
+    @Override
+    public void onItemImageClick(Item item) {
+        callback.onItemImageClick(item);
+    }
+
+    public interface Callback {
+        void onItemLayoutClick(Item item);
+        void onItemImageClick(Item item);
+    }
 }

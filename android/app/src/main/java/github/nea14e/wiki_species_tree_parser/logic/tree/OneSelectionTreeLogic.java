@@ -51,50 +51,43 @@ public class OneSelectionTreeLogic implements TreeLogic {
     }
 
     @Override
-    public void expandOrCollapse(@NonNull Level curLevel, @NonNull Item curItem) {
+    public void expandOrCollapse(long itemId) {
         if (tree == null)
             return;
+        Level curLevel = null;
+        Item curItem = null;
+        for (Level level : tree.levels) {
+            for (Item item : level.items) {
+                if (item.id == itemId) {
+                    curLevel = level;
+                    curItem = item;
+                    break;
+                }
+            }
+            if (curItem != null) {
+                break;
+            }
+        }
+        if (curItem == null) {
+            // If requested itemId not found in tree which exists now, reload entire tree
+            this.networkHelper.getTreeById(itemId, new SmartCallback<Tree>(true) {
+                @Override
+                protected void onData(Tree data) {
+                    tree = data;
+                    callback.onNewTree(data);
+                }
+            });
+            return;
+        }
 
         // If selected item clicked - clear selection:
         if (selectedLevel != null && selectedItem == curItem) {
-
-            // Clear selection
-            selectedLevel.isLevelHasSelectedItem = false;
-            selectedItem.isSelected = false;
-            selectedItem.isExpanded = false;
-
-            // Select item's parent
-            if (curItem.parentId != null) {
-                boolean isBreak = false;
-                for (Level level : tree.levels) {
-                    for (Item item : level.items) {
-                        if (item.id == curItem.parentId) {
-                            level.isLevelHasSelectedItem = true;
-                            item.isSelected = true;
-                            item.isExpanded = true;
-                            updateSubtree(level, item, null);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // If curItem have no parents - clear the tree to default state
-            if (defaultTree != null) {
-                tree = defaultTree;
-                callback.onNewTree(defaultTree);
-            } else {
-                this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
-                    @Override
-                    protected void onData(Tree data) {
-                        defaultTree = tree;
-                        tree = data;
-                        callback.onNewTree(data);
-                    }
-                });
-            }
+            deselectSelectedItem(curLevel, curItem);
             return;
         }  // If selected item clicked - end
+
+        // Update isExpanded flags through the tree (required when user clicked on plain (not expanded) tree)
+        updateExpanding(curLevel, curItem);
 
         // Deselect old
         if (selectedLevel != null && selectedLevel != curLevel) {
@@ -104,26 +97,87 @@ public class OneSelectionTreeLogic implements TreeLogic {
             selectedItem.isSelected = false;
         }
 
-        // De-expand other items on curLevel
-        for (Item item : curLevel.items) {
-            if (item.isExpanded) {
-                item.isExpanded = false;
-            }
-        }
-
         // Select
+        tree.id = curItem.id;
         curLevel.isLevelHasSelectedItem = true;
         curItem.isExpanded = true;
         curItem.isSelected = true;
         selectedLevel = curLevel;
         selectedItem = curItem;
 
+        final Level finalCurLevel = curLevel;
+        final Item finalCurItem = curItem;
         networkHelper.getChildesById(curItem.id, new SmartCallback<List<Level>>(false) {
             @Override
             protected void onData(List<Level> data) {
-                updateSubtree(curLevel, curItem, data);
+                updateSubtree(finalCurLevel, finalCurItem, data);
             }
         });
+    }
+
+    private void deselectSelectedItem(@NonNull Level curLevel, @NonNull Item curItem) {
+        if (tree == null || selectedLevel == null || selectedItem == null)
+            return;
+
+        // Clear selection
+        selectedLevel.isLevelHasSelectedItem = false;
+        selectedItem.isSelected = false;
+        selectedItem.isExpanded = false;
+
+        // Select item's parent
+        if (curItem.parentId != null) {
+            boolean isBreak = false;
+            for (Level level : tree.levels) {
+                for (Item item : level.items) {
+                    if (item.id == curItem.parentId) {
+                        tree.id = item.id;
+                        level.isLevelHasSelectedItem = true;
+                        item.isSelected = true;
+                        item.isExpanded = true;
+                        updateSubtree(level, item, null);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // If curItem have no parents - clear the tree to default state
+        if (defaultTree != null) {
+            tree = defaultTree;
+            callback.onNewTree(defaultTree);
+        } else {
+            this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
+                @Override
+                protected void onData(Tree data) {
+                    defaultTree = tree;
+                    tree = data;
+                    callback.onNewTree(data);
+                }
+            });
+        }
+    }
+
+    private void updateExpanding(@NonNull Level curLevel, @NonNull Item curItem) {
+        if (tree == null)
+            return;
+
+        long curId = curItem.id;
+        for (int i = tree.levels.size() - 1; i >= 0; --i) {
+            Level level = tree.levels.get(i);
+            for (Item item : level.items) {
+                if (item.id == curId) {
+                    item.isExpanded = true;
+                    if (item.parentId != null) {
+                        curId = item.parentId;
+                    } else {
+                        return;  // Top levels without parent reached
+                    }
+                } else {
+                    item.isExpanded = false;
+                }
+            }
+        }
+        return;
     }
 
     private void updateSubtree(@NonNull Level curLevel, @NonNull Item curItem, @Nullable List<Level> newLevels) {

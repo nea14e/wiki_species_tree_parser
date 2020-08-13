@@ -10,14 +10,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.entities.Item;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.BaseTreeViewLevel;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.DetailedTreeViewLevel;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.ShortenedTreeViewLevel;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.ListItemsTreeViewLevel;
 
-public class LevelsAdapter extends RecyclerView.Adapter<BaseLevelViewHolder<?>> {
+public class LevelsAdapter extends RecyclerView.Adapter<BaseLevelViewHolder<?>> implements BaseLevelViewHolder.Callback {
 
+    private final LevelsAdapter.Callback callback;
     private List<BaseTreeViewLevel> levels;
+
+    public LevelsAdapter(LevelsAdapter.Callback callback) {
+        this.callback = callback;
+    }
 
     public void setData(List<BaseTreeViewLevel> levels) {
         this.levels = levels;
@@ -32,15 +38,15 @@ public class LevelsAdapter extends RecyclerView.Adapter<BaseLevelViewHolder<?>> 
             case Shortened:
                 v = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.level_shortened, parent, false);
-                return new ShortenedLevelViewHolder(v);
+                return new ShortenedLevelViewHolder(v, this);
             case Detailed:
                 v = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.level_detailed, parent, false);
-                return new DetailedLevelViewHolder(v);
+                return new DetailedLevelViewHolder(v, this);
             case ListItems:
                 v = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.level_list_items, parent, false);
-                return new ListItemsLevelViewHolder(v);
+                return new ListItemsLevelViewHolder(v, this);
             default:
                 throw new IllegalStateException("LevelsAdapter: onCreateViewHolder() was called with invalid viewType.");
         }
@@ -80,8 +86,23 @@ public class LevelsAdapter extends RecyclerView.Adapter<BaseLevelViewHolder<?>> 
         return levels.size();
     }
 
+    @Override
+    public void onItemLayoutClick(Item item) {
+        callback.onItemLayoutClick(item);
+    }
+
+    @Override
+    public void onItemImageClick(Item item) {
+        callback.onItemImageClick(item);
+    }
+
     private enum ViewTypes {
         Shortened, Detailed, ListItems
+    }
+
+    public interface Callback {
+        void onItemLayoutClick(Item item);
+        void onItemImageClick(Item item);
     }
 
 }

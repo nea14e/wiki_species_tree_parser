@@ -29,13 +29,18 @@ class ListItemViewHolder extends RecyclerView.ViewHolder {
 
     ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
 
-    public ListItemViewHolder(@NonNull View itemView) {
+    private Item item;
+    private final ListItemViewHolder.Callback callback;
+
+    public ListItemViewHolder(@NonNull View itemView, ListItemViewHolder.Callback callback) {
         super(itemView);
+        this.callback = callback;
         ButterKnife.bind(this, itemView);
     }
 
     @SuppressLint("SetTextI18n")
     public void bindData(Item item) {
+        this.item = item;
         imageView.setContentDescription(item.titleForLanguage);
         if (item.imageUrl != null) {
             imageLoadHelper.loadImage(item.imageUrl, true, imageView);
@@ -57,15 +62,21 @@ class ListItemViewHolder extends RecyclerView.ViewHolder {
             imageLoadHelper.clearImage(imageView);
             hasImage = false;
         }
+        this.item = null;
     }
 
     @OnClick(R.id.level_item_layout)
     public void onLayoutClick() {
-        // TODO expand/collapse tree
+        callback.onItemLayoutClick(item);
     }
 
     @OnClick(R.id.image_view)
     public void onImageClick() {
-        // TODO show full-screen image
+        callback.onItemImageClick(item);
+    }
+
+    public interface Callback {
+        void onItemLayoutClick(Item item);
+        void onItemImageClick(Item item);
     }
 }
