@@ -13,16 +13,18 @@ import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import github.nea14e.wiki_species_tree_parser.App;
 import github.nea14e.wiki_species_tree_parser.R;
+import github.nea14e.wiki_species_tree_parser.entities.TipOfTheDay;
 import github.nea14e.wiki_species_tree_parser.fragments.BaseFragment;
 import github.nea14e.wiki_species_tree_parser.fragments.tree.TreeFragment;
 import github.nea14e.wiki_species_tree_parser.libs.image_loading.ImageLoaderHelper;
-import github.nea14e.wiki_species_tree_parser.libs.image_loading.impl.GlideImageLoaderHelper;
-import github.nea14e.wiki_species_tree_parser.entities.TipOfTheDay;
 import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
 
 public class TipOfTheDayFragment extends BaseFragment {
@@ -39,7 +41,9 @@ public class TipOfTheDayFragment extends BaseFragment {
     Button okButton;
 
     private Unbinder unbinder;
-    private ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
+
+    @Inject
+    ImageLoaderHelper imageLoadHelper;
 
     private TipOfTheDay tipOfTheDay;
 
@@ -48,6 +52,7 @@ public class TipOfTheDayFragment extends BaseFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.tip_of_the_day, container, false);
         unbinder = ButterKnife.bind(this, view);
+        App.getAppComponent().inject(this);
 
         if (tipOfTheDay != null) {
             updateView();

@@ -6,12 +6,14 @@ import androidx.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
+import javax.inject.Inject;
+
+import github.nea14e.wiki_species_tree_parser.App;
 import github.nea14e.wiki_species_tree_parser.entities.Item;
 import github.nea14e.wiki_species_tree_parser.entities.Level;
 import github.nea14e.wiki_species_tree_parser.entities.Tree;
 import github.nea14e.wiki_species_tree_parser.libs.network.NetworkHelper;
 import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
-import github.nea14e.wiki_species_tree_parser.libs.network.impl.RetrofitNetworkHelper;
 
 public class OneSelectionTreeLogic implements TreeLogic {
 
@@ -26,10 +28,17 @@ public class OneSelectionTreeLogic implements TreeLogic {
     @Nullable
     private Item selectedItem = null;
 
-    private NetworkHelper networkHelper = new RetrofitNetworkHelper();
+    @Inject
+    public NetworkHelper networkHelper;
 
     public OneSelectionTreeLogic(@Nullable Long initId, Callback callback) {
+        // Init arguments
         this.callback = callback;
+
+        // Injection
+        App.getAppComponent().inject(this);
+
+        // Other init actions
         if (initId == null) {
             this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
                 @Override
@@ -41,6 +50,20 @@ public class OneSelectionTreeLogic implements TreeLogic {
             });
         } else {
             this.networkHelper.getTreeById(initId, new SmartCallback<Tree>(true) {
+                @Override
+                protected void onData(Tree data) {
+                    tree = data;
+                    callback.onNewTree(data);
+                }
+            });
+        }
+    }
+
+    public void getOrLoadTreeAsync() {
+        if (tree != null) {
+            callback.onNewTree(tree);
+        } else {
+            this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
                 @Override
                 protected void onData(Tree data) {
                     tree = data;

@@ -31,7 +31,7 @@ public class TreeFragment extends BaseFragment implements TreePresenter.Callback
 
     private Unbinder unbinder;
 
-    private TreePresenter presenter = new ThreeTypesTreePresenter(null, this);
+    private TreePresenter presenter;
 
     @Nullable
     @Override
@@ -39,6 +39,11 @@ public class TreeFragment extends BaseFragment implements TreePresenter.Callback
         View view = inflater.inflate(R.layout.tree, container, false);
         unbinder = ButterKnife.bind(this, view);
         setupRecyclerView();
+        if (presenter == null) {
+            presenter = new ThreeTypesTreePresenter(null, this);
+        } else {
+            presenter.onCreateView();
+        }
         return view;
     }
 

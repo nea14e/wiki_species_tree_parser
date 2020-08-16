@@ -2,10 +2,12 @@ package github.nea14e.wiki_species_tree_parser.logic.tree;
 
 import androidx.annotation.Nullable;
 
+import javax.inject.Inject;
+
+import github.nea14e.wiki_species_tree_parser.App;
 import github.nea14e.wiki_species_tree_parser.entities.Tree;
 import github.nea14e.wiki_species_tree_parser.libs.network.NetworkHelper;
 import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
-import github.nea14e.wiki_species_tree_parser.libs.network.impl.RetrofitNetworkHelper;
 
 public class SimpleReloadTreeLogic implements TreeLogic {
 
@@ -14,10 +16,16 @@ public class SimpleReloadTreeLogic implements TreeLogic {
     @Nullable
     private Tree tree;
 
-    private NetworkHelper networkHelper = new RetrofitNetworkHelper();
+    @Inject
+    NetworkHelper networkHelper;
 
     public SimpleReloadTreeLogic(@Nullable Long initId, Callback callback) {
+        // Init arguments
         this.callback = callback;
+
+        // Injection
+        App.getAppComponent().inject(this);
+
         if (initId == null) {
             this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
                 @Override
@@ -28,6 +36,20 @@ public class SimpleReloadTreeLogic implements TreeLogic {
             });
         } else {
             this.networkHelper.getTreeById(initId, new SmartCallback<Tree>(true) {
+                @Override
+                protected void onData(Tree data) {
+                    tree = data;
+                    callback.onNewTree(data);
+                }
+            });
+        }
+    }
+
+    public void getOrLoadTreeAsync() {
+        if (tree != null) {
+            callback.onNewTree(tree);
+        } else {
+            this.networkHelper.getTreeDefault(new SmartCallback<Tree>(true) {
                 @Override
                 protected void onData(Tree data) {
                     tree = data;

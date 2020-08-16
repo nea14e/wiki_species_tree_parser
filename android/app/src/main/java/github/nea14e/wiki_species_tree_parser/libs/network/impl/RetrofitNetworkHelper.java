@@ -2,6 +2,8 @@ package github.nea14e.wiki_species_tree_parser.libs.network.impl;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.RetrofitApi;
 import github.nea14e.wiki_species_tree_parser.libs.network.retrofit.RetrofitLanguageInterceptor;
 import github.nea14e.wiki_species_tree_parser.libs.network.SmartCallback;
@@ -17,6 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitNetworkHelper extends BaseNetworkHelper {
     private final RetrofitApi api;
 
+    @Inject
     public RetrofitNetworkHelper() {
         Retrofit retrofit = new Retrofit.Builder()
                 .client(new OkHttpClient.Builder()

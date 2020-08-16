@@ -6,9 +6,17 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 
+import javax.inject.Inject;
+
 import github.nea14e.wiki_species_tree_parser.R;
 
 public class GlideImageLoaderHelper extends BaseImageLoaderHelper {
+
+    @Inject
+    public GlideImageLoaderHelper() {
+        int i = 1;
+    }
+
     public void loadImage(String url, boolean isCenterCrop, ImageView imageView) {
 
         // TODO troubles with Wikimedia URL's

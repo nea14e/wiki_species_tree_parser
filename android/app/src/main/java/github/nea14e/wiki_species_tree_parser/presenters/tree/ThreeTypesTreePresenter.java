@@ -19,11 +19,16 @@ import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.Shor
 public class ThreeTypesTreePresenter implements TreePresenter, TreeLogic.Callback {
 
     private final TreePresenter.Callback callback;
-    private TreeLogic treeLogic = null;
+    private TreeLogic treeLogic;
 
     public ThreeTypesTreePresenter(@Nullable Long initId, TreePresenter.Callback callback) {
         this.callback = callback;
         treeLogic = new SimpleReloadTreeLogic(initId, this);
+    }
+
+    @Override
+    public void onCreateView() {
+        treeLogic.getOrLoadTreeAsync();
     }
 
     @Override

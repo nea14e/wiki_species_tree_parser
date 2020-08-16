@@ -8,15 +8,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import github.nea14e.wiki_species_tree_parser.App;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.entities.Item;
 import github.nea14e.wiki_species_tree_parser.libs.image_loading.ImageLoaderHelper;
-import github.nea14e.wiki_species_tree_parser.libs.image_loading.impl.GlideImageLoaderHelper;
 
-class ListItemViewHolder extends RecyclerView.ViewHolder {
+public class ListItemViewHolder extends RecyclerView.ViewHolder {
 
     @BindView(R.id.image_view)
     ImageView imageView;
@@ -27,7 +29,8 @@ class ListItemViewHolder extends RecyclerView.ViewHolder {
 
     private boolean hasImage = false;
 
-    ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
+    @Inject
+    ImageLoaderHelper imageLoadHelper;
 
     private Item item;
     private final ListItemViewHolder.Callback callback;
@@ -35,6 +38,7 @@ class ListItemViewHolder extends RecyclerView.ViewHolder {
     public ListItemViewHolder(@NonNull View itemView, ListItemViewHolder.Callback callback) {
         super(itemView);
         this.callback = callback;
+        App.getAppComponent().inject(this);
         ButterKnife.bind(this, itemView);
     }
 

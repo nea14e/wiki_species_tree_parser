@@ -79,6 +79,13 @@ dependencies {
 //        exclude group: 'glide-parent'
 //    }
 
+    // Dagger 2
+    implementation 'com.google.dagger:dagger-android:2.15'
+    annotationProcessor "com.google.dagger:dagger-compiler:2.15"
+    //api 'com.google.dagger:dagger-android-support:2.15' // if you use the support libraries
+    //annotationProcessor 'com.google.dagger:dagger-android-processor:2.15'
+
+
     // Other
     implementation 'org.greenrobot:eventbus:3.2.0'
     implementation 'com.jakewharton:butterknife:10.2.1'

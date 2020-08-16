@@ -8,26 +8,30 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import github.nea14e.wiki_species_tree_parser.App;
 import github.nea14e.wiki_species_tree_parser.R;
 import github.nea14e.wiki_species_tree_parser.libs.image_loading.ImageLoaderHelper;
-import github.nea14e.wiki_species_tree_parser.libs.image_loading.impl.GlideImageLoaderHelper;
 import github.nea14e.wiki_species_tree_parser.presenters.tree.view_entities.DetailedTreeViewLevel;
 
-class DetailedLevelViewHolder extends BaseLevelViewHolder<DetailedTreeViewLevel> {
+public class DetailedLevelViewHolder extends BaseLevelViewHolder<DetailedTreeViewLevel> {
 
     @BindView(R.id.image_view)
     ImageView imageView;
     private boolean hasImage = false;
-    ImageLoaderHelper imageLoadHelper = new GlideImageLoaderHelper();
     @BindView(R.id.level_type)
     TextView levelType;
     @BindView(R.id.level_item_title)
     TextView levelItemTitle;
     @BindView(R.id.level_item_leaves_count)
     TextView itemLeavesCount;
+
+    @Inject
+    ImageLoaderHelper imageLoadHelper;
 
     @Nullable
     private DetailedTreeViewLevel viewLevel = null;
@@ -36,6 +40,7 @@ class DetailedLevelViewHolder extends BaseLevelViewHolder<DetailedTreeViewLevel>
     public DetailedLevelViewHolder(@NonNull View levelView, BaseLevelViewHolder.Callback callback) {
         super(levelView);
         this.callback = callback;
+        App.getAppComponent().inject(this);
         ButterKnife.bind(this, levelView);
     }
 
