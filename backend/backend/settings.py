@@ -30,7 +30,6 @@ DEBUG = Config.IS_DEBUG
 ALLOWED_HOSTS = [
     '*'
 ]
-CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_METHODS = (
     # 'DELETE',
     'GET',
@@ -39,7 +38,11 @@ CORS_ALLOW_METHODS = (
     # 'POST',
     # 'PUT',
 )
-
+CORS_ORIGIN_WHITLEST=(
+"https://127.0.0.1:4200",
+"https://localhost:4200"
+)
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Application definition
@@ -51,7 +54,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'species_tree_backend'
+    'species_tree_backend',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
