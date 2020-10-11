@@ -1,21 +1,22 @@
 <body class="container-fluid">
-<h1 class="row">{{tree?.translation.site_title}}</h1>
-<h4 class="row">{{tree?.translation.site_description}}</h4>
+<h1>{{tree?.translation.site_title}}</h1>
+<h4>{{tree?.translation.site_description}}</h4>
 
-<div class="row">
+<div class="row ml-0 mr-0 mb-2">
   <button class="col-auto mr-4">{{tree?.translation.tip_of_the_day_word}}</button>
   <button class="col-auto mr-4">{{tree?.translation.search_word}}</button>
   <button class="col-auto mr-4">{{tree?.translation.authors_word}}</button>
 </div>
 
-<div *ngFor="let level of tree?.levels" class="row">
-  <div class="col-2"><b>{{level.title_on_language}}</b></div>
+<div *ngFor="let level of tree?.levels" class="row ml-0 mr-0">
+  <div class="col-12" style="background-color: black; width: 100%; height: 3px"></div>
+  <div class="col-2 ml-0 mr-0"><b>{{level.title_on_language}}</b></div>
   <div *ngFor="let item of level.items" class="item p-0">
     <div class="container-fluid p-0">
       <div class="item-img-container">
         <img [src]="item.image_url" [title]="item.title_for_language" class="item-img-content">
       </div>
-      <div class="d-flex justify-content-center" style="overflow-wrap: break-word;">
+      <div class="d-flex justify-content-center" style="word-break: break-word;">
         {{item.title_for_language}}
       </div>
     </div>
