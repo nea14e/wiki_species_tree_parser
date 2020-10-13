@@ -8,7 +8,7 @@
     {{tree?.translation.tip_of_the_day_word}}
   </div>
   <div class="btn col-auto mr-4">
-    <img src="assets/from-bootstrap/eyeglasses.svg" class="btn-img"/>
+    <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
     {{tree?.translation.search_word}}
   </div>
   <div class="btn col-auto mr-4">
@@ -25,17 +25,20 @@
     <br/><b>{{level.title_on_language}}</b>
   </div>
 
-  <div *ngFor="let item of level.items" class="item p-0">
+  <div *ngFor="let item of level.items" (click)="onItemClick(item)" class="item p-0" [class]="getItemClass(item)">
     <div class="container-fluid p-0">
-      <div class="item-img-container">
+      <div class="item-img-container" [class]="getItemClass(item)">
         <img [src]="item.image_url" [title]="item.title_for_language" class="item-img-content">
       </div>
-      <div class="d-flex justify-content-center" style="word-break: break-word;">
+      <div class="item-title d-flex justify-content-center" [class]="getItemClass(item)">
         {{item.title_for_language}}
       </div>
-      <div class="d-flex justify-content-center" style="word-break: break-word;">
+      <div class="d-flex justify-content-center">
         <img src="assets/from-bootstrap/diagram-3.svg" class="align-self-center"/>
         &nbsp;{{!!item.leaves_count ? item.leaves_count : '?'}}
+      </div>
+      <div *ngIf="item.is_expanded===true" class="d-flex justify-content-center">
+        <img src="assets/from-bootstrap/caret-down-fill.svg" class="item-down-arrow align-self-center"/>
       </div>
     </div>
   </div>

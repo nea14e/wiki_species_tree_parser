@@ -1,10 +1,32 @@
+::ng-deep  :root {
+  --item-color-0: thistle;
+  --item-color-1: #c3a8c3;
+  --item-color-2: #bf81d3;
+  --item-color-3: #aa55d3;
+  --item-accent: darkviolet;
+}
+
 .item {
   width: 150px;
-  height: 200px;
+  height: auto;
   margin: 4px;
   position: relative;
-  border: 1px solid darkviolet;
-  background-color: thistle;
+  border: 1px solid var(--item-accent);
+  background-color: var(--item-color-0);
+}
+
+.item.expanded {
+  width: 200px;
+  border: 3px solid var(--item-accent);
+  margin: 1px;
+  background-color: var(--item-color-1);
+}
+
+.item.selected {
+  width: 200px;
+  border: 3px solid black;
+  margin: 1px;
+  background-color: var(--item-color-2);
 }
 
 .item-img-container {
@@ -12,7 +34,19 @@
   height: 150px;
   overflow: hidden;
   position: relative;
-  background-color: #c3a8c3;
+  background-color: var(--item-color-1);
+}
+
+.item-img-container.expanded {
+  width: 194px;
+  height: 200px;
+  background-color: var(--item-color-2);
+}
+
+.item-img-container.selected {
+  width: 194px;
+  height: 200px;
+  background-color: var(--item-color-3);
 }
 
 .item-img-content {
@@ -21,6 +55,15 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.item-title {
+  word-break: break-word;
+}
+
+.item-down-arrow {
+  width: 100px;
+  height: 1rem;
 }
 
 .btn {
