@@ -8,6 +8,13 @@
   --item-selected-borders: darkviolet;
 }
 
+.level-title {
+}
+
+.level-title.has-selected {
+  color: darkviolet;
+}
+
 .level-hr {
   width: 100%;
   height: 3px;
@@ -75,6 +82,10 @@
   word-break: break-word;
 }
 
+.item-title.selected {
+  font-weight: bold;
+}
+
 .item-down-arrow {
   width: 100px;
   height: 1.3rem;
@@ -94,4 +105,14 @@
 .btn-img {
   width: 32px;
   height: 32px;
+}
+
+.item-btn {
+  font-size: 1rem;
+  padding: 0.5rem 0.5rem;
+}
+
+.item-btn-img {
+  width: 1.3rem;
+  height: auto;
 }

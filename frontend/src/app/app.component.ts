@@ -43,7 +43,7 @@ export class AppComponent implements OnInit {
   }
 
   private updLevelSelected(): void {
-    for (let level of this.tree?.levels) {
+    for (let level of this.tree.levels) {
       let isLevelHasItem = false;
       for (let item of level.items) {
         if (item.is_selected) {
@@ -62,5 +62,15 @@ export class AppComponent implements OnInit {
       return 'has-selected';
     }
     return '';
+  }
+
+  readItemOnWiki(item: Item) {
+    const url = 'https://' + this.tree._language_key + '.wikipedia.org/wiki/' + item.wiki_url_for_language;
+    window.open(url, '_blank');
+  }
+
+  googleItem(item: Item) {
+    const url = 'https://www.google.com/search?q=' + encodeURIComponent(item.title_for_language);
+    window.open(url, '_blank');
   }
 }
