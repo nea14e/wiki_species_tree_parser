@@ -82,7 +82,19 @@
   word-break: break-word;
 }
 
+.item-title.expanded {
+  font-weight: bold;
+}
+
 .item-title.selected {
+  font-weight: bold;
+}
+
+.item-leaves-count.expanded {
+  font-weight: bold;
+}
+
+.item-leaves-count.selected {
   font-weight: bold;
 }
 
