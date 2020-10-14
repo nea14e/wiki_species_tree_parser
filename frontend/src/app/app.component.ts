@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {NetworkService} from './network.service';
-import {Item, Tree} from './models';
+import {Item, Level, Tree} from './models';
 
 @Component({
   selector: 'app-root',
@@ -39,6 +39,28 @@ export class AppComponent implements OnInit {
       item.is_expanded = false;
       item.is_selected = false;
     }
+    this.updLevelSelected();
   }
 
+  private updLevelSelected(): void {
+    for (let level of this.tree?.levels) {
+      let isLevelHasItem = false;
+      for (let item of level.items) {
+        if (item.is_selected) {
+          isLevelHasItem = true;
+          level.is_level_has_selected_item = true;
+        }
+      }
+      if (!isLevelHasItem) {
+        level.is_level_has_selected_item = false;
+      }
+    }
+  }
+
+  getLevelClass(level: Level): string {
+    if (level.is_level_has_selected_item) {
+      return 'has-selected';
+    }
+    return '';
+  }
 }
