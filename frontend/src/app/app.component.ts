@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {NetworkService} from './network.service';
 import {Item, Level, Tree} from './models';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -11,14 +12,27 @@ export class AppComponent implements OnInit {
 
   tree: Tree;
 
-  constructor(private networkService: NetworkService) {}
+  constructor(private networkService: NetworkService,
+              private activatedRoute: ActivatedRoute,
+              private router: Router) {}
 
   ngOnInit(): void {
-    this.networkService.getTreeDefault().subscribe(data => {
-      this.tree = data;
-    }, error => {
-      alert(error);
-    });
+    this.activatedRoute.queryParams.subscribe(params => {
+        const id: number = +params.id || null;
+        if (!id) {
+          this.networkService.getTreeDefault().subscribe(data => {
+            this.tree = data;
+          }, error => {
+            alert(error);
+          });
+        } else {
+          this.networkService.getTreeById(id).subscribe(data => {
+            this.tree = data;
+          }, error => {
+            alert(error);
+          });
+        }
+      });
   }
 
   getItemClass(item: Item): string {
@@ -31,29 +45,16 @@ export class AppComponent implements OnInit {
   }
 
   onItemClick(item: Item): void {
-    if (item.is_expanded === false) {
-      item.is_expanded = true;
-    } else if (item.is_selected === false) {
-      item.is_selected = true;
+    let id: number;
+    if (item.is_selected) {
+      id = item.parent_id;
     } else {
-      item.is_expanded = false;
-      item.is_selected = false;
+      id = item.id;
     }
-    this.updLevelSelected();
-  }
-
-  private updLevelSelected(): void {
-    for (let level of this.tree.levels) {
-      let isLevelHasItem = false;
-      for (let item of level.items) {
-        if (item.is_selected) {
-          isLevelHasItem = true;
-          level.is_level_has_selected_item = true;
-        }
-      }
-      if (!isLevelHasItem) {
-        level.is_level_has_selected_item = false;
-      }
+    if (!id) {
+      this.router.navigate([]);
+    } else {
+      this.router.navigate([], { queryParams: { id } });
     }
   }
 

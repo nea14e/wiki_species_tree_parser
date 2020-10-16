@@ -15,4 +15,8 @@ export class NetworkService {
     return this.http.get<Tree>(environment.BACKEND_API_URL + 'get_tree_default');
   }
 
+  public getTreeById(id: number): Observable<Tree> {
+    return this.http.get<Tree>(environment.BACKEND_API_URL + 'get_tree_by_id/' + id);
+  }
+
 }
