@@ -24,6 +24,7 @@
   position: relative;
   border: 1px solid var(--item-accent);
   background-color: var(--item-color-0);
+  cursor: pointer;
 }
 
 .item.expanded {
@@ -38,6 +39,7 @@
   border: 3px solid var(--item-selected-borders);
   margin: 1px;
   background-color: var(--item-color-3);
+  cursor: zoom-out;
 }
 
 .item-img-container {
