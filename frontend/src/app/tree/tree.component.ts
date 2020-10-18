@@ -40,6 +40,7 @@ export class TreeComponent implements OnInit {
       });
   }
 
+  // noinspection JSMethodCanBeStatic
   getItemClass(item: Item): string {
     if (item.is_selected === true) {
       return 'selected';
@@ -63,6 +64,7 @@ export class TreeComponent implements OnInit {
     }
   }
 
+  // noinspection JSMethodCanBeStatic
   getLevelClass(level: Level): string {
     if (level.is_level_has_selected_item) {
       return 'has-selected';
@@ -70,12 +72,12 @@ export class TreeComponent implements OnInit {
     return '';
   }
 
-  readItemOnWiki(item: Item) {
+  readItemOnWiki(item: Item): void {
     const url = 'https://' + this.tree._language_key + '.wikipedia.org/wiki/' + item.wiki_url_for_language;
     window.open(url, '_blank');
   }
 
-  googleItem(item: Item) {
+  googleItem(item: Item): void {
     const url = 'https://www.google.com/search?q=' + encodeURIComponent(item.title_for_language);
     window.open(url, '_blank');
   }

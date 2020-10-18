@@ -1,0 +1,14 @@
+<div class="row router-hr"></div>
+<h3>{{rootData.translationRoot?.translations.authors_word}}</h3>
+
+<div class="row">
+  <div class="col-auto" [innerHTML]="rootData.translationRoot?.translations.authors_content">
+  </div>
+</div>
+
+<div class="row ml-0">
+  <div class="btn col-auto mr-2 mt-2" (click)="onBackClick()">
+    <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+    {{rootData.translationRoot?.translations.go_back}}
+  </div>
+</div>

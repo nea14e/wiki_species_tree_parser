@@ -27,19 +27,19 @@ export class AppComponent implements OnInit {
     });
   }
 
-  onTipClick() {
+  onTipClick(): void {
     this.router.navigate(['tip']);
   }
 
-  onToTreeRootClick() {
+  onToTreeRootClick(): void {
     this.router.navigate(['tree']);
   }
 
-  onSearchClick() {
+  onSearchClick(): void {
     this.router.navigate(['search']);
   }
 
-  onAuthorsClick() {
+  onAuthorsClick(): void {
     this.router.navigate(['authors']);
   }
 }

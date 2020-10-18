@@ -2,8 +2,8 @@
 <h3>{{rootData.translationRoot?.translations.tip_of_the_day_word}}</h3>
 
 <div class="row">
-  <div *ngIf="!!tip.image_url" class="col-auto">
-    <img [src]="tip.image_url">
+  <div *ngIf="!!tip?.image_url" class="col-auto">
+    <img [src]="tip?.image_url">
   </div>
   <div class="col-auto d-flex">
     <p class="font-weight-bold align-self-center">{{tip?.tip_text}}</p>

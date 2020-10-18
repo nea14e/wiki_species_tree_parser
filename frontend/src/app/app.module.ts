@@ -6,10 +6,12 @@ import {HttpClientModule} from '@angular/common/http';
 import {RouterModule, Routes} from '@angular/router';
 import { TreeComponent } from './tree/tree.component';
 import { TipOfTheDayComponent } from './tip-of-the-day/tip-of-the-day.component';
+import { AuthorsComponent } from './authors/authors.component';
 
 const routes: Routes = [
   { path: 'tip', component: TipOfTheDayComponent },
   { path: 'tree', component: TreeComponent },
+  { path: 'authors', component: AuthorsComponent },
   { path: '**', redirectTo: 'tip' },
 ];
 
@@ -17,7 +19,8 @@ const routes: Routes = [
   declarations: [
     AppComponent,
     TipOfTheDayComponent,
-    TreeComponent
+    TreeComponent,
+    AuthorsComponent
   ],
   imports: [
     BrowserModule,

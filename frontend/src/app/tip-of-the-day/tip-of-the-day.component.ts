@@ -26,7 +26,7 @@ export class TipOfTheDayComponent implements OnInit {
     this.loadTip();
   }
 
-  loadTip() {
+  loadTip(): void {
     this.networkService.getTipOfTheDay().subscribe(data => {
       this.tip = data;
       this.router.navigate(['tip'], {queryParams: {id: this.tip.id}});
@@ -35,23 +35,23 @@ export class TipOfTheDayComponent implements OnInit {
     });
   }
 
-  isShowInTreeDisabled() {
+  isShowInTreeDisabled(): boolean {
     return !this.tip || !this.tip.species_id;
   }
 
-  onShowInTreeClick() {
+  onShowInTreeClick(): void {
     this.router.navigate(['tree'], {queryParams: {id: this.tip.species_id}});
   }
 
-  onNextTipClick() {
+  onNextTipClick(): void {
     this.loadTip();
   }
 
-  onShareClick() {
+  onShareClick(): void {
     // TODO
   }
 
-  onToTreeRootClick() {
+  onToTreeRootClick(): void {
     this.router.navigate(['tree']);
   }
 }

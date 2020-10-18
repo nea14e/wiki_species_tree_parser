@@ -11,7 +11,7 @@
     <div class="container-fluid p-0">
 
       <div class="item-img-container" [class]="getItemClass(item)">
-        <img [src]="item.image_url" [title]="item.title_for_language" class="item-img-content">
+        <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language" class="item-img-content">
       </div>
       <div class="item-title d-flex justify-content-center" [class]="getItemClass(item)">
         {{item.title_for_language}}
