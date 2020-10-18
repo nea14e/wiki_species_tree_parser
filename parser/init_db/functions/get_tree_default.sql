@@ -62,18 +62,10 @@ BEGIN
     END LOOP; -- Cycle by _cur_level_type:
 
 
-  SELECT jsonb_agg(t) -> 0 INTO _translation_object_json
-  FROM (
-         SELECT *
-         FROM public.known_languages
-         WHERE lang_key = COALESCE(_language_key, 'en')
-       ) t;
-
   RETURN jsonb_build_object(
       '_id', NULL,
       '_language_key', _language_key,
-      'levels', _levels_json,
-      'translation', _translation_object_json
+      'levels', _levels_json
     )::json;
 END;
 $$;

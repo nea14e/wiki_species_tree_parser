@@ -6,6 +6,19 @@ from species_tree_backend.http_headers_parser import get_language_key
 
 
 @csrf_exempt
+def get_translations(request):  # выдаёт переводы интерфейса пользователя
+    accept_language = request.headers['Accept-Language']
+    language_key = get_language_key(accept_language)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_translations(_language_key := %s);
+    """, (language_key,))
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response, safe=False)
+
+
+@csrf_exempt
 def get_childes_by_id(request, _id: int):  # выдаёт дочернюю часть дерева для записи с нужным id (все его прямые потомки на разных уровнях)
     accept_language = request.headers['Accept-Language']
     language_key = get_language_key(accept_language)

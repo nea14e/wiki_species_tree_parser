@@ -18,13 +18,14 @@ import os
 from django.contrib import admin
 from django.urls import path
 
-from species_tree_backend.views import get_childes_by_id, get_tree_by_id, get_tree_default, search_by_words, get_tip_of_the_day, check, \
+from species_tree_backend.views import get_translations, get_childes_by_id, get_tree_by_id, get_tree_default, search_by_words, get_tip_of_the_day, check, \
         admin_get_count_1, admin_get_count_2, admin_get_count_3
 
 from config import Config
 
 urlpatterns = [
     # path('admin/', admin.site.urls),  # Стандартная админ-панель Django - просто не нужна
+    path('api/get_translations', get_translations),
     path('api/get_childes_by_id/<int:_id>', get_childes_by_id),
     path('api/get_tree_by_id/<int:_id>', get_tree_by_id),
     path('api/get_tree_default', get_tree_default),

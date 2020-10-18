@@ -65,6 +65,8 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages.sql"))
         else:
             print("Таблица public.known_languages уже существует, пропускаем этап создания.")
+        print("Миграция public.known_languages_MIGRATE...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages_MIGRATE.sql"))
 
         # Таблица с советами дня
         print("\nТаблица с советами дня:")
@@ -74,8 +76,6 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day.sql"))
         else:
             print("Таблица public.tips_of_the_day уже существует, пропускаем этап создания.")
-        print("Миграция public.tips_of_the_day...")
-        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day_ADD_page_url.sql"))
 
         # Заполняем данными
         print("\n\n===================================================")
@@ -98,6 +98,8 @@ class DbFunctions:
         # (триггерные функции надо писать в скрипте создания их таблицы)
         print("\n\n===================================================")
         print("Хранимки и прочие скрипты:")
+        print("\nХранимка по выдаче перевода...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_translations.sql"))
         print("\nХранимка для выдачи дерева по умолчанию: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree_default.sql"))
         print("\nХранимка для выдачи дерева по id: перенакатываем...")

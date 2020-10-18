@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {NetworkService} from './network.service';
-import {Item, Level, Tree} from './models';
+import {Item, Level, TranslationRoot, Tree} from './models';
 import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
@@ -10,6 +10,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 })
 export class AppComponent implements OnInit {
 
+  translationRoot: TranslationRoot;
   tree: Tree;
 
   constructor(private networkService: NetworkService,
@@ -17,6 +18,12 @@ export class AppComponent implements OnInit {
               private router: Router) {}
 
   ngOnInit(): void {
+    this.networkService.getTranslations().subscribe(data => {
+      this.translationRoot = data;
+    }, error => {
+      alert(error);
+    });
+
     this.activatedRoute.queryParams.subscribe(params => {
         const id: number = +params.id || null;
         if (!id) {

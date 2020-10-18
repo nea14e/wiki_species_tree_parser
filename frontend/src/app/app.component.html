@@ -1,19 +1,19 @@
 <body class="container-fluid">
-<h1>{{tree?.translation.site_title}}</h1>
-<h4>{{tree?.translation.site_description}}</h4>
+<h1>{{translationRoot?.translations.site_title}}</h1>
+<h4>{{translationRoot?.translations.site_description}}</h4>
 
 <div class="row ml-0 mr-0 mb-2">
   <div class="btn col-auto mr-4">
     <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
-    {{tree?.translation.tip_of_the_day_word}}
+    {{translationRoot?.translations.tip_of_the_day_word}}
   </div>
   <div class="btn col-auto mr-4">
     <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
-    {{tree?.translation.search_word}}
+    {{translationRoot?.translations.search_word}}
   </div>
   <div class="btn col-auto mr-4">
     <img src="assets/from-bootstrap/vector-pen.svg" class="btn-img"/>
-    {{tree?.translation.authors_word}}
+    {{translationRoot?.translations.authors_word}}
   </div>
 </div>
 
@@ -21,7 +21,7 @@
   <div class="level-hr col-12" [class]="getLevelClass(level)"></div>
 
   <div class="level-title col-2 ml-0 mr-0" [class]="getLevelClass(level)">
-    {{tree?.translation.rank_word}}:
+    {{translationRoot?.translations.rank_word}}:
     <br/><b>{{level.title_on_language}}</b>
   </div>
 
