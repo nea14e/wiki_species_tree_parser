@@ -5,6 +5,10 @@
   color: darkviolet;
 }
 
+.level-parent-title {
+  word-break: break-word;
+}
+
 .level-hr {
   width: 100%;
   height: 3px;

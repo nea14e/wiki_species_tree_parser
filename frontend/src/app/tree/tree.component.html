@@ -33,6 +33,11 @@
   <div class="level-title col-2 ml-0 mr-0" [class]="getLevelClass(level)">
     {{rootData.translationRoot?.translations.rank_word}}:
     <br/><b>{{level.title_on_language}}</b>
+    <small *ngIf="!!level.level_parent_title">
+      <br/>
+      <br/>{{rootData.translationRoot?.translations.parent_word}}:
+      <br/><i class="level-parent-title">{{level.level_parent_title}}</i>
+    </small>
   </div>
 
   <div *ngFor="let item of level.items" (click)="onItemClick(item)" class="item p-0" [class]="getItemClass(item)">
@@ -76,3 +81,5 @@
 
   <div class="level-hr col-12" [class]="getLevelClass(level)"></div>
 </div>
+
+<div class="row mb-3"></div>
