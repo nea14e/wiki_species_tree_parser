@@ -30,7 +30,7 @@ $$
     ORDER BY random()
     LIMIT 1
   )
-  SELECT json_agg(t)
+  SELECT json_agg(t)->0
   FROM (
     SELECT id, tip_text, species_id, image_url
     FROM translated_cte
