@@ -15,6 +15,9 @@ export interface Translations {
   next_fact: string;
   rank_word: string;
   site_title: string;
+  translated_only: string;
+  latin_only: string;
+  both_languages: string;
   link_copied: string;
   parent_word: string;
   search_word: string;
@@ -58,6 +61,13 @@ export interface Item {
   is_expanded: boolean;
   is_selected: boolean;
   leaves_count: number;
+  title_latin: string;
   title_for_language: string;
   wiki_url_for_language: string;
+}
+
+export enum LatinModeEnum {
+  TranslatedOnly,
+  BothLanguages,
+  LatinOnly
 }

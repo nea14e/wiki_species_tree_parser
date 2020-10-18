@@ -7,6 +7,8 @@ import {RouterModule, Routes} from '@angular/router';
 import { TreeComponent } from './tree/tree.component';
 import { TipOfTheDayComponent } from './tip-of-the-day/tip-of-the-day.component';
 import { AuthorsComponent } from './authors/authors.component';
+import {FormsModule} from '@angular/forms';
+import {CommonModule} from '@angular/common';
 
 const routes: Routes = [
   { path: 'tip', component: TipOfTheDayComponent },
@@ -25,7 +27,9 @@ const routes: Routes = [
   imports: [
     BrowserModule,
     HttpClientModule,
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes),
+    CommonModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -56,11 +56,12 @@ BEGIN
                  INTO _level_items_json, _has_level_selected_item
           FROM (
                  SELECT id,
+                        title AS title_latin,
                         COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,    -- Latin name if not present
                         page_url,
                         image_url,
                         COALESCE(wikipedias_by_languages ->> _language_key,
-                                 wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English type if not present
+                                 wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wiki if not present
                         parent_id,
                         leaves_count,
                         COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,

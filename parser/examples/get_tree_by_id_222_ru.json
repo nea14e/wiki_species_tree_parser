@@ -11,6 +11,7 @@
           "parent_id": null,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "A",
           "leaves_count": 5,
           "title_for_language": "A_ru",
           "wiki_url_for_language": "A_ru_url"
@@ -22,6 +23,7 @@
           "parent_id": null,
           "is_expanded": true,
           "is_selected": false,
+          "title_latin": "B",
           "leaves_count": 9,
           "title_for_language": "B_ru",
           "wiki_url_for_language": "B_ru_url"
@@ -41,6 +43,7 @@
           "parent_id": 2,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Ba",
           "leaves_count": 2,
           "title_for_language": "Ba_ru",
           "wiki_url_for_language": "Ba_ru_url"
@@ -52,6 +55,7 @@
           "parent_id": 2,
           "is_expanded": true,
           "is_selected": false,
+          "title_latin": "Bb_without_languages",
           "leaves_count": 7,
           "title_for_language": "Bb_without_languages",
           "wiki_url_for_language": null
@@ -71,6 +75,7 @@
           "parent_id": 22,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb1",
           "leaves_count": 0,
           "title_for_language": "Bb1_ru",
           "wiki_url_for_language": "Bb1_ru_url"
@@ -82,6 +87,7 @@
           "parent_id": 22,
           "is_expanded": true,
           "is_selected": true,
+          "title_latin": "Bb2_en_only",
           "leaves_count": 4,
           "title_for_language": "Bb2_en_only",
           "wiki_url_for_language": "Bb2_en_url"
@@ -101,6 +107,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb21",
           "leaves_count": 0,
           "title_for_language": "Bb21_ru",
           "wiki_url_for_language": "Bb21_ru_url"
@@ -112,6 +119,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb22",
           "leaves_count": 1,
           "title_for_language": "Bb22_ru",
           "wiki_url_for_language": "Bb22_ru_url"
@@ -131,6 +139,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb2x1",
           "leaves_count": 0,
           "title_for_language": "Bb2x1_ru",
           "wiki_url_for_language": "Bb2x1_ru_url"
@@ -142,6 +151,7 @@
           "parent_id": 222,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb2x2",
           "leaves_count": 0,
           "title_for_language": "Bb2x2_ru",
           "wiki_url_for_language": "Bb2x2_ru_url"
@@ -152,17 +162,5 @@
       "is_level_has_selected_item": false
     }
   ],
-  "translation": {
-    "comment": "Русский",
-    "lang_key": "ru",
-    "rank_word": "Ранг",
-    "site_title": "Дерево видов",
-    "parent_word": "Родитель",
-    "search_word": "Поиск",
-    "authors_word": "Авторы",
-    "authors_content": "Сделано коллективом добровольцев, в том числе с использованием рабочего времени и ресурсов, щедро предоставленных <a href=\"https://it-avangard.su/\">ООО \"ИТ-Авангард\"</a>.",
-    "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Фотографии и информация для построения дерева взяты из проекта Викивиды",
-    "tip_of_the_day_word": "Совет дня"
-  },
   "_language_key": "ru"
 }

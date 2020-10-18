@@ -80,6 +80,19 @@
   font-weight: bold;
 }
 
+.item-title-second {
+  word-break: break-word;
+  font-style: italic;
+}
+
+.item-title-second.expanded {
+  font-weight: bold;
+}
+
+.item-title-second.selected {
+  font-weight: bold;
+}
+
 .item-leaves-count.expanded {
   font-weight: bold;
 }

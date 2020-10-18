@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {Item, Level, Tree} from '../models';
+import {Item, LatinModeEnum, Level, Tree} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkService} from '../network.service';
 import {RootDataKeeperService} from '../root-data-keeper.service';
@@ -15,6 +15,8 @@ import {RootDataKeeperService} from '../root-data-keeper.service';
 export class TreeComponent implements OnInit {
 
   tree: Tree;
+  latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
+  LATIN_MODE_ENUM = LatinModeEnum;
 
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,

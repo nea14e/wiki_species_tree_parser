@@ -7,10 +7,11 @@
         {
           "id": 1,
           "page_url": "A_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Diversidad_procariota.PNG/265px-Diversidad_procariota.PNG",
           "parent_id": null,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "A",
           "leaves_count": 5,
           "title_for_language": "A_ru",
           "wiki_url_for_language": "A_ru_url"
@@ -18,16 +19,18 @@
         {
           "id": 2,
           "page_url": "B_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Endomembrane_system_diagram_ru.svg/350px-Endomembrane_system_diagram_ru.svg.png",
           "parent_id": null,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "B",
           "leaves_count": 9,
           "title_for_language": "B_ru",
           "wiki_url_for_language": "B_ru_url"
         }
       ],
-      "title_on_language": "Первый уровень",
+      "level_parent_id": null,
+      "title_on_language": "\u041f\u0435\u0440\u0432\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c",
       "level_parent_title": null,
       "is_level_has_selected_item": false
     },
@@ -37,10 +40,11 @@
         {
           "id": 11,
           "page_url": "Aa_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/RedcrestedTuraco.jpg/275px-RedcrestedTuraco.jpg",
           "parent_id": 1,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Aa",
           "leaves_count": 3,
           "title_for_language": "Aa_ru",
           "wiki_url_for_language": "Aa_ru_url"
@@ -48,10 +52,11 @@
         {
           "id": 12,
           "page_url": "Ab_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bird_Diversity_2013.png/275px-Bird_Diversity_2013.png",
           "parent_id": 1,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Ab",
           "leaves_count": 2,
           "title_for_language": "Ab_ru",
           "wiki_url_for_language": "Ab_ru_url"
@@ -59,10 +64,11 @@
         {
           "id": 21,
           "page_url": "Ba_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Extant_reptilia.jpg/275px-Extant_reptilia.jpg",
           "parent_id": 2,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Ba",
           "leaves_count": 2,
           "title_for_language": "Ba_ru",
           "wiki_url_for_language": "Ba_ru_url"
@@ -70,10 +76,11 @@
         {
           "id": 22,
           "page_url": "Bb_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Mammal_Diversity_2011.png/275px-Mammal_Diversity_2011.png",
           "parent_id": 2,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb_without_languages",
           "leaves_count": 7,
           "title_for_language": "Bb_without_languages",
           "wiki_url_for_language": null
@@ -81,16 +88,18 @@
         {
           "id": 3,
           "page_url": "xc_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Rotavirus_Reconstruction.jpg/275px-Rotavirus_Reconstruction.jpg",
           "parent_id": null,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "xc",
           "leaves_count": 1,
           "title_for_language": "xc_ru",
           "wiki_url_for_language": "xc_ru_url"
         }
       ],
-      "title_on_language": "Второй уровень",
+      "level_parent_id": null,
+      "title_on_language": "\u0412\u0442\u043e\u0440\u043e\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c",
       "level_parent_title": null,
       "is_level_has_selected_item": false
     },
@@ -100,10 +109,11 @@
         {
           "id": 111,
           "page_url": "Aa1_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Afrikanischer_Elefant%2C_Miami.jpg/275px-Afrikanischer_Elefant%2C_Miami.jpg",
           "parent_id": 11,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Aa1",
           "leaves_count": 2,
           "title_for_language": "Aa1_ru",
           "wiki_url_for_language": "Aa1_ru_url"
@@ -111,10 +121,11 @@
         {
           "id": 112,
           "page_url": "Aa2_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Tuatara.jpg/275px-Tuatara.jpg",
           "parent_id": 11,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Aa2",
           "leaves_count": 0,
           "title_for_language": "Aa2_ru",
           "wiki_url_for_language": "Aa2_ru_url"
@@ -122,10 +133,11 @@
         {
           "id": 121,
           "page_url": "Ab1_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Turtles-Tortoises-Terrapins.jpg/275px-Turtles-Tortoises-Terrapins.jpg",
           "parent_id": 12,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Ab1",
           "leaves_count": 0,
           "title_for_language": "Ab1_ru",
           "wiki_url_for_language": "Ab1_ru_url"
@@ -133,10 +145,11 @@
         {
           "id": 122,
           "page_url": "Ab2_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Musky-rat_%28Hypsiprymnodon_moschatus%29.jpg/275px-Musky-rat_%28Hypsiprymnodon_moschatus%29.jpg",
           "parent_id": 12,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Ab2",
           "leaves_count": 0,
           "title_for_language": "Ab2_ru",
           "wiki_url_for_language": "Ab2_ru_url"
@@ -144,10 +157,11 @@
         {
           "id": 211,
           "page_url": "Ba1_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Carnivora_portraits.jpg/213px-Carnivora_portraits.jpg",
           "parent_id": 21,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Ba1",
           "leaves_count": 0,
           "title_for_language": "Ba1_ru",
           "wiki_url_for_language": "Ba1_ru_url"
@@ -155,10 +169,11 @@
         {
           "id": 212,
           "page_url": "Ba2_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Eulipotyphla.jpg/275px-Eulipotyphla.jpg",
           "parent_id": 21,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Ba2",
           "leaves_count": 0,
           "title_for_language": "Ba2_ru",
           "wiki_url_for_language": "Ba2_ru_url"
@@ -166,10 +181,11 @@
         {
           "id": 221,
           "page_url": "Bb1_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/The_Artiodactyla.jpg/275px-The_Artiodactyla.jpg",
           "parent_id": 22,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb1",
           "leaves_count": 0,
           "title_for_language": "Bb1_ru",
           "wiki_url_for_language": "Bb1_ru_url"
@@ -177,10 +193,11 @@
         {
           "id": 222,
           "page_url": "Bb2_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/White_Rhino.jpg/275px-White_Rhino.jpg",
           "parent_id": 22,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "Bb2_en_only",
           "leaves_count": 4,
           "title_for_language": "Bb2_en_only",
           "wiki_url_for_language": "Bb2_en_url"
@@ -188,31 +205,21 @@
         {
           "id": 31,
           "page_url": "xc1_url",
-          "image_url": null,
+          "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Rana_esculenta_on_Nymphaea_edit.JPG/275px-Rana_esculenta_on_Nymphaea_edit.JPG",
           "parent_id": 3,
           "is_expanded": false,
           "is_selected": false,
+          "title_latin": "xc1",
           "leaves_count": 0,
           "title_for_language": "xc1_ru",
           "wiki_url_for_language": "xc1_ru_url"
         }
       ],
-      "title_on_language": "Третий уровень",
+      "level_parent_id": null,
+      "title_on_language": "\u0422\u0440\u0435\u0442\u0438\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c",
       "level_parent_title": null,
       "is_level_has_selected_item": false
     }
   ],
-  "translation": {
-    "comment": "Русский",
-    "lang_key": "ru",
-    "rank_word": "Ранг",
-    "site_title": "Дерево видов",
-    "parent_word": "Родитель",
-    "search_word": "Поиск",
-    "authors_word": "Авторы",
-    "authors_content": "Сделано коллективом добровольцев, в том числе с использованием рабочего времени и ресурсов, щедро предоставленных <a href=\"https://it-avangard.su/\">ООО \"ИТ-Авангард\"</a>.",
-    "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Фотографии и информация для построения дерева взяты из проекта Викивиды",
-    "tip_of_the_day_word": "Совет дня"
-  },
   "_language_key": "ru"
 }

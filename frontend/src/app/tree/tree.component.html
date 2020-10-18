@@ -1,3 +1,31 @@
+<div class="row router-hr"></div>
+
+<div class="row ml-0 mb-2">
+  <label class="mr-4">
+    <input type="radio" name="latin"
+           [title]="rootData.translationRoot?.translations.translated_only"
+           [value]="LATIN_MODE_ENUM.TranslatedOnly"
+           [(ngModel)]="latinMode"
+    >
+    {{rootData.translationRoot?.translations.translated_only}}
+  </label>
+  <label class="mr-4">
+    <input type="radio" name="latin"
+           [title]="rootData.translationRoot?.translations.both_languages"
+           [value]="LATIN_MODE_ENUM.BothLanguages"
+           [(ngModel)]="latinMode"
+    >
+    {{rootData.translationRoot?.translations.both_languages}}
+  </label>
+  <label class="mr-4">
+    <input type="radio" name="latin"
+           [title]="rootData.translationRoot?.translations.latin_only"
+           [value]="LATIN_MODE_ENUM.LatinOnly"
+           [(ngModel)]="latinMode"
+    >
+    {{rootData.translationRoot?.translations.latin_only}}
+  </label>
+</div>
 
 <div *ngFor="let level of tree?.levels" class="row m-0">
   <div class="level-hr col-12" [class]="getLevelClass(level)"></div>
@@ -14,7 +42,15 @@
         <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language" class="item-img-content">
       </div>
       <div class="item-title d-flex justify-content-center" [class]="getItemClass(item)">
-        {{item.title_for_language}}
+        <span *ngIf="latinMode===LATIN_MODE_ENUM.TranslatedOnly || latinMode===LATIN_MODE_ENUM.BothLanguages">
+          {{item.title_for_language}}
+        </span>
+        <span *ngIf="latinMode===LATIN_MODE_ENUM.LatinOnly">
+          {{item.title_latin}}
+        </span>
+      </div>
+      <div *ngIf="latinMode===LATIN_MODE_ENUM.BothLanguages" class="item-title-second d-flex justify-content-center" [class]="getItemClass(item)">
+        {{item.title_latin}}
       </div>
 
       <div *ngIf="item.is_selected===true">
