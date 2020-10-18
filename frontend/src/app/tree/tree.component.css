@@ -1,13 +1,3 @@
-::ng-deep  :root {
-  --item-color-0: thistle;
-  --item-color-1: #c3a8c3;
-  --item-color-2: #bd9ed3;
-  --item-color-3: #bf81d3;
-  --item-color-4: #aa55d3;
-  --item-accent: darkviolet;
-  --item-selected-borders: darkviolet;
-}
-
 .level-title {
 }
 

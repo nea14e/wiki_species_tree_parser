@@ -1,0 +1,15 @@
+.item-img-container {
+  width: 33%;
+  height: 33%;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--item-color-1);
+}
+
+.item-img-content {
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
