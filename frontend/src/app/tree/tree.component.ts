@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {Item, Level, Tree} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkService} from '../network.service';
+import {RootDataKeeperService} from '../root-data-keeper.service';
 
 @Component({
   selector: 'app-tree',
@@ -15,7 +16,8 @@ export class TreeComponent implements OnInit {
 
   tree: Tree;
 
-  constructor(private networkService: NetworkService,
+  constructor(public rootData: RootDataKeeperService,
+              private networkService: NetworkService,
               private activatedRoute: ActivatedRoute,
               private router: Router) { }
 
@@ -55,9 +57,9 @@ export class TreeComponent implements OnInit {
       id = item.id;
     }
     if (!id) {
-      this.router.navigate([]);
+      this.router.navigate(['tree']);
     } else {
-      this.router.navigate([], { queryParams: { id } });
+      this.router.navigate(['tree'], { queryParams: { id } });
     }
   }
 

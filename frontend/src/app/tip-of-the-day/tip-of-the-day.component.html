@@ -1,0 +1,24 @@
+<div class="row router-hr"></div>
+<h3>{{rootData.translationRoot?.translations.tip_of_the_day_word}}</h3>
+<p>{{tip?.tip_text}}</p>
+
+<div class="row ml-0 mr-0 mt-5">
+  <div class="btn col-auto mr-4 mt-4"
+       (click)="isShowInTreeDisabled() ? $event.stopPropagation() : onShowInTreeClick()"
+       [class]="isShowInTreeDisabled() ? 'disabled' : ''">
+    <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
+    {{rootData.translationRoot?.translations.show_in_tree}}
+  </div>
+  <div class="btn col-auto mr-4 mt-4" (click)="onShareClick()">
+    <img src="assets/from-bootstrap/share.svg" class="btn-img"/>
+    {{rootData.translationRoot?.translations.copy_link_to_share}}
+  </div>
+  <div class="btn col-auto mr-4 mt-4" (click)="onNextTipClick()">
+    <img src="assets/from-bootstrap/chevron-double-right.svg" class="btn-img"/>
+    {{rootData.translationRoot?.translations.next_fact}}
+  </div>
+  <div class="btn col-auto mr-4 mt-4" (click)="onToTreeRootClick()">
+    <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
+    {{rootData.translationRoot?.translations.to_tree_root}}
+  </div>
+</div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {TranslationRoot, Tree} from './models';
+import {TipOfTheDay, TranslationRoot, Tree} from './models';
 import {environment} from '../environments/environment';
 
 @Injectable({
@@ -13,6 +13,10 @@ export class NetworkService {
 
   public getTranslations(): Observable<TranslationRoot> {
     return this.http.get<TranslationRoot>(environment.BACKEND_API_URL + 'get_translations');
+  }
+
+  public getTipOfTheDay(): Observable<TipOfTheDay> {
+    return this.http.get<TipOfTheDay>(environment.BACKEND_API_URL + 'get_tip_of_the_day');
   }
 
   public getTreeDefault(): Observable<Tree> {
