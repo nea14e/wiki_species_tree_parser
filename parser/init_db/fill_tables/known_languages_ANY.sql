@@ -3,6 +3,7 @@ WITH cte(lang_key, comment, translations) AS (
     '{
         "site_title": "Дерево видов",
         "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Фотографии и информация для построения дерева взяты из проекта Викивиды",
+        "go_back": "Назад",
         "rank_word": "Ранг",
         "parent_word": "Родитель",
         "read_on_wiki": "Читать на Википедии",
@@ -21,13 +22,14 @@ WITH cte(lang_key, comment, translations) AS (
         "delete_bookmark": "Удалить закладку",
         "delete_bookmark_question": "Удалить выбранную закладку?",
         "authors_word": "Авторы",
-        "authors_content": "Сделано коллективом добровольцев, в том числе с использованием рабочего времени и ресурсов, щедро предоставленных <a href=\"https://it-avangard.su/\">ООО \"ИТ-Авангард\"</a>."
+        "authors_content": "Сделано коллективом добровольцев, в том числе с использованием рабочего времени и ресурсов, щедро предоставленных <a href=\"https://it-avangard.su/\" target=\"_blank\">ООО \"ИТ-Авангард\"</a>."
       }'::jsonb
   ),
     ('en', 'English',
       '{
         "site_title": "Species tree",
         "site_description": "Biological systematics of more than 100,000 species of animals, plants, bacteria and fungi. Photos and information for building a tree are taken from the Wikispecies/Wikipedia project",
+        "go_back": "Back",
         "rank_word": "Rank",
         "parent_word": "Parent",
         "read_on_wiki": "Read on Wikipedia",
@@ -46,7 +48,7 @@ WITH cte(lang_key, comment, translations) AS (
         "delete_bookmark": "Remove bookmark",
         "delete_bookmark_question": "Remove selected bookmark?",
         "authors_word": "Authors",
-        "authors_content": "Made by team of volunteers from <a href=\"https://it-avangard.su/\">https://it-avangard.su/</a> company."
+        "authors_content": "Made by team of volunteers from <a href=\"https://it-avangard.su/\" target=\"_blank\">https://it-avangard.su/</a> company."
       }'::jsonb
     )
 ),
