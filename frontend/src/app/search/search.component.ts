@@ -30,20 +30,27 @@ export class SearchComponent implements OnInit {
   ngOnInit(): void {
     this.queryChanged  // see https://stackoverflow.com/a/52977862/7573844
       .pipe(
-        filter(value => value.length >= 3),
         debounceTime(1000), // wait 1 sec after the last event before emitting last event
         distinctUntilChanged() // only emit if value is different from previous value
       )
       .subscribe(data => {
         console.log('search:', data);
-        this.query = data;
-
-        // Call your function which calls API or do anything you would like do after a lag of 1 sec\
-        this.runSearch(0);
+        // Call your function which calls API or do anything you would like do after a lag of 1 sec
+        this.router.navigate(['search'], {queryParams: {q: data}});
       });
+
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.query = params.q || '';
+      this.runSearch(0);
+    });
   }
 
   runSearch(offset: number): void {
+    if (this.query.length < 3) {
+      this.resultItems = [];
+      return;
+    }
+
     this.networkService.search(this.query, offset)
       .subscribe(result => {
         console.log('result:', result);
@@ -51,6 +58,12 @@ export class SearchComponent implements OnInit {
       }, error => {
         alert(error);
       });
+  }
+
+  onShareClick(): void {
+    const val = window.location.href;
+    this.copyToClipboardService.copy(val);
+    alert(this.rootData.translationRoot?.translations.link_copied);
   }
 
   onQueryInputChanged(inputText: string): void {

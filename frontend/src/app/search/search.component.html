@@ -11,9 +11,14 @@
   >
 </div>
 
-
 <div *ngFor="let item of resultItems" class="row ml-0 d-flex justify-content-center">
   <div class="col-8">
     {{item.title_for_language}}
+  </div>
+</div>
+
+<div *ngIf="resultItems.length > 0" class="row ml-0 mt-3">
+  <div class="btn col-auto mr-2 mt-2" (click)="onShareClick()" [title]="rootData.translationRoot?.translations.copy_link_to_share">
+    <img src="assets/from-bootstrap/share.svg" class="btn-img"/>
   </div>
 </div>
