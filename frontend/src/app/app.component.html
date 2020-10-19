@@ -21,6 +21,21 @@
   </div>
 </div>
 
+<div class="row ml-0 mr-0 mb-2">
+  <div class="btn col-auto mr-2 mt-2"
+       (click)="onBackClick()"
+       [title]="translationRoot?.translations.go_back"
+  >
+    <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+  </div>
+  <div class="btn col-auto mr-2 mt-2"
+       (click)="onForwardClick()"
+       [title]="translationRoot?.translations.go_forward"
+  >
+    <img src="assets/from-bootstrap/arrow-right.svg" class="btn-img"/>
+  </div>
+</div>
+
 <router-outlet></router-outlet>
 
 </body>

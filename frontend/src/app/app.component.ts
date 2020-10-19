@@ -3,6 +3,7 @@ import {NetworkService} from './network.service';
 import {Item, Level, TranslationRoot, Tree} from './models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {RootDataKeeperService} from './root-data-keeper.service';
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ export class AppComponent implements OnInit {
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
               private activatedRoute: ActivatedRoute,
-              private router: Router) {}
+              private router: Router,
+              private location: Location) {}
 
   ngOnInit(): void {
     this.networkService.getTranslations().subscribe(data => {
@@ -53,5 +55,13 @@ export class AppComponent implements OnInit {
 
   onAuthorsClick(): void {
     this.router.navigate(['authors']);
+  }
+
+  onBackClick(): void {
+    this.location.back();
+  }
+
+  onForwardClick(): void {
+    this.location.forward();
   }
 }

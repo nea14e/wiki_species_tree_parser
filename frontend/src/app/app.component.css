@@ -19,6 +19,10 @@
   border: 2px solid black;
 }
 
+.btn.disabled, .btn:disabled {
+    opacity: .40;
+}
+
 .btn-img {
   width: 32px;
   height: 32px;
