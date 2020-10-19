@@ -27,6 +27,7 @@ export class TreeComponent implements OnInit {
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
+        this.rootData.lastTreeParams = params;
         const id: number = +params.id || null;
         if (!id) {
           this.networkService.getTreeDefault().subscribe(data => {

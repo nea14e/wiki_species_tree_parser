@@ -26,6 +26,7 @@ export class TipOfTheDayComponent implements OnInit {
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
+      this.rootData.lastTipParams = params;
       const id: number = +params.id || null;
       this.loadTip(id);
     });
@@ -34,15 +35,17 @@ export class TipOfTheDayComponent implements OnInit {
   loadTip(id: number): void {
     if (!!id) {
       this.networkService.getTipOfTheDayById(id).subscribe(data => {
+        const isFirstTip = (!this.tip);
         this.tip = data;
-        this.router.navigate(['tip'], {queryParams: {id: this.tip.id}});
+        this.router.navigate(['tip'], {queryParams: {id: this.tip.id}, replaceUrl: isFirstTip});
       }, error => {
         alert(error);
       });
     } else {
       this.networkService.getTipOfTheDay().subscribe(data => {
+        const isFirstTip = (!this.tip);
         this.tip = data;
-        this.router.navigate(['tip'], {queryParams: {id: this.tip.id}});
+        this.router.navigate(['tip'], {queryParams: {id: this.tip.id}, replaceUrl: isFirstTip});
       }, error => {
         alert(error);
       });

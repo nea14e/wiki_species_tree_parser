@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {TranslationRoot} from './models';
+import {Params} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -7,6 +8,9 @@ import {TranslationRoot} from './models';
 export class RootDataKeeperService {
 
   public translationRoot: TranslationRoot;
+  public lastTipParams: Params;
+  public lastTreeParams: Params;
+  public lastSearchParams: Params;
 
   constructor() { }
 }

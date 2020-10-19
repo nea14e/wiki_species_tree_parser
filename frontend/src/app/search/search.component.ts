@@ -36,10 +36,11 @@ export class SearchComponent implements OnInit {
       .subscribe(data => {
         console.log('search:', data);
         // Call your function which calls API or do anything you would like do after a lag of 1 sec
-        this.router.navigate(['search'], {queryParams: {q: data}});
+        this.router.navigate(['search'], {queryParams: {q: data}, replaceUrl: true});
       });
 
     this.activatedRoute.queryParams.subscribe(params => {
+      this.rootData.lastSearchParams = params;
       this.query = params.q || '';
       this.runSearch(0);
     });

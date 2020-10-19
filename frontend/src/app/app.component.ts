@@ -28,15 +28,27 @@ export class AppComponent implements OnInit {
   }
 
   onTipClick(): void {
-    this.router.navigate(['tip']);
+    if (!!this.rootData.lastTipParams) {
+      this.router.navigate(['tip'], {queryParams: this.rootData.lastTipParams});
+    } else {
+      this.router.navigate(['tip']);
+    }
   }
 
   onToTreeRootClick(): void {
-    this.router.navigate(['tree']);
+    if (!!this.rootData.lastTreeParams) {
+      this.router.navigate(['tree'], {queryParams: this.rootData.lastTreeParams});
+    } else {
+      this.router.navigate(['tree']);
+    }
   }
 
   onSearchClick(): void {
-    this.router.navigate(['search']);
+    if (!!this.rootData.lastSearchParams) {
+      this.router.navigate(['search'], {queryParams: this.rootData.lastSearchParams});
+    } else {
+      this.router.navigate(['search']);
+    }
   }
 
   onAuthorsClick(): void {
