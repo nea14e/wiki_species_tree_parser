@@ -71,7 +71,11 @@ export class TipOfTheDayComponent implements OnInit {
     alert(this.rootData.translationRoot?.translations.link_copied);
   }
 
-  onToTreeRootClick(): void {
-    this.router.navigate(['tree']);
+  onToTreeClick(): void {
+    if (!!this.rootData.lastTreeParams) {
+      this.router.navigate(['tree'], {queryParams: this.rootData.lastTreeParams});
+    } else {
+      this.router.navigate(['tree']);
+    }
   }
 }

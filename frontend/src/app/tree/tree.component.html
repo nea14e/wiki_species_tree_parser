@@ -1,7 +1,14 @@
 <div class="row router-hr"></div>
 
-<div class="row ml-0 mb-2">
-  <label class="mr-4">
+<div class="row ml-0 mb-3">
+  <div class="btn col-auto mr-5"
+       (click)="onToTreeRootClick()"
+       [title]="rootData.translationRoot?.translations.to_tree_root"
+  >
+    <img src="assets/from-bootstrap/house-door.svg" class="btn-img"/>
+  </div>
+
+  <label class="align-self-center mr-4">
     <input type="radio" name="latin"
            [title]="rootData.translationRoot?.translations.translated_only"
            [value]="LATIN_MODE_ENUM.TranslatedOnly"
@@ -9,7 +16,7 @@
     >
     {{rootData.translationRoot?.translations.translated_only}}
   </label>
-  <label class="mr-4">
+  <label class="align-self-center mr-4">
     <input type="radio" name="latin"
            [title]="rootData.translationRoot?.translations.both_languages"
            [value]="LATIN_MODE_ENUM.BothLanguages"
@@ -17,7 +24,7 @@
     >
     {{rootData.translationRoot?.translations.both_languages}}
   </label>
-  <label class="mr-4">
+  <label class="align-self-center mr-4">
     <input type="radio" name="latin"
            [title]="rootData.translationRoot?.translations.latin_only"
            [value]="LATIN_MODE_ENUM.LatinOnly"

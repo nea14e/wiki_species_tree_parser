@@ -26,6 +26,9 @@ export interface Translations {
   read_on_wiki: string;
   show_in_tree: string;
   to_tree_root: string;
+  to_tree: string;
+  go_back: string;
+  go_forward: string;
   authors_content: string;
   delete_bookmark: string;
   add_to_bookmarks: string;
@@ -39,7 +42,6 @@ export interface Translations {
   tip_of_the_day_word: string;
   delete_bookmark_question: string;
   bookmarks_use_cookies_question: string;
-  go_back: string;
 }
 
 export interface TipOfTheDay {

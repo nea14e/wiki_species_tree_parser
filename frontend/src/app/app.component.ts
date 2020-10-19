@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  onToTreeRootClick(): void {
+  onToTreeClick(): void {
     if (!!this.rootData.lastTreeParams) {
       this.router.navigate(['tree'], {queryParams: this.rootData.lastTreeParams});
     } else {

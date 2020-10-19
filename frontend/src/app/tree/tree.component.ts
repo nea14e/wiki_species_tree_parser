@@ -93,4 +93,7 @@ export class TreeComponent implements OnInit {
     alert(this.rootData.translationRoot?.translations.link_copied);
   }
 
+  onToTreeRootClick(): void {
+    this.router.navigate(['tree']);
+  }
 }
