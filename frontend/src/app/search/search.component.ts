@@ -60,6 +60,10 @@ export class SearchComponent implements OnInit {
       });
   }
 
+  onItemClick(item: SearchItem): void {
+    this.router.navigate(['tree'], {queryParams: {id: item.id}});
+  }
+
   onShareClick(): void {
     const val = window.location.href;
     this.copyToClipboardService.copy(val);

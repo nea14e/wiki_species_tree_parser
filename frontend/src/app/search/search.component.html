@@ -1,7 +1,7 @@
 <div class="row router-hr"></div>
 <h3>{{rootData.translationRoot?.translations.search_word}}</h3>
 
-<div class="row ml-0 d-flex justify-content-center">
+<div class="row ml-0 mt-2 mb-2 d-flex justify-content-center">
   <img src="assets/from-bootstrap/search.svg" class="btn-img mr-2"/>
   <input class="col-8" type="text"
          [(ngModel)]="query"
@@ -11,14 +11,41 @@
   >
 </div>
 
-<div *ngFor="let item of resultItems" class="row ml-0 d-flex justify-content-center">
+<div class="row ml-0 d-flex justify-content-center">
   <div class="col-8">
-    {{item.title_for_language}}
+
+    <div *ngFor="let item of resultItems" class="search-item row" (click)="onItemClick(item)">
+
+      <div class="search-item-img-container">
+        <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language"
+             class="search-item-img-content">
+      </div>
+
+      <div class="col-auto mr-auto d-flex">
+        <div class="align-self-center">
+          <small>{{item.rank_for_language}}</small>
+          <br/><b>{{item.title_for_language}}</b>
+        </div>
+      </div>
+
+      <div *ngIf="!!item.leaves_count"
+           class="col-auto d-flex"
+           [title]="rootData.translationRoot?.translations.leaves_count"
+      >
+        <div class="align-self-center">
+          <img src="assets/from-bootstrap/diagram-3.svg"/>
+          {{item.leaves_count}}
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </div>
 
 <div *ngIf="resultItems.length > 0" class="row ml-0 mt-3">
-  <div class="btn col-auto mr-2 mt-2" (click)="onShareClick()" [title]="rootData.translationRoot?.translations.copy_link_to_share">
+  <div class="btn col-auto mr-2 mt-2" (click)="onShareClick()"
+       [title]="rootData.translationRoot?.translations.copy_link_to_share">
     <img src="assets/from-bootstrap/share.svg" class="btn-img"/>
   </div>
 </div>
