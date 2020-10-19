@@ -32,6 +32,9 @@ export interface Translations {
   site_description: string;
   copy_link_to_share: string;
   search_result_empty: string;
+  leaves_count: string;
+  expanded_tooltip: string;
+  selected_tooltip: string;
   tip_of_the_day_word: string;
   delete_bookmark_question: string;
   bookmarks_use_cookies_question: string;
