@@ -35,6 +35,3 @@ FROM (
                         FROM translated_cte)
      ) t;
 $$;
-
-ALTER FUNCTION get_tip_of_the_day(text) OWNER TO postgres;
-
