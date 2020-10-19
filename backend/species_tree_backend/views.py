@@ -88,6 +88,19 @@ def get_tip_of_the_day(request):
 
 
 @csrf_exempt
+def get_tip_of_the_day_by_id(request, _id: int = None):
+    accept_language = request.headers['Accept-Language']
+    language_key = get_language_key(accept_language)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_tip_of_the_day_by_id(_language_key := %s, _id := %s);
+    """, (language_key, _id))
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
+
+
+@csrf_exempt
 def admin_get_count_1(request):
     conn = connections["default"]
     cur = conn.cursor()

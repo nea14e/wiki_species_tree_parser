@@ -110,6 +110,8 @@ class DbFunctions:
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
         print("\nХранимка по выдаче совета дня...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tip_of_the_day.sql"))
+        print("\nХранимка по выдаче совета дня по id...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tip_of_the_day_by_id.sql"))
         print("\nХранимка по подсчёту листов в дереве: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "service_update_leaves_count.sql"))
 

@@ -19,6 +19,10 @@ export class NetworkService {
     return this.http.get<TipOfTheDay>(environment.BACKEND_API_URL + 'get_tip_of_the_day');
   }
 
+  public getTipOfTheDayById(id: number): Observable<TipOfTheDay> {
+    return this.http.get<TipOfTheDay>(environment.BACKEND_API_URL + 'get_tip_of_the_day_by_id/' + id);
+  }
+
   public getTreeDefault(): Observable<Tree> {
     return this.http.get<Tree>(environment.BACKEND_API_URL + 'get_tree_default');
   }

@@ -59,11 +59,14 @@
       </div>
 
       <div *ngIf="item.is_selected===true">
-        <div class="item-btn btn ml-2 mr-2" (click)="readItemOnWiki(item)">
+        <div class="item-btn btn ml-2 mr-2" (click)="onReadWikiClick(item)">
           <img src="assets/from-bootstrap/layout-text-sidebar-reverse.svg" class="item-btn-img"/>
         </div>
-        <div class="item-btn btn mr-2" (click)="googleItem(item)">
+        <div class="item-btn btn mr-2" (click)="onGoogleItemClick(item)">
           <img src="assets/from-bootstrap/globe.svg" class="item-btn-img"/>
+        </div>
+        <div class="item-btn btn mr-2" (click)="onShareItemClick(item)">
+          <img src="assets/from-bootstrap/share.svg" class="item-btn-img"/>
         </div>
       </div>
 

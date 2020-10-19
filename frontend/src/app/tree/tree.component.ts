@@ -3,6 +3,7 @@ import {Item, LatinModeEnum, Level, Tree} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkService} from '../network.service';
 import {RootDataKeeperService} from '../root-data-keeper.service';
+import {CopyToClipboardService} from '../copy-to-clipboard.service';
 
 @Component({
   selector: 'app-tree',
@@ -21,7 +22,8 @@ export class TreeComponent implements OnInit {
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
               private activatedRoute: ActivatedRoute,
-              private router: Router) { }
+              private router: Router,
+              private copyToClipboardService: CopyToClipboardService) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
@@ -74,14 +76,20 @@ export class TreeComponent implements OnInit {
     return '';
   }
 
-  readItemOnWiki(item: Item): void {
+  onReadWikiClick(item: Item): void {
     const url = 'https://' + this.tree._language_key + '.wikipedia.org/wiki/' + item.wiki_url_for_language;
     window.open(url, '_blank');
   }
 
-  googleItem(item: Item): void {
+  onGoogleItemClick(item: Item): void {
     const url = 'https://www.google.com/search?q=' + encodeURIComponent(item.title_for_language);
     window.open(url, '_blank');
+  }
+
+  onShareItemClick(item: Item): void {
+    const val = window.location.href;
+    this.copyToClipboardService.copy(val);
+    alert(this.rootData.translationRoot?.translations.link_copied);
   }
 
 }

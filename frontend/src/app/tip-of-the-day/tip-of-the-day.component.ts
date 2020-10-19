@@ -3,6 +3,7 @@ import {NetworkService} from '../network.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TipOfTheDay} from '../models';
 import {RootDataKeeperService} from '../root-data-keeper.service';
+import {CopyToClipboardService} from '../copy-to-clipboard.service';
 
 @Component({
   selector: 'app-tip-of-the-day',
@@ -19,20 +20,33 @@ export class TipOfTheDayComponent implements OnInit {
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
               private activatedRoute: ActivatedRoute,
-              private router: Router) {
+              private router: Router,
+              private copyToClipboardService: CopyToClipboardService) {
   }
 
   ngOnInit(): void {
-    this.loadTip();
+    this.activatedRoute.queryParams.subscribe(params => {
+      const id: number = +params.id || null;
+      this.loadTip(id);
+    });
   }
 
-  loadTip(): void {
-    this.networkService.getTipOfTheDay().subscribe(data => {
-      this.tip = data;
-      this.router.navigate(['tip'], {queryParams: {id: this.tip.id}});
-    }, error => {
-      alert(error);
-    });
+  loadTip(id: number): void {
+    if (!!id) {
+      this.networkService.getTipOfTheDayById(id).subscribe(data => {
+        this.tip = data;
+        this.router.navigate(['tip'], {queryParams: {id: this.tip.id}});
+      }, error => {
+        alert(error);
+      });
+    } else {
+      this.networkService.getTipOfTheDay().subscribe(data => {
+        this.tip = data;
+        this.router.navigate(['tip'], {queryParams: {id: this.tip.id}});
+      }, error => {
+        alert(error);
+      });
+    }
   }
 
   isShowInTreeDisabled(): boolean {
@@ -44,11 +58,14 @@ export class TipOfTheDayComponent implements OnInit {
   }
 
   onNextTipClick(): void {
-    this.loadTip();
+    this.loadTip(null);
   }
 
+  // noinspection JSMethodCanBeStatic
   onShareClick(): void {
-    // TODO
+    const val = window.location.href;
+    this.copyToClipboardService.copy(val);
+    alert(this.rootData.translationRoot?.translations.link_copied);
   }
 
   onToTreeRootClick(): void {
