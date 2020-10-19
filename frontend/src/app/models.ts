@@ -21,6 +21,7 @@ export interface Translations {
   link_copied: string;
   parent_word: string;
   search_word: string;
+  search_tooltip: string;
   authors_word: string;
   read_on_wiki: string;
   show_in_tree: string;
@@ -73,4 +74,13 @@ export enum LatinModeEnum {
   TranslatedOnly,
   BothLanguages,
   LatinOnly
+}
+
+export interface SearchItem {
+  id: number;
+  rank_for_language: string;
+  title_for_language: string;
+  image_url: string;
+  rank_order: number;
+  leaves_count: number;
 }

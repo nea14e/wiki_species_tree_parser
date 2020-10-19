@@ -9,10 +9,12 @@ import { TipOfTheDayComponent } from './tip-of-the-day/tip-of-the-day.component'
 import { AuthorsComponent } from './authors/authors.component';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
+import { SearchComponent } from './search/search.component';
 
 const routes: Routes = [
   { path: 'tip', component: TipOfTheDayComponent },
   { path: 'tree', component: TreeComponent },
+  { path: 'search', component: SearchComponent },
   { path: 'authors', component: AuthorsComponent },
   { path: '**', redirectTo: 'tip' },
 ];
@@ -22,6 +24,7 @@ const routes: Routes = [
     AppComponent,
     TipOfTheDayComponent,
     TreeComponent,
+    SearchComponent,
     AuthorsComponent
   ],
   imports: [
