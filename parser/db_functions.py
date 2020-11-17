@@ -76,6 +76,8 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day.sql"))
         else:
             print("Таблица public.tips_of_the_day уже существует, пропускаем этап создания.")
+        print("\nТаблица с советами дня: добавление колонки page_url:")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day_ADD_page_url.sql"))
 
         # Заполняем данными
         print("\n\n===================================================")
