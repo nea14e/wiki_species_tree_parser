@@ -24,8 +24,9 @@ export class AppComponent implements OnInit {
     this.networkService.getTranslations().subscribe(data => {
       this.translationRoot = data;
       this.rootData.translationRoot = data;
-    }, error => {
-      alert(error);
+    }, () => {
+      alert('Please check network or try again later.');  // Здесь переводы ещё не загружены, поэтому английский.
+      // В остальных местах испрользуйте alert(this.rootData.translationRoot.translations.network_error);
     });
   }
 

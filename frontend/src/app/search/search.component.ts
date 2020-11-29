@@ -56,8 +56,8 @@ export class SearchComponent implements OnInit {
       .subscribe(result => {
         console.log('result:', result);
         this.resultItems = result;
-      }, error => {
-        alert(error);
+      }, () => {
+        alert(this.rootData.translationRoot.translations.network_error);
       });
   }
 

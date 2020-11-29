@@ -38,16 +38,16 @@ export class TipOfTheDayComponent implements OnInit {
         const isFirstTip = (!this.tip);
         this.tip = data;
         this.router.navigate(['tip'], {queryParams: {id: this.tip.id}, replaceUrl: isFirstTip});
-      }, error => {
-        alert(error);
+      }, () => {
+        alert(this.rootData.translationRoot.translations.network_error);
       });
     } else {
       this.networkService.getTipOfTheDay().subscribe(data => {
         const isFirstTip = (!this.tip);
         this.tip = data;
         this.router.navigate(['tip'], {queryParams: {id: this.tip.id}, replaceUrl: isFirstTip});
-      }, error => {
-        alert(error);
+      }, () => {
+        alert(this.rootData.translationRoot.translations.network_error);
       });
     }
   }

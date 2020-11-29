@@ -42,6 +42,7 @@ export interface Translations {
   tip_of_the_day_word: string;
   delete_bookmark_question: string;
   bookmarks_use_cookies_question: string;
+  network_error: string;
 }
 
 export interface TipOfTheDay {

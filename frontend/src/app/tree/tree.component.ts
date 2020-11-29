@@ -32,14 +32,14 @@ export class TreeComponent implements OnInit {
         if (!id) {
           this.networkService.getTreeDefault().subscribe(data => {
             this.tree = data;
-          }, error => {
-            alert(error);
+          }, () => {
+            alert(this.rootData.translationRoot.translations.network_error);
           });
         } else {
           this.networkService.getTreeById(id).subscribe(data => {
             this.tree = data;
-          }, error => {
-            alert(error);
+          }, () => {
+            alert(this.rootData.translationRoot.translations.network_error);
           });
         }
       });
