@@ -10,12 +10,15 @@ import { AuthorsComponent } from './authors/authors.component';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import { SearchComponent } from './search/search.component';
+import { DbTasksComponent } from './admin/db-tasks/db-tasks.component';
 
 const routes: Routes = [
   { path: 'tip', component: TipOfTheDayComponent },
   { path: 'tree', component: TreeComponent },
   { path: 'search', component: SearchComponent },
   { path: 'authors', component: AuthorsComponent },
+  { path: 'admin', redirectTo: 'tip' },
+  { path: 'admin/db-tasks', component: DbTasksComponent },
   { path: '**', redirectTo: 'tip' },
 ];
 
@@ -25,7 +28,8 @@ const routes: Routes = [
     TipOfTheDayComponent,
     TreeComponent,
     SearchComponent,
-    AuthorsComponent
+    AuthorsComponent,
+    DbTasksComponent
   ],
   imports: [
     BrowserModule,

@@ -7,6 +7,7 @@ import {Params} from '@angular/router';
 })
 export class RootDataKeeperService {
 
+  public adminPassword: string;
   public translationRoot: TranslationRoot;
   public lastTipParams: Params;
   public lastTreeParams: Params;

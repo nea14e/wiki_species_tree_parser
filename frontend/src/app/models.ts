@@ -43,6 +43,11 @@ export interface Translations {
   delete_bookmark_question: string;
   bookmarks_use_cookies_question: string;
   network_error: string;
+  // Admin:
+  admin_password_placeholder: string;
+  admin_password_error: string;
+  admin_logout: string;
+  admin_db_tasks: string;
 }
 
 export interface TipOfTheDay {

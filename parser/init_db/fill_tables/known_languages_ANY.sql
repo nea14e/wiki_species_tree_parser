@@ -31,8 +31,12 @@ WITH cte(lang_key, comment, translations) AS (
         "delete_bookmark": "Удалить закладку",
         "delete_bookmark_question": "Удалить выбранную закладку?",
         "authors_word": "Авторы",
-        "authors_content": "Сделано коллективом добровольцев, в том числе с использованием рабочего времени и ресурсов, щедро предоставленных <a href=\"https://it-avangard.su/\" target=\"_blank\">ООО \"ИТ-Авангард\"</a>."
-        "network_error": "Проверьте подключение к Интернету или попробуйте позже."
+        "authors_content": "Сделано коллективом добровольцев, в том числе с использованием рабочего времени и ресурсов, щедро предоставленных <a href=\"https://it-avangard.su/\" target=\"_blank\">ООО \"ИТ-Авангард\"</a>.",
+        "network_error": "Проверьте подключение к Интернету или попробуйте позже.",
+        "admin_password_placeholder": "Введите здесь пароль администратора и просто работайте как админ",
+        "admin_password_error": "Неверный пароль администратора",
+        "admin_logout": "Выйти из администрирования",
+        "admin_db_tasks": "Задачи БД"
       }'::jsonb
   ),
     ('en', 'English',
@@ -68,7 +72,11 @@ WITH cte(lang_key, comment, translations) AS (
         "delete_bookmark_question": "Remove selected bookmark?",
         "authors_word": "Authors",
         "authors_content": "Made by team of volunteers from <a href=\"https://it-avangard.su/\" target=\"_blank\">https://it-avangard.su/</a> company.",
-        "network_error": "Please check Internet connection or try again later."
+        "network_error": "Please check Internet connection or try again later.",
+        "admin_password_placeholder": "Input admin password here and just work as admin",
+        "admin_password_error": "Wrond admin password",
+        "admin_logout": "Logout from admin",
+        "admin_db_tasks": "DB tasks"
       }'::jsonb
     )
 ),

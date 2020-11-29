@@ -79,6 +79,15 @@ class DbFunctions:
         print("\nТаблица с советами дня: добавление колонки page_url:")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day_ADD_page_url.sql"))
 
+        # Таблица с запущенными задачами
+        print("\nТаблица с запущенными задачами:")
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'tasks');"
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tasks.sql"))
+        else:
+            print("Таблица public.tasks уже существует, пропускаем этап создания.")
+
         # Заполняем данными
         print("\n\n===================================================")
         print("Заполняем данными:")

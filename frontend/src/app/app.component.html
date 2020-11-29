@@ -36,6 +36,31 @@
   </div>
 </div>
 
+<div *ngIf="isAdminMode===true">
+  <div class="row router-hr"></div>
+
+  <div class="row ml-0 mr-0 mb-2">
+    <input type="text"
+           [(ngModel)]="rootData.adminPassword"
+           [placeholder]="translationRoot?.translations.admin_password_placeholder">
+  </div>
+
+  <div *ngIf="!!rootData.adminPassword" class="row ml-0 mr-0 mb-2">
+    <div class="btn col-auto mr-2 mt-2"
+         (click)="onToDbTasksClick()"
+    >
+      <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
+      {{translationRoot?.translations.admin_db_tasks}}
+    </div>
+    <div class="btn col-auto mt-2"
+         (click)="adminLogout()"
+         [title]="translationRoot?.translations.admin_logout"
+    >
+      <img src="assets/from-bootstrap/door-open-fill.svg" class="btn-img"/>
+    </div>
+  </div>
+</div>
+
 <router-outlet></router-outlet>
 
 </body>

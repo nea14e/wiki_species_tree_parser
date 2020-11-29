@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {NetworkService} from './network.service';
-import {Item, Level, TranslationRoot, Tree} from './models';
+import {TranslationRoot} from './models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {RootDataKeeperService} from './root-data-keeper.service';
 import {Location} from '@angular/common';
@@ -13,6 +13,7 @@ import {Location} from '@angular/common';
 export class AppComponent implements OnInit {
 
   translationRoot: TranslationRoot;
+  isAdminMode = false;  // активируется по URL "/admin" и его продолжениям
 
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
@@ -27,6 +28,12 @@ export class AppComponent implements OnInit {
     }, () => {
       alert('Please check network or try again later.');  // Здесь переводы ещё не загружены, поэтому английский.
       // В остальных местах испрользуйте alert(this.rootData.translationRoot.translations.network_error);
+    });
+
+    this.location.onUrlChange(url => {
+      if (url.includes('admin')) {
+        this.isAdminMode = true;
+      }
     });
   }
 
@@ -64,5 +71,15 @@ export class AppComponent implements OnInit {
 
   onForwardClick(): void {
     this.location.forward();
+  }
+
+  onToDbTasksClick(): void {
+    this.router.navigate(['admin/db-tasks']);
+  }
+
+  adminLogout(): void {
+    this.isAdminMode = false;
+    this.rootData.adminPassword = null;
+    this.router.navigate(['tip']);
   }
 }
