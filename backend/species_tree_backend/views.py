@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from species_tree_backend.http_headers_parser import get_language_key
 
 from config import Config
+from config_EXAMPLE import Config as ConfigExample
 
 
 # ====================================
@@ -117,15 +118,21 @@ def get_tip_of_the_day_by_id(request, _id: int = None):
 # Это декоратор для всех функций, где надо проверять ключ админа в теле запроса
 def check_admin_request(func):
     def wrapped(*args, **kw):
+
+        if (ConfigExample.BACKEND_SECRET_KEY == Config.BACKEND_SECRET_KEY):
+            return JsonResponse({"is_ok": False, "message": "You forgot to change Config.BACKEND_SECRET_KEY when copied from Config_EXAMPLE!"})
+        if (ConfigExample.BACKEND_ADMIN_URL_PREFIX == Config.BACKEND_ADMIN_URL_PREFIX):
+            return JsonResponse({"is_ok": False, "message": "You forgot to change Config.BACKEND_ADMIN_URL_PREFIX when copied from Config_EXAMPLE!"})
+
         request = args[0]
         try:
             body = json.loads(request.body)
             if (str(body["adminKey"]) != Config.BACKEND_ADMIN_URL_PREFIX):
-                return JsonResponse({"isOk": False, "message": "Wrong admin key"})
+                return JsonResponse({"is_ok": False, "message": "Wrong admin key"})
         except BaseException:
             return JsonResponse(
                 {
-                    "isOk": False,
+                    "is_ok": False,
                     "message": "All admin's requests must be of HTTP POST type with 'adminKey' provided in POST's json object."
                 }
             )
