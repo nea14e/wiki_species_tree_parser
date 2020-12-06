@@ -71,9 +71,9 @@
           <option value="0" [selected]="editingTask.stage==='0'">0 - init DB / migrate DB</option>
           <option value="1" [selected]="editingTask.stage==='1'">1 - populate list</option>
           <option value="2" [selected]="editingTask.stage==='2'">2 - parse (items from stage 1)</option>
-          <option value="3" [selected]="editingTask.stage==='3'">3 - correct parents (items from stage 3)</option>
-          <option value="4" [selected]="editingTask.stage==='4'">4 - update leaves count (items from stage 4)</option>
-          <option value="parse_language" [selected]="editingTask.stage==='parse_language'">parse_language - parse translations (items from stage 1)</option>
+          <option value="3" [selected]="editingTask.stage==='3'">3 - correct parents (items from stage 2)</option>
+          <option value="4" [selected]="editingTask.stage==='4'">4 - update leaves count (items from stage 3)</option>
+          <option value="parse_language" [selected]="editingTask.stage==='parse_language'">parse_language - parse translations (items from stage 2)</option>
         </select>
       </div>
     </div>
