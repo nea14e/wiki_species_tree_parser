@@ -82,4 +82,8 @@ export class AppComponent implements OnInit {
     this.rootData.adminPassword = null;
     this.router.navigate(['tip']);
   }
+
+  onAdminPasswordChange(): void {
+    this.onToDbTasksClick();  // Show db tasks admin panel
+  }
 }

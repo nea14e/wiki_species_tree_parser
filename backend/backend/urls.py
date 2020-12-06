@@ -20,7 +20,7 @@ from django.urls import path
 
 from species_tree_backend.views import get_translations, get_childes_by_id, get_tree_by_id, get_tree_default, \
         search_by_words, get_tip_of_the_day, get_tip_of_the_day_by_id, check, \
-        admin_get_tasks, admin_add_task, admin_edit_task, admin_delete_task, \
+        admin_get_known_languages_all, admin_get_tasks, admin_add_task, admin_edit_task, admin_delete_task, \
         admin_get_count_1, admin_get_count_2, admin_get_count_3
 
 from config import Config
@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/get_tip_of_the_day_by_id/<int:_id>', get_tip_of_the_day_by_id),
     path('check', check),
     path('', check),
+    path('api/admin_get_known_languages_all', admin_get_known_languages_all),
     path('api/admin_get_tasks', admin_get_tasks),
     path('api/admin_add_task', admin_add_task),
     path('api/admin_edit_task', admin_edit_task),

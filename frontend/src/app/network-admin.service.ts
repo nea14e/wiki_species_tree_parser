@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, of, throwError} from 'rxjs';
 import {environment} from '../environments/environment';
-import {AdminResponse, DbTask} from './models-admin';
+import {AdminLanguage, AdminResponse, DbTask} from './models-admin';
 import {catchError, switchMap} from 'rxjs/operators';
 
 @Injectable({
@@ -21,6 +21,30 @@ export class NetworkAdminService {
     );
   }
 
+  public createTask(task: DbTask, adminKey: string): Observable<AdminResponse> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_add_task', {adminKey, data: task})
+    );
+  }
+
+  public saveTask(task: DbTask, adminKey: string): Observable<AdminResponse> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_edit_task', {adminKey, data: task})
+    );
+  }
+
+  public deleteTask(id: number, adminKey: string): Observable<AdminResponse> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_delete_task', {adminKey, id})
+    );
+  }
+
+  public getKnownLanguagesAll(adminKey: string): Observable<AdminLanguage[]> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminLanguage[] | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_known_languages_all', {adminKey})
+    );
+  }
+
   /*
     Оборачиваем все Observable сетевых запросов админки в этот метод.
     Все запросы админки могут вместо данных положенного типа T вернуть AdminResponse с ошибкой.
@@ -36,8 +60,10 @@ export class NetworkAdminService {
           return throwError(null);
         }),
         switchMap(response => {
-          if ('message' in response) {
-            return throwError(response.message);  // Послать дальше по трубе ошибку
+          if ('is_ok' in response) {
+            if (response.is_ok === false) {
+              return throwError(response.message);  // Послать дальше по трубе ошибку
+            }
           }
           return of(response as T);  // Послать дальше по трубе данные
           // Так как throwError() возвращает Observable, то используется метод switchMap(), возвращающий Observable,

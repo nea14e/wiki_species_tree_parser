@@ -144,18 +144,29 @@ def check_admin_request(func):
 
 @check_admin_request
 @csrf_exempt
+def admin_get_known_languages_all(request):
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT COALESCE(json_agg(t ORDER BY t.lang_key), '[]')
+        FROM (
+               SELECT *
+               FROM public.known_languages
+             ) t;
+    """)
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
+
+
+@check_admin_request
+@csrf_exempt
 def admin_get_tasks(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.isCompleted, t.id), '[]')
+        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.is_completed, t.id), '[]')
         FROM (
-               SELECT
-                      id,
-                      stage,
-                      args,
-                      is_run_on_startup AS isRunOnStartup,
-                      is_completed AS isCompleted
+               SELECT *
                FROM public.tasks
           ) t;
     """)
@@ -172,7 +183,7 @@ def admin_add_task(request):
     cur.execute("""
         INSERT INTO public.tasks(stage, args, is_run_on_startup)
         VALUES (%s, %s, %s);
-    """, (body["data"]["stage"], body["data"]["args"], body["data"]["is_run_on_startup"]))
+    """, (body["data"]["stage"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"]))
     return JsonResponse({"is_ok": True, "message": "Task added successfully."})
 
 
@@ -188,7 +199,7 @@ def admin_edit_task(request):
          args = %s,
          is_run_on_startup = %s
         WHERE id = %s;
-    """, (body["data"]["stage"], body["data"]["args"], body["data"]["is_run_on_startup"], body["data"]["id"]))
+    """, (body["data"]["stage"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"], body["data"]["id"]))
     return JsonResponse({"is_ok": True, "message": "Task edited successfully."})
 
 

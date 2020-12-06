@@ -40,9 +40,11 @@
   <div class="row router-hr"></div>
 
   <div class="row ml-0 mr-0 mb-2">
-    <input type="text"
+    <input class="col-12" type="text"
            [(ngModel)]="rootData.adminPassword"
-           [placeholder]="translationRoot?.translations.admin_password_placeholder">
+           [placeholder]="translationRoot?.translations.admin_password_placeholder"
+           (ngModelChange)="onAdminPasswordChange()"
+    >
   </div>
 
   <div *ngIf="!!rootData.adminPassword" class="row ml-0 mr-0 mb-2">

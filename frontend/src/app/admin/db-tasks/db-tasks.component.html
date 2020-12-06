@@ -1,1 +1,182 @@
-<p>db-tasks works!</p>
+<div class="row router-hr"></div>
+<h3>{{rootData.translationRoot?.translations.admin_db_tasks}}</h3>
+
+<div class="row ml-0 mr-0 mb-2">
+  <div class="btn col-auto mr-2 mt-2"
+       (click)="onCreateClick()"
+       [title]="rootData.translationRoot?.translations.create"
+  >
+    <img src="assets/from-bootstrap/plus.svg" class="btn-img"/>
+  </div>
+</div>
+
+<div class="row ml-0 mr-0">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Stage</th>
+        <th>Args</th>
+        <th>Run on startup</th>
+        <th>Is completed</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let task of tasks">
+        <td>{{task.stage}}</td>
+        <td>
+          <span *ngIf="task.stage==='0'">{{task.args.is_test}}</span>
+          <span *ngIf="task.stage==='1'">{{task.args.from_title}} - {{task.args.to_title}}</span>
+          <span *ngIf="task.stage==='2'">{{task.args.skip_parsed_interval}}, {{task.args.where}}</span>
+          <span *ngIf="task.stage==='3'">{{task.args.where}}</span>
+          <span *ngIf="task.stage==='4'">-</span>
+          <span *ngIf="task.stage==='parse_language'">{{task.args.lang_key}}, {{task.args.skip_parsed_interval}}, {{task.args.where}}</span>
+        </td>
+        <td>
+          <input type="checkbox" [(ngModel)]="task.is_run_on_startup" disabled>
+        </td>
+        <td>
+          <input type="checkbox" [(ngModel)]="task.is_completed" disabled>
+        </td>
+        <td>
+          <div class="btn col-auto mr-2"
+               (click)="onEditClick(task)"
+               [title]="rootData.translationRoot?.translations.edit"
+          >
+            <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
+          </div>
+          <div class="btn col-auto mr-2"
+               (click)="onDeleteClick(task)"
+               [title]="rootData.translationRoot?.translations.delete"
+          >
+            <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="editingTask!==null" class="row">
+  <div class="row ml-0 mr-0 router-hr"></div>
+
+  <div class="container-fluid">
+
+    <div class="row mt-4">
+      <div class="col-3">
+        Stage:
+      </div>
+      <div class="col-9">
+        <select [(ngModel)]="editingTask.stage">
+          <option value="0" [selected]="editingTask.stage==='0'">0 - init DB / migrate DB</option>
+          <option value="1" [selected]="editingTask.stage==='1'">1 - populate list</option>
+          <option value="2" [selected]="editingTask.stage==='2'">2 - parse (items from stage 1)</option>
+          <option value="3" [selected]="editingTask.stage==='3'">3 - correct parents (items from stage 3)</option>
+          <option value="4" [selected]="editingTask.stage==='4'">4 - update leaves count (items from stage 4)</option>
+          <option value="parse_language" [selected]="editingTask.stage==='parse_language'">parse_language - parse translations (items from stage 1)</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='parse_language'" class="row mt-4">
+      <div class="col-3">
+        lang_key:
+      </div>
+      <div class="col-9">
+        <select [(ngModel)]="editingTask.args.lang_key">
+          <option *ngFor="let lang of knownLanguagesAll" [value]="lang.lang_key" [selected]="editingTask.args.lang_key === lang.lang_key">
+            {{lang.lang_key}} - {{lang.comment}}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='0'" class="row mt-4">
+      <div class="col-3">
+        is_test:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingTask.args.is_test">
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='1'" class="row mt-4">
+      <div class="col-3">
+        from_title:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingTask.args.from_title">
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='1'" class="row mt-4">
+      <div class="col-3">
+        to_title:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingTask.args.to_title">
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='2' || editingTask.stage==='parse_language'" class="row mt-4">
+      <div class="col-3">
+        skip_parsed_interval:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingTask.args.skip_parsed_interval">
+        <br/>
+        <small>Do not try again failed/skipped items on the interval; always start from last parsed item on the interval</small>
+        <br/>
+        <small>CHECK to not waste time on parsing restarts</small>
+        <small>UNCHECK to try parse failed items again or remove gaps</small>
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='2' || editingTask.stage==='3' || editingTask.stage==='parse_language'" class="row mt-4">
+      <div class="col-3">
+        where:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingTask.args.where">
+        <br/>
+        <small>Write here "where" clause for SQL query for table "public.list". Please use "page_url" column for conditions (title may change through parsing progress):</small>
+        <br/>
+        <small>page_url >= 'Aa' AND page_url < 'Ca'</small>
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='1' || editingTask.stage==='2' || editingTask.stage==='parse_language'" class="row mt-4">
+      <div class="col-3">
+        proxy:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingTask.args.proxy">
+        <br/>
+        <small>For example:</small>
+        <br/>
+        <small>"protocol://address:port@login:password"</small>
+        <br/>
+        <small>"protocol://address:port"</small>
+      </div>
+    </div>
+
+    <div class="row ml-0 mr-0 mb-2">
+
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onCancelClick()"
+      >
+        <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.cancel}}
+      </div>
+
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onSaveClick()"
+      >
+        <img src="assets/from-bootstrap/check-2.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.save}}
+      </div>
+
+    </div>
+
+  </div>
+</div>

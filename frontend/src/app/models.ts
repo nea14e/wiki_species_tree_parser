@@ -48,6 +48,11 @@ export interface Translations {
   admin_password_error: string;
   admin_logout: string;
   admin_db_tasks: string;
+  create: string;
+  edit: string;
+  delete: string;
+  save: string;
+  cancel: string;
 }
 
 export interface TipOfTheDay {

@@ -36,7 +36,12 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_password_placeholder": "Введите здесь пароль администратора и просто работайте как админ",
         "admin_password_error": "Неверный пароль администратора",
         "admin_logout": "Выйти из администрирования",
-        "admin_db_tasks": "Задачи БД"
+        "admin_db_tasks": "Задачи БД",
+        "create": "Добавить новый",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "save": "Сохранить",
+        "cancel": "Отмена"
       }'::jsonb
   ),
     ('en', 'English',
@@ -76,7 +81,12 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_password_placeholder": "Input admin password here and just work as admin",
         "admin_password_error": "Wrond admin password",
         "admin_logout": "Logout from admin",
-        "admin_db_tasks": "DB tasks"
+        "admin_db_tasks": "DB tasks",
+        "create": "Create",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel"
       }'::jsonb
     )
 ),
