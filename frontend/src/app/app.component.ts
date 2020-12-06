@@ -84,6 +84,7 @@ export class AppComponent implements OnInit {
   }
 
   onAdminPasswordChange(): void {
-    this.onToDbTasksClick();  // Show db tasks admin panel
+    this.router.navigate(['authors'])  // navigate to some another component previously to refresh db-tasks
+      .then(() => this.router.navigate(['admin/db-tasks']));  // Show db tasks admin panel
   }
 }

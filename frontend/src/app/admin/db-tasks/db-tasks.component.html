@@ -14,6 +14,7 @@
   <table class="table">
     <thead>
       <tr>
+        <th>Id</th>
         <th>Stage</th>
         <th>Args</th>
         <th>Run on startup</th>
@@ -23,6 +24,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let task of tasks">
+        <td>{{task.id}}</td>
         <td>{{task.stage}}</td>
         <td>
           <span *ngIf="task.stage==='0'">{{task.args.is_test}}</span>
@@ -64,7 +66,16 @@
 
     <div class="row mt-4">
       <div class="col-3">
-        Stage:
+        id:
+      </div>
+      <div class="col-9">
+        {{editingTask.id}}
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        stage<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <select [(ngModel)]="editingTask.stage">
@@ -80,7 +91,7 @@
 
     <div *ngIf="editingTask.stage==='parse_language'" class="row mt-4">
       <div class="col-3">
-        lang_key:
+        lang_key<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <select [(ngModel)]="editingTask.args.lang_key">
@@ -93,7 +104,7 @@
 
     <div *ngIf="editingTask.stage==='0'" class="row mt-4">
       <div class="col-3">
-        is_test:
+        is_test<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <input type="checkbox" [(ngModel)]="editingTask.args.is_test">
@@ -102,7 +113,7 @@
 
     <div *ngIf="editingTask.stage==='1'" class="row mt-4">
       <div class="col-3">
-        from_title:
+        from_title<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <input type="text" [(ngModel)]="editingTask.args.from_title">
@@ -111,7 +122,7 @@
 
     <div *ngIf="editingTask.stage==='1'" class="row mt-4">
       <div class="col-3">
-        to_title:
+        to_title<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <input type="text" [(ngModel)]="editingTask.args.to_title">
@@ -120,7 +131,7 @@
 
     <div *ngIf="editingTask.stage==='2' || editingTask.stage==='parse_language'" class="row mt-4">
       <div class="col-3">
-        skip_parsed_interval:
+        skip_parsed_interval<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <input type="checkbox" [(ngModel)]="editingTask.args.skip_parsed_interval">
@@ -134,7 +145,7 @@
 
     <div *ngIf="editingTask.stage==='2' || editingTask.stage==='3' || editingTask.stage==='parse_language'" class="row mt-4">
       <div class="col-3">
-        where:
+        where<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <input type="text" [(ngModel)]="editingTask.args.where">

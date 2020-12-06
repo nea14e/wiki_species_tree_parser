@@ -39,8 +39,10 @@
 <div *ngIf="isAdminMode===true">
   <div class="row router-hr"></div>
 
+  <h3>Admin panel:</h3>
+
   <div class="row ml-0 mr-0 mb-2">
-    <input class="col-12" type="text"
+    <input class="col-12" type="password"
            [(ngModel)]="rootData.adminPassword"
            [placeholder]="translationRoot?.translations.admin_password_placeholder"
            (ngModelChange)="onAdminPasswordChange()"
