@@ -19,12 +19,15 @@
         <th>Stage</th>
         <th>Args</th>
         <th>Run on startup</th>
+        <th>Is running now</th>
         <th>Is completed</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let task of tasks">
+      <tr *ngFor="let task of tasks"
+          [style.background]="getColorForTask(task)"
+      >
         <td>{{task.id}}</td>
         <td>{{task.stage}}</td>
         <td>
@@ -39,21 +42,55 @@
           <input type="checkbox" [(ngModel)]="task.is_run_on_startup" disabled>
         </td>
         <td>
-          <input type="checkbox" [(ngModel)]="task.is_completed" disabled>
+          <input type="checkbox" [(ngModel)]="task.is_running_now" disabled>
         </td>
         <td>
+          <input type="checkbox" [(ngModel)]="task.is_success" disabled>
+        </td>
+        <td>
+
+          <div class="btn col-auto mr-2"
+               (click)="onRunClick(task)"
+               title="Run task"
+          >
+            <img src="assets/from-bootstrap/play-fill.svg" class="btn-img"/>
+          </div>
+
+          <div *ngIf="" class="btn col-auto mr-2"
+               (click)="onPauseClick(task)"
+               title="Pause task"
+          >
+            <img src="assets/from-bootstrap/pause-fill.svg" class="btn-img"/>
+          </div>
+
+          <div class="btn col-auto mr-2"
+               (click)="onStopClick(task)"
+               title="Pause task"
+          >
+            <img src="assets/from-bootstrap/stop-fill.svg" class="btn-img"/>
+          </div>
+
           <div class="btn col-auto mr-2"
                (click)="onEditClick(task)"
                [title]="rootData.translationRoot?.translations.edit"
           >
             <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
           </div>
+
+          <div class="btn col-auto mr-2"
+               (click)="onDuplicateClick(task)"
+               title="Duplicate and edit"
+          >
+            <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
+          </div>
+
           <div class="btn col-auto mr-2"
                (click)="onDeleteClick(task)"
                [title]="rootData.translationRoot?.translations.delete"
           >
             <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
           </div>
+
         </td>
       </tr>
     </tbody>

@@ -16,7 +16,8 @@ class DbTaskManager:
         DbTaskManager.__instance = self
         self.processes_running = {}  # словарь с самими объектами процессов. Ключ - task_id
         self.finished_ids = []  # это процессы, которые выдали какой-то код возврата. Обновляется с задержкой по таймеру.
-        self.recent_logs = {}  # словарь с последним куском логов stdout/stderr для каждого процесса. Ключ - task_id
+        self.recent_stdout_logs = {}  # словарь с последним куском логов stdout для каждого процесса. Ключ - task_id
+        self.recent_stderr_logs = {}  # словарь с последним куском логов stderr для каждого процесса. Ключ - task_id
         self.update_recent_logs_thread = threading.Timer(5.0, self._update_recent_logs)  # Обновление логов/состояний процессов по таймеру
         self.update_recent_logs_thread.start()
 
@@ -31,20 +32,26 @@ class DbTaskManager:
     # Обрабатывает список tasks, добавляя к каждой состояние и кусок недавних логов
     def get_tasks_states(self, tasks: list) -> list:
         for task in tasks:
-            task["running_state"] = self.get_task_running_state(task["id"])
+            task["is_running_now"] = self._get_task_running_state(task["id"])
             task["recent_logs"] = self._get_task_recent_logs(task)
         return tasks
 
     # Проходится по списку задач и запускает все помеченные для автозапуска и не завершённые
     def start_tasks_on_startup(self, tasks: list):
         for task in tasks:
-            if bool(task["is_run_on_startup"]) and not bool(task["is_completed"]):
+            if bool(task["is_run_on_startup"]) and task["is_success"] is None:
                 self.start_one_task(task)
 
     def start_one_task(self, task: dict):
         task_id = int(task["id"])
-        if self.check_task_if_running(task_id):
+
+        if self.check_task_if_running(task_id):  # останавливаем задачу, если надо
             self.stop_one_task(task_id)
+        if task_id in self.recent_stdout_logs:  # логи очищаем именно при старте задачи, чтобы после её окончания они ещё оставались
+            del self.recent_stdout_logs[task_id]
+        if task_id in self.recent_stderr_logs:
+            del self.recent_stderr_logs[task_id]
+
         args = self._get_args_from_task(task)
         proc = subprocess.Popen(args, cwd=PARSER_CWD, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.processes_running[task_id] = proc
@@ -55,20 +62,21 @@ class DbTaskManager:
         proc = self.processes_running[task_id]
         return proc.poll() is None
 
-    def get_task_running_state(self, task_id: int) -> str:
+    def _get_task_running_state(self, task_id: int) -> bool:
         if task_id not in self.processes_running:
-            return "Not running"
+            return False
         proc = self.processes_running[task_id]
-        return_code = proc.poll()
-        if return_code is None:
-            return "Running..."
-        return "Returned code: " + str(return_code)
+        return proc.poll() is None
 
     def stop_one_task(self, task_id: int):
         if task_id in self.processes_running:
             self.processes_running[task_id].kill()
             del self.processes_running[task_id]
             self.finished_ids.append(task_id)
+
+    # =============================================
+    # Далее внутренние методы класса:
+    # =============================================
 
     # Составление аргументов командной строки для процесса парсера
     # (т.к. он изанчально был расчитан на самостоятельный запуск из консоли)
@@ -111,29 +119,33 @@ class DbTaskManager:
 
             log_content = proc.stdout.read().decode("utf-8")
             if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_logs[task_id] = log_content
+                self.recent_stdout_logs[task_id] = log_content
 
             err_content = proc.stderr.read().decode("utf-8")
             if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_logs[task_id] = err_content
+                self.recent_stderr_logs[task_id] = err_content
                 self._set_task_error_message(task_id, err_content)
 
         self.update_recent_logs_thread = threading.Timer(5.0, self._update_recent_logs)
         self.update_recent_logs_thread.start()
 
     def _mark_task_as_completed(self, task_id: int):
-        is_success = self.processes_running[task_id].poll() == 0
+        # успех = возврат кода 0 И нет логов ошибок
+        is_success = self.processes_running[task_id].poll() == 0 \
+                and task_id not in self.recent_stderr_logs
 
         conn = connections["default"]
         cur = conn.cursor()
         cur.execute("""
             UPDATE public.tasks
-            SET is_completed = %s
+            SET is_success = %s
             WHERE id = %s;
         """, (is_success, task_id,))
 
     @staticmethod
     def _set_task_error_message(task_id: int, error_message: str):
+        # Просто обновляем логи ошибок в БД.
+        # Не уверен, что процесс обязательно завершится, чтобы писать сюда is_success = FALSE
         conn = connections["default"]
         cur = conn.cursor()
         cur.execute("""
@@ -145,9 +157,9 @@ class DbTaskManager:
     def _get_task_recent_logs(self, task_id: int) -> str:
         if task_id not in self.processes_running:
             return "This task was not run."
-        if task_id not in self.recent_logs:
+        if task_id not in self.recent_stdout_logs:
             return "This task not formed any logs yet, wait for 30 seconds."
-        return self.recent_logs[task_id]
+        return self.recent_stdout_logs[task_id] + '\n' + self.recent_stdout_logs[task_id]
 
     def __del__(self):
         self.update_recent_logs_thread.cancel()

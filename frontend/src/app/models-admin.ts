@@ -7,8 +7,8 @@ export class DbTask {
   python_exe = 'python3';
   args: DbTaskArgs = new DbTaskArgs();
   is_run_on_startup = true;
-  is_completed = false;
-  running_state: string;
+  is_success = false;
+  is_running_now: string;
   recent_logs: string;
 }
 

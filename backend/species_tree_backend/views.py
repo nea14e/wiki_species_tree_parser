@@ -164,7 +164,7 @@ def startup_start_tasks():
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.is_completed, t.id), '[]')
+        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.id), '[]')
         FROM (
                SELECT *
                FROM public.tasks
@@ -181,7 +181,7 @@ def admin_get_tasks(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.is_completed, t.id), '[]')
+        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.id), '[]')
         FROM (
                SELECT *
                FROM public.tasks
@@ -200,9 +200,12 @@ def admin_add_task(request):
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO public.tasks(stage, python_exe, args, is_run_on_startup)
-        VALUES (%s, %s, %s, %s);
+        VALUES (%s, %s, %s, %s)
+        RETURNING id;
     """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"]))
-    DbTaskManager.get_instance().start_one_task(body["data"])  # запускаем задачу
+    task = body["data"]
+    task["id"] = int(cur.fetchone()[0])
+    DbTaskManager.get_instance().start_one_task(task)  # запускаем задачу
     return JsonResponse({"is_ok": True, "message": "Task added successfully."})
 
 
@@ -221,9 +224,10 @@ def admin_edit_task(request):
         WHERE id = %s;
     """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"], body["data"]["id"]))
     task_id = body["data"]["id"]
+    task = body["data"]
     if DbTaskManager.get_instance().check_task_if_running(task_id):  # перезапускам задачу при внесении в неё изменений (только если она уже работала)
         DbTaskManager.get_instance().stop_one_task(task_id)
-        DbTaskManager.get_instance().start_one_task(task_id)
+        DbTaskManager.get_instance().start_one_task(task)
     return JsonResponse({"is_ok": True, "message": "Task edited successfully."})
 
 

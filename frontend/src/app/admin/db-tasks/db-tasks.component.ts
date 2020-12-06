@@ -47,7 +47,15 @@ export class DbTasksComponent implements OnInit {
     this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. To can be enabled to cancel changes
     setTimeout(() => {
       window.scrollTo(0, 9999999);
-    }, 750);
+    }, 500);
+  }
+
+  onDuplicateClick(task: DbTask): void {
+    this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. Copying of object.
+    this.editingTask.id = null;  // mark task as new
+    setTimeout(() => {
+      window.scrollTo(0, 9999999);
+    }, 500);
   }
 
   onDeleteClick(task: DbTask): void {
@@ -83,6 +91,18 @@ export class DbTasksComponent implements OnInit {
       }, error => {
         alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
       });
+    }
+  }
+
+  getColorForTask(task: DbTask): string {
+    if (task.is_running_now) {
+      return 'lightblue';
+    }
+    if (task.is_success) {
+      return '#a6dca6';
+    }
+    if (!task.is_success) {
+      return '#f57c7c';
     }
   }
 }
