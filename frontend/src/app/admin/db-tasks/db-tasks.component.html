@@ -2,6 +2,7 @@
 <h3>{{rootData.translationRoot?.translations.admin_db_tasks}}</h3>
 
 <div class="row ml-0 mr-0 mb-2">
+
   <div class="btn col-auto mr-2 mt-2"
        (click)="onCreateClick()"
        [title]="rootData.translationRoot?.translations.create"
@@ -89,6 +90,15 @@
       </div>
     </div>
 
+    <div class="row mt-4">
+      <div class="col-3">
+        python_exe<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingTask.python_exe">
+      </div>
+    </div>
+
     <div *ngIf="editingTask.stage==='parse_language'" class="row mt-4">
       <div class="col-3">
         lang_key<span class="text-danger">*</span>:
@@ -168,6 +178,15 @@
         <small>"protocol://address:port@login:password"</small>
         <br/>
         <small>"protocol://address:port"</small>
+      </div>
+    </div>
+
+    <div *ngIf="editingTask.stage==='0'" class="row mt-4">
+      <div class="col-3">
+        is_run_on_startup:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingTask.is_run_on_startup">
       </div>
     </div>
 

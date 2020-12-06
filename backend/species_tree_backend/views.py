@@ -6,6 +6,7 @@ from django.http import JsonResponse
 
 from species_tree_backend.http_headers_parser import get_language_key
 
+from species_tree_backend.db_task_manager import DbTaskManager
 from config import Config
 from config_EXAMPLE import Config as ConfigExample
 
@@ -158,6 +159,22 @@ def admin_get_known_languages_all(request):
     return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
 
 
+# Это обычный метод, не API
+def startup_start_tasks():
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.is_completed, t.id), '[]')
+        FROM (
+               SELECT *
+               FROM public.tasks
+          ) t;
+    """)
+    tasks = list(cur.fetchone()[0])
+    DbTaskManager.get_instance().start_tasks_on_startup(tasks)  # запускаем (точнее, продолжаем) задачи парсинга по умолчанию
+    # Это обычный метод, не API
+
+
 @check_admin_request
 @csrf_exempt
 def admin_get_tasks(request):
@@ -170,8 +187,9 @@ def admin_get_tasks(request):
                FROM public.tasks
           ) t;
     """)
-    db_response = cur.fetchone()[0]
-    return JsonResponse(db_response, safe=False)  # unsafe указывается только для запросов БД на языке SQL
+    tasks = list(cur.fetchone()[0])
+    tasks = DbTaskManager.get_instance().get_tasks_states(tasks)  # добавлем к задачам их состояние запущена/не запущена, последние логи
+    return JsonResponse(tasks, safe=False)  # unsafe указывается только для запросов БД на языке SQL
 
 
 @check_admin_request
@@ -181,9 +199,10 @@ def admin_add_task(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO public.tasks(stage, args, is_run_on_startup)
-        VALUES (%s, %s, %s);
-    """, (body["data"]["stage"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"]))
+        INSERT INTO public.tasks(stage, python_exe, args, is_run_on_startup)
+        VALUES (%s, %s, %s, %s);
+    """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"]))
+    DbTaskManager.get_instance().start_one_task(body["data"])  # запускаем задачу
     return JsonResponse({"is_ok": True, "message": "Task added successfully."})
 
 
@@ -196,10 +215,15 @@ def admin_edit_task(request):
     cur.execute("""
         UPDATE public.tasks
         SET stage = %s,
+         python_exe = %s,
          args = %s,
          is_run_on_startup = %s
         WHERE id = %s;
-    """, (body["data"]["stage"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"], body["data"]["id"]))
+    """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"], body["data"]["id"]))
+    task_id = body["data"]["id"]
+    if DbTaskManager.get_instance().check_task_if_running(task_id):  # перезапускам задачу при внесении в неё изменений (только если она уже работала)
+        DbTaskManager.get_instance().stop_one_task(task_id)
+        DbTaskManager.get_instance().start_one_task(task_id)
     return JsonResponse({"is_ok": True, "message": "Task edited successfully."})
 
 
@@ -207,6 +231,7 @@ def admin_edit_task(request):
 @csrf_exempt
 def admin_delete_task(request):
     body = json.loads(request.body)
+    DbTaskManager.get_instance().stop_one_task(body["id"])  # сначала останавливаем задачу (там проверят, если она не была запущена)
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""

@@ -4,9 +4,12 @@ import {Translations} from "./models";
 export class DbTask {
   id: number | null;
   stage: string;
+  python_exe = 'python3';
   args: DbTaskArgs = new DbTaskArgs();
   is_run_on_startup = true;
   is_completed = false;
+  running_state: string;
+  recent_logs: string;
 }
 
 export class DbTaskArgs {
