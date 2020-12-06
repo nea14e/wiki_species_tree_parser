@@ -129,7 +129,8 @@ def check_admin_request(func):
                     "message": "All admin's requests must be of HTTP POST type with 'adminKey' provided in POST's json object."
                 }
             )
-        func(*args, **kw)
+
+        return func(*args, **kw)
 
     return wrapped
 
