@@ -201,7 +201,7 @@ def admin_delete_task(request):
     cur.execute("""
         DELETE FROM public.tasks
         WHERE id = %s;
-    """, (body["data"]["id"]))
+    """, (body["id"],))
     return JsonResponse({"is_ok": True, "message": "Task deleted successfully."})
 
 
