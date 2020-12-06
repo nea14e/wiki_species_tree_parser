@@ -44,7 +44,7 @@ export class DbTasksComponent implements OnInit {
   }
 
   onEditClick(task: DbTask): void {
-    this.editingTask = task;
+    this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. To can be enabled to cancel changes
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 750);
