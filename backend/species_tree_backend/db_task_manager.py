@@ -18,7 +18,7 @@ class DbTaskManager:
         self.finished_ids = []  # это процессы, которые выдали какой-то код возврата. Обновляется с задержкой по таймеру.
         self.recent_stdout_logs = {}  # словарь с последним куском логов stdout для каждого процесса. Ключ - task_id
         self.recent_stderr_logs = {}  # словарь с последним куском логов stderr для каждого процесса. Ключ - task_id
-        self.update_recent_logs_thread = threading.Timer(5.0, self._update_recent_logs)  # Обновление логов/состояний процессов по таймеру
+        self.update_recent_logs_thread = threading.Timer(30.0, self._update_recent_logs)  # Обновление логов/состояний процессов по таймеру
         self.update_recent_logs_thread.start()
 
     # Для доступа снаружи ВСЕГДА используйте этот метод. Объект нашего класса должен быть ТОЛЬКО ОДИН на всё приложение!
@@ -32,8 +32,9 @@ class DbTaskManager:
     # Обрабатывает список tasks, добавляя к каждой состояние и кусок недавних логов
     def get_tasks_states(self, tasks: list) -> list:
         for task in tasks:
-            task["is_running_now"] = self._get_task_running_state(task["id"])
-            task["recent_logs"] = self._get_task_recent_logs(task)
+            task["is_running_now"] = self._check_task_if_running(task["id"])
+            task["is_launch_now"] = task["is_running_now"]  # При редактировании задачи выставлять галочку "Launch now" по умолчанию
+            task["recent_stdout"], task["recent_stderr"] = self._get_task_recent_logs(task["id"])
         return tasks
 
     # Проходится по списку задач и запускает все помеченные для автозапуска и не завершённые
@@ -45,7 +46,7 @@ class DbTaskManager:
     def start_one_task(self, task: dict):
         task_id = int(task["id"])
 
-        if self.check_task_if_running(task_id):  # останавливаем задачу, если надо
+        if self._check_task_if_running(task_id):  # останавливаем задачу, если надо
             self.stop_one_task(task_id)
         if task_id in self.recent_stdout_logs:  # логи очищаем именно при старте задачи, чтобы после её окончания они ещё оставались
             del self.recent_stdout_logs[task_id]
@@ -56,13 +57,7 @@ class DbTaskManager:
         proc = subprocess.Popen(args, cwd=PARSER_CWD, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.processes_running[task_id] = proc
 
-    def check_task_if_running(self, task_id: int):
-        if task_id not in self.processes_running:
-            return False
-        proc = self.processes_running[task_id]
-        return proc.poll() is None
-
-    def _get_task_running_state(self, task_id: int) -> bool:
+    def _check_task_if_running(self, task_id: int):
         if task_id not in self.processes_running:
             return False
         proc = self.processes_running[task_id]
@@ -112,7 +107,7 @@ class DbTaskManager:
     def _update_recent_logs(self):
         for task_id, proc in self.processes_running.items():
 
-            if not self.check_task_if_running(task_id):
+            if not self._check_task_if_running(task_id):
                 if task_id not in self.finished_ids:
                     self._mark_task_as_completed(task_id)
                     self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
@@ -154,12 +149,15 @@ class DbTaskManager:
             WHERE id = %s;
         """, (error_message, task_id,))
 
-    def _get_task_recent_logs(self, task_id: int) -> str:
+    def _get_task_recent_logs(self, task_id: int) -> (str, str):
         if task_id not in self.processes_running:
-            return "This task was not run."
+            return "This task was not run since last Backend Server's launch.", None
         if task_id not in self.recent_stdout_logs:
-            return "This task not formed any logs yet, wait for 30 seconds."
-        return self.recent_stdout_logs[task_id] + '\n' + self.recent_stdout_logs[task_id]
+            return "This task not formed any logs yet.", None
+        if task_id in self.recent_stderr_logs:
+            return self.recent_stdout_logs[task_id], self.recent_stderr_logs[task_id]
+        else:
+            return self.recent_stdout_logs[task_id], None
 
     def __del__(self):
         self.update_recent_logs_thread.cancel()

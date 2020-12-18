@@ -45,6 +45,18 @@ export class NetworkAdminService {
     );
   }
 
+  public startOneTask(task: DbTask, adminKey: string): Observable<AdminResponse> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_start_one_task', {adminKey, data: task})
+    );
+  }
+
+  public stopOneTask(id: number, adminKey: string): Observable<AdminResponse> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_stop_one_task', {adminKey, id})
+    );
+  }
+
   /*
     Оборачиваем все Observable сетевых запросов админки в этот метод.
     Все запросы админки могут вместо данных положенного типа T вернуть AdminResponse с ошибкой.

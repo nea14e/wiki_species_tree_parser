@@ -11,6 +11,11 @@
   </div>
 </div>
 
+<div class="row ml-0 mr-0 mb-2">
+  <h4 *ngIf="!!balloonMessage" class="text-success">{{balloonMessage}}</h4>
+  <h4 *ngIf="!balloonMessage">(No pending messages)</h4>
+</div>
+
 <div class="row ml-0 mr-0">
   <table class="table">
     <thead>
@@ -19,8 +24,7 @@
         <th>Stage</th>
         <th>Args</th>
         <th>Run on startup</th>
-        <th>Is running now</th>
-        <th>Is completed</th>
+        <th>State</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -42,30 +46,29 @@
           <input type="checkbox" [(ngModel)]="task.is_run_on_startup" disabled>
         </td>
         <td>
-          <input type="checkbox" [(ngModel)]="task.is_running_now" disabled>
-        </td>
-        <td>
-          <input type="checkbox" [(ngModel)]="task.is_success" disabled>
+          {{getTaskState(task)}}
         </td>
         <td>
 
-          <div class="btn col-auto mr-2"
-               (click)="onRunClick(task)"
+          <div *ngIf="!task.is_running_now" class="btn col-auto mr-2"
+               (click)="onStartClick(task)"
                title="Run task"
           >
             <img src="assets/from-bootstrap/play-fill.svg" class="btn-img"/>
           </div>
 
-          <div *ngIf="" class="btn col-auto mr-2"
+          <div *ngIf="!!task.is_running_now && (task.stage==='2' || task.stage==='parse_language')"
+               class="btn col-auto mr-2"
                (click)="onPauseClick(task)"
                title="Pause task"
           >
             <img src="assets/from-bootstrap/pause-fill.svg" class="btn-img"/>
           </div>
 
-          <div class="btn col-auto mr-2"
+          <div *ngIf="!!task.is_running_now && !(task.stage==='2' || task.stage==='parse_language')"
+               class="btn col-auto mr-2"
                (click)="onStopClick(task)"
-               title="Pause task"
+               title="Stop task"
           >
             <img src="assets/from-bootstrap/stop-fill.svg" class="btn-img"/>
           </div>
@@ -218,12 +221,23 @@
       </div>
     </div>
 
+    <div class="row router-hr"></div>
+
     <div *ngIf="editingTask.stage==='0'" class="row mt-4">
       <div class="col-3">
         is_run_on_startup:
       </div>
       <div class="col-9">
         <input type="checkbox" [(ngModel)]="editingTask.is_run_on_startup">
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        Start/resume now<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingTask.is_launch_now">
       </div>
     </div>
 

@@ -194,8 +194,9 @@ def admin_add_task(request):
     """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"]))
     task = body["data"]
     task["id"] = int(cur.fetchone()[0])
-    DbTaskManager.get_instance().start_one_task(task)  # запускаем задачу
-    return JsonResponse({"is_ok": True, "message": "Task added successfully."})
+    if bool(body["data"]["is_launch_now"]):
+        DbTaskManager.get_instance().start_one_task(task)  # запускаем задачу
+    return JsonResponse({"is_ok": True, "message": "Task {id} added successfully.".format(id=task["id"])})
 
 
 @check_admin_request
@@ -213,10 +214,11 @@ def admin_edit_task(request):
     """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"], body["data"]["id"]))
     task_id = body["data"]["id"]
     task = body["data"]
-    if DbTaskManager.get_instance().check_task_if_running(task_id):  # перезапускам задачу при внесении в неё изменений (только если она уже работала)
+    if bool(body["data"]["is_launch_now"]):  # запускаем/останавливаем задачу при внесении в неё изменений в зависимости от галочки на форме редактирования
+        DbTaskManager.get_instance().start_one_task(task)  # если задача уже работает, она будет перезапущена
+    else:
         DbTaskManager.get_instance().stop_one_task(task_id)
-        DbTaskManager.get_instance().start_one_task(task)
-    return JsonResponse({"is_ok": True, "message": "Task edited successfully."})
+    return JsonResponse({"is_ok": True, "message": "Task {id} edited successfully.".format(id=task["id"])})
 
 
 @check_admin_request
@@ -229,7 +231,21 @@ def admin_delete_task(request):
         DELETE FROM public.tasks
         WHERE id = %s;
     """, (body["id"],))
-    return JsonResponse({"is_ok": True, "message": "Task deleted successfully."})
+    return JsonResponse({"is_ok": True, "message": "Task {id} deleted successfully.".format(id=body["id"])})
+
+
+@check_admin_request
+def admin_start_one_task(request):
+    body = json.loads(request.body)
+    DbTaskManager.get_instance().start_one_task(body["data"])
+    return JsonResponse({"is_ok": True, "message": "Task {id} started successfully.".format(id=body["data"]["id"])})
+
+
+@check_admin_request
+def admin_stop_one_task(request):
+    body = json.loads(request.body)
+    DbTaskManager.get_instance().stop_one_task(body["id"])
+    return JsonResponse({"is_ok": True, "message": "Task {id} paused/stopped successfully.".format(id=body["id"])})
 
 
 # ====================================

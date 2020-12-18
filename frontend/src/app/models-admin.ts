@@ -7,9 +7,11 @@ export class DbTask {
   python_exe = 'python3';
   args: DbTaskArgs = new DbTaskArgs();
   is_run_on_startup = true;
+  is_launch_now = true;
   is_success = false;
-  is_running_now: string;
-  recent_logs: string;
+  is_running_now: boolean;
+  recent_stdout: string;
+  recent_stderr: string;
 }
 
 export class DbTaskArgs {
