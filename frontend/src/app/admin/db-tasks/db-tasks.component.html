@@ -23,7 +23,7 @@
         <th>Id</th>
         <th>Stage</th>
         <th>Args</th>
-        <th>Run on startup</th>
+        <th>Auto restart</th>
         <th>State</th>
         <th>Actions</th>
       </tr>
@@ -35,14 +35,15 @@
         <td>{{task.id}}</td>
         <td>{{task.stage}}</td>
         <td>
-          <span *ngIf="task.stage==='0'">{{task.args.is_test}}</span>
-          <span *ngIf="task.stage==='1'">{{task.args.from_title}} - {{task.args.to_title}}</span>
-          <span *ngIf="task.stage==='2'">{{task.args.skip_parsed_interval}}, {{task.args.where}}</span>
-          <span *ngIf="task.stage==='3'">{{task.args.where}}</span>
+          <span *ngIf="task.stage==='0'">is_test: {{task.args.is_test}}</span>
+          <span *ngIf="task.stage==='1'">"{{task.args.from_title}}" - "{{task.args.to_title}}"</span>
+          <span *ngIf="task.stage==='2'">skip_parsed_interval: {{task.args.skip_parsed_interval}}, "{{task.args.where}}"</span>
+          <span *ngIf="task.stage==='3'">where: "{{task.args.where}}"</span>
           <span *ngIf="task.stage==='4'">-</span>
-          <span *ngIf="task.stage==='parse_language'">{{task.args.lang_key}}, {{task.args.skip_parsed_interval}}, {{task.args.where}}</span>
+          <span *ngIf="task.stage==='parse_language'">"{{task.args.lang_key}}", {{task.args.skip_parsed_interval}}, "{{task.args.where}}"</span>
+          <span *ngIf="task.stage==='test_task'">will_success: {{task.args.will_success}} in {{task.args.timeout}} sec</span>
         </td>
-        <td>
+        <td title="Run/resume task automatically on Backend Server's restart">
           <input type="checkbox" [(ngModel)]="task.is_run_on_startup" disabled>
         </td>
         <td>
@@ -50,7 +51,14 @@
         </td>
         <td>
 
-          <div *ngIf="!task.is_running_now" class="btn col-auto mr-2"
+          <div class="btn col-auto mr-2 mt-2"
+               (click)="onShowLogClick(task)"
+               title="Show log"
+          >
+            <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
+          </div>
+
+          <div *ngIf="!task.is_running_now" class="btn col-auto mr-2 mt-2"
                (click)="onStartClick(task)"
                title="Run task"
           >
@@ -58,7 +66,7 @@
           </div>
 
           <div *ngIf="!!task.is_running_now && (task.stage==='2' || task.stage==='parse_language')"
-               class="btn col-auto mr-2"
+               class="btn col-auto mr-2 mt-2"
                (click)="onPauseClick(task)"
                title="Pause task"
           >
@@ -66,28 +74,28 @@
           </div>
 
           <div *ngIf="!!task.is_running_now && !(task.stage==='2' || task.stage==='parse_language')"
-               class="btn col-auto mr-2"
+               class="btn col-auto mr-2 mt-2"
                (click)="onStopClick(task)"
                title="Stop task"
           >
             <img src="assets/from-bootstrap/stop-fill.svg" class="btn-img"/>
           </div>
 
-          <div class="btn col-auto mr-2"
+          <div class="btn col-auto mr-2 mt-2"
                (click)="onEditClick(task)"
                [title]="rootData.translationRoot?.translations.edit"
           >
             <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
           </div>
 
-          <div class="btn col-auto mr-2"
+          <div class="btn col-auto mr-2 mt-2"
                (click)="onDuplicateClick(task)"
                title="Duplicate and edit"
           >
             <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
           </div>
 
-          <div class="btn col-auto mr-2"
+          <div class="btn col-auto mr-2 mt-2"
                (click)="onDeleteClick(task)"
                [title]="rootData.translationRoot?.translations.delete"
           >
@@ -126,11 +134,12 @@
           <option value="3" [selected]="editingTask.stage==='3'">3 - correct parents (items from stage 2)</option>
           <option value="4" [selected]="editingTask.stage==='4'">4 - update leaves count (items from stage 3)</option>
           <option value="parse_language" [selected]="editingTask.stage==='parse_language'">parse_language - parse translations (items from stage 2)</option>
+          <option value="test_task" [selected]="editingTask.stage==='test_task'">test_task - to simply test tasks engine (no DB)</option>
         </select>
       </div>
     </div>
 
-    <div class="row mt-4">
+    <div *ngIf="!!editingTask.stage" class="row mt-4">
       <div class="col-3">
         python_exe<span class="text-danger">*</span>:
       </div>
@@ -221,23 +230,49 @@
       </div>
     </div>
 
-    <div class="row router-hr"></div>
+    <div *ngIf="editingTask.stage==='test_task'" class="row mt-4">
+      <div class="col-3">
+        will_success:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingTask.args.will_success">
+        <br/>
+        <small>Task will complete with success or error</small>
+      </div>
+    </div>
 
-    <div *ngIf="editingTask.stage==='0'" class="row mt-4">
+    <div *ngIf="editingTask.stage==='test_task'" class="row mt-4">
+      <div class="col-3">
+        timeout:
+      </div>
+      <div class="col-9">
+        <input type="number" [(ngModel)]="editingTask.args.timeout">
+        <br/>
+        <small>In seconds</small>
+      </div>
+    </div>
+
+    <div *ngIf="!!editingTask.stage" class="row router-hr"></div>
+
+    <div *ngIf="!!editingTask.stage" class="row mt-4">
       <div class="col-3">
         is_run_on_startup:
       </div>
       <div class="col-9">
         <input type="checkbox" [(ngModel)]="editingTask.is_run_on_startup">
+        <br/>
+        <small>Run/resume task automatically on Backend Server's restart</small>
       </div>
     </div>
 
-    <div class="row mt-4">
+    <div *ngIf="!!editingTask.stage" class="row mt-4">
       <div class="col-3">
         Start/resume now<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
         <input type="checkbox" [(ngModel)]="editingTask.is_launch_now">
+        <br/>
+        <small>Starts task if checked and stops if unchecked</small>
       </div>
     </div>
 
@@ -250,13 +285,46 @@
         {{rootData.translationRoot?.translations.cancel}}
       </div>
 
-      <div class="btn col-auto mr-2 mt-2"
+      <div *ngIf="!!editingTask.stage" class="btn col-auto mr-2 mt-2"
            (click)="onSaveClick()"
       >
         <img src="assets/from-bootstrap/check-2.svg" class="btn-img"/>
         {{rootData.translationRoot?.translations.save}}
       </div>
 
+    </div>
+
+  </div>
+</div>
+
+<div *ngIf="!!logShowingTaskId" class="row ml-0 mr-0">
+  <div class="row ml-0 mr-0 router-hr"></div>
+
+  <div class="container-fluid">
+
+    <div class="row mt-4">
+      <h3 class="col-6">Log from STDOUT:
+      </h3>
+      <h3 class="col-6">Log from STDERR:
+      </h3>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-6 pr-2">
+        {{logShowingTask?.recent_stdout}}
+      </div>
+      <div class="col-6">
+        {{logShowingTask?.recent_stderr}}
+      </div>
+    </div>
+
+    <div class="row ml-0 mr-0 mb-2">
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onLogBackClick()"
+      >
+        <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.go_back}}
+      </div>
     </div>
 
   </div>

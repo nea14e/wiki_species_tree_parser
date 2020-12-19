@@ -7,6 +7,8 @@ from django.db import connections
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
+LOGS_UPDATE_TIMER = 30.0
+LOGS_KEEP_RECORDS_COUNT = 5
 
 # Запускает задачи парсера данных и прочие тяжеловесные задачи БД, написанные в файле parser/wiki_parser.py.
 class DbTaskManager:
@@ -18,7 +20,7 @@ class DbTaskManager:
         self.finished_ids = []  # это процессы, которые выдали какой-то код возврата. Обновляется с задержкой по таймеру.
         self.recent_stdout_logs = {}  # словарь с последним куском логов stdout для каждого процесса. Ключ - task_id
         self.recent_stderr_logs = {}  # словарь с последним куском логов stderr для каждого процесса. Ключ - task_id
-        self.update_recent_logs_thread = threading.Timer(30.0, self._update_recent_logs)  # Обновление логов/состояний процессов по таймеру
+        self.update_recent_logs_thread = threading.Timer(LOGS_UPDATE_TIMER, self._update_recent_logs)  # Обновление логов/состояний процессов по таймеру
         self.update_recent_logs_thread.start()
 
     # Для доступа снаружи ВСЕГДА используйте этот метод. Объект нашего класса должен быть ТОЛЬКО ОДИН на всё приложение!
@@ -50,8 +52,12 @@ class DbTaskManager:
             self.stop_one_task(task_id)
         if task_id in self.recent_stdout_logs:  # логи очищаем именно при старте задачи, чтобы после её окончания они ещё оставались
             del self.recent_stdout_logs[task_id]
+        self.recent_stdout_logs[task_id] = list()
         if task_id in self.recent_stderr_logs:
             del self.recent_stderr_logs[task_id]
+        self.recent_stderr_logs[task_id] = list()
+        if task_id in self.finished_ids:
+            self.finished_ids.remove(task_id)
 
         args = self._get_args_from_task(task)
         proc = subprocess.Popen(args, cwd=PARSER_CWD, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -89,7 +95,7 @@ class DbTaskManager:
             if task["args"]["proxy"]:
                 args.append(task["args"]["proxy"])
         elif stage == "2":
-            args.append(bool(task["args"]["skip_parsed_interval"]))
+            args.append(str(bool(task["args"]["skip_parsed_interval"])))
             args.append('"' + str(task["args"]["where"]) + '"')
             if task["args"]["proxy"]:
                 args.append(task["args"]["proxy"])
@@ -97,15 +103,19 @@ class DbTaskManager:
             args.append('"' + str(task["args"]["where"]) + '"')
         elif stage == "parse_language":
             args.append(task["args"]["lang_key"])
-            args.append(bool(task["args"]["skip_parsed_interval"]))
+            args.append(str(bool(task["args"]["skip_parsed_interval"])))
             args.append('"' + str(task["args"]["where"]) + '"')
             if task["args"]["proxy"]:
                 args.append(task["args"]["proxy"])
+        elif stage == "test_task":
+            args.append(str(bool(task["args"]["will_success"])))
+            args.append(str(float(task["args"]["timeout"])))
         return args
 
     # Обновление логов/состояний процессов по таймеру
     def _update_recent_logs(self):
-        for task_id, proc in self.processes_running.items():
+        for task_id in self.processes_running.keys():
+            proc = self.processes_running[task_id]  # чтобы избежать ошибки при итерации в цикле по изменённой коллекции
 
             if not self._check_task_if_running(task_id):
                 if task_id not in self.finished_ids:
@@ -114,20 +124,24 @@ class DbTaskManager:
 
             log_content = proc.stdout.read().decode("utf-8")
             if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_stdout_logs[task_id] = log_content
+                self.recent_stdout_logs[task_id].append(log_content)
+                if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                    self.recent_stdout_logs = self.recent_stdout_logs[1:]
 
             err_content = proc.stderr.read().decode("utf-8")
             if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_stderr_logs[task_id] = err_content
+                self.recent_stderr_logs[task_id].append(err_content)
+                if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                    self.recent_stderr_logs = self.recent_stderr_logs[1:]
                 self._set_task_error_message(task_id, err_content)
 
-        self.update_recent_logs_thread = threading.Timer(5.0, self._update_recent_logs)
+        self.update_recent_logs_thread = threading.Timer(LOGS_UPDATE_TIMER, self._update_recent_logs)
         self.update_recent_logs_thread.start()
 
     def _mark_task_as_completed(self, task_id: int):
-        # успех = возврат кода 0 И нет логов ошибок
+        # успех = возврат кода 0 И лог ошибок пустой
         is_success = self.processes_running[task_id].poll() == 0 \
-                and task_id not in self.recent_stderr_logs
+                and len(self.recent_stderr_logs[task_id]) == 0
 
         conn = connections["default"]
         cur = conn.cursor()
@@ -151,13 +165,13 @@ class DbTaskManager:
 
     def _get_task_recent_logs(self, task_id: int) -> (str, str):
         if task_id not in self.processes_running:
-            return "This task was not run since last Backend Server's launch.", None
+            return "This task was not run since last Backend Server's launch.", ""
         if task_id not in self.recent_stdout_logs:
-            return "This task not formed any logs yet.", None
-        if task_id in self.recent_stderr_logs:
-            return self.recent_stdout_logs[task_id], self.recent_stderr_logs[task_id]
+            return "This task not formed any logs yet.", ""
+        if len(self.recent_stderr_logs[task_id]) > 0:
+            return "\n".join(self.recent_stdout_logs[task_id]), "\n".join(self.recent_stderr_logs[task_id])
         else:
-            return self.recent_stdout_logs[task_id], None
+            return "\n".join(self.recent_stdout_logs[task_id]), ""
 
     def __del__(self):
         self.update_recent_logs_thread.cancel()

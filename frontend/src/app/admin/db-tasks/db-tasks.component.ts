@@ -13,8 +13,13 @@ import {AdminLanguage, DbTask} from '../../models-admin';
 })
 export class DbTasksComponent implements OnInit {
 
+  LIST_AUTORELOAD_INTERVAL = 2000;
+  autoReloadTimeoutId: number | null = null;
+
   tasks: DbTask[] = [];
   editingTask: DbTask | null = null;
+  logShowingTaskId: number | null = null;
+  logShowingTask: DbTask | null = null;
   knownLanguagesAll: AdminLanguage[] = [];
 
   balloonMessage: string | null = null;
@@ -36,7 +41,13 @@ export class DbTasksComponent implements OnInit {
   private reloadList(): void {
     this.networkAdminService.getDbTasks(this.rootData.adminPassword).subscribe(data => {
       this.tasks = data;
-      setTimeout(() => { this.reloadList(); }, 3000);  // обновлять список каждые несколько секунд
+      this.updateShowedLog();
+      if (!!this.autoReloadTimeoutId) {
+        clearTimeout(this.autoReloadTimeoutId);
+      }
+      this.autoReloadTimeoutId = setTimeout(() => {
+        this.reloadList();
+      }, this.LIST_AUTORELOAD_INTERVAL);  // обновлять список каждые несколько секунд
     }, error => {
       alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
     });
@@ -57,13 +68,20 @@ export class DbTasksComponent implements OnInit {
 
   onCreateClick(): void {
     this.editingTask = new DbTask();
+    this.logShowingTaskId = null;
+    this.logShowingTask = null;
+    setTimeout(() => {
+      window.scrollTo(0, 9999999);
+    }, 250);
   }
 
   onEditClick(task: DbTask): void {
     this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. To can be enabled to cancel changes
+    this.logShowingTaskId = null;
+    this.logShowingTask = null;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
-    }, 500);
+    }, 250);
   }
 
   onDuplicateClick(task: DbTask): void {
@@ -71,9 +89,11 @@ export class DbTasksComponent implements OnInit {
     this.editingTask.id = null;  // mark task as new
     this.editingTask.is_run_on_startup = true;
     this.editingTask.is_launch_now = true;
+    this.logShowingTaskId = null;
+    this.logShowingTask = null;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
-    }, 500);
+    }, 250);
   }
 
   onDeleteClick(task: DbTask): void {
@@ -165,5 +185,37 @@ export class DbTasksComponent implements OnInit {
     }, error => {
       alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
     });
+  }
+
+  onShowLogClick(task: DbTask): void {
+    this.editingTask = null;
+    this.logShowingTaskId = task.id;
+    this.logShowingTask = task;
+    console.log('onShowLogClick(): task:', task);  // TODO
+    setTimeout(() => {
+      window.scrollTo(0, 9999999);
+    }, 250);
+  }
+
+  private updateShowedLog(): void {
+    if (!this.logShowingTaskId) {
+      console.log('updateShowedLog(): logShowingTaskId == null');  // TODO
+      this.logShowingTask = null;
+      return;
+    }
+
+    const task = this.tasks.find(t => t.id === this.logShowingTaskId);
+    if (!task) {
+      console.log('updateShowedLog(): task == null');  // TODO
+      this.logShowingTaskId = null;
+      this.logShowingTask = null;
+      return;
+    }
+    this.logShowingTask = task;
+  }
+
+  onLogBackClick(): void {
+    console.log('onLogBackClick()');  // TODO
+    this.logShowingTaskId = null;
   }
 }

@@ -100,6 +100,16 @@ def main():
         if len(sys.argv) >= 6:
             apply_proxy(str(sys.argv[5]))
         parse_language(lang_key, skip_parsed_interval, where)  # Добавление языка
+    elif stage_number == 'test_task':  # Task to test tasks progress engine
+        if len(sys.argv) >= 3:
+            will_success = sys.argv[2] == "True"
+        else:
+            will_success = True
+        if len(sys.argv) >= 4:
+            timeout = float(sys.argv[3])
+        else:
+            timeout = 30.0
+        test_task(timeout, will_success)
     else:
         print_usage()
 
@@ -554,6 +564,27 @@ def correct_parents(where: str = None):
     print("Не найдены родители для " + str(without_parents) + " элементов.")
 
 
+def test_task(timeout: float, will_success: bool):
+    elapsed = 0
+    while True:
+        if timeout < 10:
+            time.sleep(10)
+            elapsed += 10
+            timeout -= 10
+        else:
+            time.sleep(timeout)
+            elapsed += timeout
+            timeout = 0
+
+        print("Test task is printing this to stdout every 10 seconds. Elapsed: {} seconds.".format(elapsed))
+
+        if timeout == 0:
+            if will_success:
+                print("Test task is printing this to stdout WHEN COMPLETED at {} seconds.".format(elapsed))
+                return
+            else:
+                print("Test task is printing this to stdout BEFORE ERROR at {} seconds.".format(elapsed))
+                raise Exception("Test task raised this test exception!")
 
 
 if __name__ == "__main__":

@@ -22,6 +22,8 @@ export class DbTaskArgs {
   where: string;
   lang_key: string;
   proxy: string;
+  timeout = 35;
+  will_success = true;
 }
 
 export class AdminLanguage {
