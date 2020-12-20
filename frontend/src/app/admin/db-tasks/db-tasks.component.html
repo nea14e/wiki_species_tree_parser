@@ -151,7 +151,7 @@
         python_exe<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
-        <input type="text" [(ngModel)]="editingTask.python_exe">
+        <input type="text" [(ngModel)]="editingTask.python_exe" style="width: 100%;">
       </div>
     </div>
 
@@ -192,6 +192,8 @@
       </div>
       <div class="col-9">
         <input type="text" [(ngModel)]="editingTask.args.to_title">
+        <br/>
+        <small>Including this value</small>
       </div>
     </div>
 
@@ -214,7 +216,7 @@
         where<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
-        <input type="text" [(ngModel)]="editingTask.args.where">
+        <input type="text" [(ngModel)]="editingTask.args.where" style="width: 100%;">
         <br/>
         <small>Write here "where" clause for SQL query for table "public.list". Please use "page_url" column for conditions (title may change through parsing progress):</small>
         <br/>
@@ -227,7 +229,7 @@
         proxy:
       </div>
       <div class="col-9">
-        <input type="text" [(ngModel)]="editingTask.args.proxy">
+        <input type="text" [(ngModel)]="editingTask.args.proxy" style="width: 100%;">
         <br/>
         <small>For example:</small>
         <br/>
