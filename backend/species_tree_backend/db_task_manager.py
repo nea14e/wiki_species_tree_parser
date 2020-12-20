@@ -9,22 +9,37 @@ PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
 LOGS_UPDATE_TIMER = 3.0
-LOGS_KEEP_RECORDS_COUNT = 20
+LOGS_KEEP_RECORDS_COUNT = 5  # TODO small for test. Set 40.
+
 
 # Запускает задачи парсера данных и прочие тяжеловесные задачи БД, написанные в файле parser/wiki_parser.py.
+# Использует subprocesses для задач...
+# ...и threads для асинхронного взаимодействия с ними (чтение логов, например, надолго замораживает поток)
 class DbTaskManager:
     __instance = None
 
     def __init__(self):
+        # Для паттерна "Singleton"
         DbTaskManager.__instance = self
-        self.processes_running = {}  # словарь с самими объектами процессов. Ключ - task_id
-        self.finished_ids = []  # это процессы, которые выдали какой-то код возврата. Обновляется с задержкой по таймеру.
-        self.recent_stdout_logs = {}  # словарь с последним куском логов stdout для каждого процесса. Ключ - task_id
-        self.recent_stderr_logs = {}  # словарь с последним куском логов stderr для каждого процесса. Ключ - task_id
-        self.update_recent_logs_thread = threading.Timer(LOGS_UPDATE_TIMER, self._update_recent_logs)  # Обновление логов/состояний процессов по таймеру
-        self.update_recent_logs_thread.start()
 
-    # Для доступа снаружи ВСЕГДА используйте этот метод. Объект нашего класса должен быть ТОЛЬКО ОДИН на всё приложение!
+        # Словарь с самими объектами процессов под каждую запущенную задачу. Ключи - task_id
+        self.processes_running = {}
+
+        # Список id задач, процессы для которых были запущены и уже завершились (нормально или с ошибкой).
+        # Нужен, чтобы помечать задачи как завершённые только по одному разу на каждый запуск
+        self.finished_ids = []
+
+        # Словари с последними кусками логов stdout для каждой задачи.
+        # Ключи - task_id, значение - list() из не более чем LOGS_KEEP_RECORDS_COUNT строк логов.
+        self.recent_stdout_logs = {}  # ...логи из stdout
+        self.recent_stderr_logs = {}  # ...логи из stderr
+
+        # Словари с запущенными вспомогательными потоками для взаимодействия с процессами от каждой задачи:
+        self.check_one_finished_threads = {}  # ...для проверки, когда он закончится
+        self.read_one_stdout_threads = {}  # ...для чтения логов из stdout
+        self.read_one_stderr_threads = {}  # ...для чтения логов из stderr
+
+    # ДЛЯ ДОСТУПА СНАРУЖИ ВСЕГДА используйте этот метод. Объект нашего класса должен быть ТОЛЬКО ОДИН на всё приложение!
     # Дело в том, что он запускает тяжеловесные задачи парсера и мониторит их, и нечего их запускать из двух объектов.
     @staticmethod
     def get_instance():
@@ -61,26 +76,47 @@ class DbTaskManager:
             self.finished_ids.remove(task_id)
 
         args = self._get_args_from_task(task)
-        proc = subprocess.Popen(args, shell=True, cwd=PARSER_CWD, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        proc = subprocess.Popen(
+            args, cwd=PARSER_CWD,
+            # shell=True, close_fds=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, encoding='utf-8'
+        )
         self.processes_running[task_id] = proc
 
+        thread = threading.Thread(target=self._check_one_finished_thread, args=(task_id,))  # Обновление логов/состояний процессов по таймеру
+        self.check_one_finished_threads[task_id] = thread
+        thread.start()
+
+        thread = threading.Thread(target=self._read_one_stdout_thread, args=(task_id, proc,))  # Обновление логов/состояний процессов по таймеру
+        self.read_one_stdout_threads[task_id] = thread
+        thread.start()
+
+        thread = threading.Thread(target=self._read_one_stderr_thread, args=(task_id, proc,))  # Обновление логов/состояний процессов по таймеру
+        self.read_one_stderr_threads[task_id] = thread
+        thread.start()
+
     def _check_task_if_running(self, task_id: int):
-        if task_id not in self.processes_running:
+        if task_id in self.finished_ids:  # если задача была завершена (нормально или с ошибкой)
+            return False
+        if task_id not in self.processes_running:  # если задачу ещё не запускали (процесс под неё ещё не был создан)
             return False
         proc = self.processes_running[task_id]
-        return proc.poll() is None
+        return proc.poll() is None  # если кода возврата у процесса ещё нет, то он ещё работает
 
     def stop_one_task(self, task_id: int):
         if task_id in self.processes_running:
             self.processes_running[task_id].kill()
-            del self.processes_running[task_id]
             self.finished_ids.append(task_id)
+            del self.check_one_finished_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
+            del self.read_one_stdout_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
+            del self.read_one_stderr_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
 
     # =============================================
     # Далее внутренние методы класса:
     # =============================================
 
-    # Составление аргументов командной строки для процесса парсера
+    # Составляет аргументов  строки для прuцесса парсера
     # (т.к. он изанчально был расчитан на самостоятельный запуск из консоли)
     @staticmethod
     def _get_args_from_task(task: dict):
@@ -113,33 +149,51 @@ class DbTaskManager:
             args.append(str(float(task["args"]["timeout"])))
         return args
 
-    # Обновление логов/состояний процессов по таймеру
-    def _update_recent_logs(self):
-        try:
-            for task_id in self.processes_running.keys():
-                proc = self.processes_running[task_id]  # чтобы избежать ошибки при итерации в цикле по изменённой коллекции
+    # Определяет, что задача завершилась.
+    # (Крутится в отдельном потоке для каждой запущенной задачи.
+    # Останавливается сам, чуть позже её остановки.)
+    def _check_one_finished_thread(self, task_id: int):
+        while True:
+            if not self._check_task_if_running(task_id):
+                if task_id not in self.finished_ids:
+                    self._mark_task_as_completed(task_id)  # пометить задачу как завершённую (нормально или с ошибкой)
+                    self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
+                    return
+            time.sleep(LOGS_UPDATE_TIMER)
 
-                if not self._check_task_if_running(task_id):
-                    if task_id not in self.finished_ids:
-                        self._mark_task_as_completed(task_id)
-                        self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
+    # Читает логи процесса из stdout.
+    # (Крутится в отдельном потоке для каждой запущенной задачи.
+    # Останавливается сам, чуть позже её остановки.)
+    def _read_one_stdout_thread(self, task_id: int, proc):
+        while True:
+            log_content = proc.stdout.read()
+            if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
+                self.recent_stdout_logs[task_id].append(log_content)
+                if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                    self.recent_stdout_logs = self.recent_stdout_logs[1:]
+            else:
+                if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
+                    return
+            time.sleep(LOGS_UPDATE_TIMER)
 
-                log_content = proc.stdout.read().decode("utf-8")
-                if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                    self.recent_stdout_logs[task_id].append(log_content)
-                    if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
-                        self.recent_stdout_logs = self.recent_stdout_logs[1:]
+    # Читает логи процесса из stderr.
+    # (Крутится в отдельном потоке для каждой запущенной задачи.
+    # Останавливается сам, чуть позже её остановки.)
+    def _read_one_stderr_thread(self, task_id: int, proc):
+        while True:
+            err_content = proc.stderr.read()
+            if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
+                self.recent_stderr_logs[task_id].append(err_content)
+                if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                    self.recent_stderr_logs = self.recent_stderr_logs[1:]
+                self._set_task_error_message(task_id, err_content)
+            else:
+                if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
+                    return
+            time.sleep(LOGS_UPDATE_TIMER)
 
-                err_content = proc.stderr.read().decode("utf-8")
-                if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                    self.recent_stderr_logs[task_id].append(err_content)
-                    if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
-                        self.recent_stderr_logs = self.recent_stderr_logs[1:]
-                    self._set_task_error_message(task_id, err_content)
-        finally:
-            self.update_recent_logs_thread = threading.Timer(LOGS_UPDATE_TIMER, self._update_recent_logs)
-            self.update_recent_logs_thread.start()
-
+    # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
+    # Не вызывать при отмене задачи пользователем.
     def _mark_task_as_completed(self, task_id: int):
         # успех = возврат кода 0 И лог ошибок пустой
         is_success = self.processes_running[task_id].poll() == 0 \
@@ -153,10 +207,11 @@ class DbTaskManager:
             WHERE id = %s;
         """, (is_success, task_id,))
 
+    # Просто обновляем логи ошибок в БД.
+    # Не уверен, что при выдаче чего-либо в stderr процесс обязательно завершится,
+    # поэтому не буду писать сюда is_success = FALSE и завершать задачу
     @staticmethod
     def _set_task_error_message(task_id: int, error_message: str):
-        # Просто обновляем логи ошибок в БД.
-        # Не уверен, что процесс обязательно завершится, чтобы писать сюда is_success = FALSE
         conn = connections["default"]
         cur = conn.cursor()
         cur.execute("""
@@ -165,6 +220,7 @@ class DbTaskManager:
             WHERE id = %s;
         """, (error_message, task_id,))
 
+    # Формирует из недавних логов что-то подходящее для просмотра по заданной задаче
     def _get_task_recent_logs(self, task_id: int) -> (str, str):
         if task_id not in self.processes_running:
             return "This task was not run since last Backend Server's launch.", ""
@@ -176,5 +232,10 @@ class DbTaskManager:
             return "\n".join(self.recent_stdout_logs[task_id]), ""
 
     def __del__(self):
-        self.update_recent_logs_thread.cancel()
+        # (Не останавливаем вспомогательные потоки, т.к. они лишь потоки и потому всё равно лягут вместе с сервером)
+        for proc in self.processes_running.values():
+            try:
+                proc.kill()  # сабпроцессы тоже вроде бы без этого и так останавливаются, но на всякий случай
+            finally:
+                pass
         DbTaskManager.__instance = None

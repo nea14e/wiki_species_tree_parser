@@ -568,11 +568,11 @@ def correct_parents(where: str = None):
 def test_task(timeout: float, will_success: bool):
     elapsed = 0
     while True:
-        if timeout > 10:
-            time.sleep(10)
-            elapsed += 10
-            timeout -= 10
-            print("Test task is printing this to stdout every 10 seconds. Elapsed: {} seconds.".format(elapsed))
+        if timeout > 5:
+            time.sleep(5)
+            elapsed += 5
+            timeout -= 5
+            print("Test task is printing this to stdout every 5 seconds. Elapsed: {} seconds.".format(elapsed))
         else:
             time.sleep(timeout)
             elapsed += timeout
