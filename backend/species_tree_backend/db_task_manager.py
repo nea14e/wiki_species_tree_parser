@@ -108,9 +108,12 @@ class DbTaskManager:
         if task_id in self.processes_running:
             self.processes_running[task_id].kill()
             self.finished_ids.append(task_id)
-            del self.check_one_finished_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
-            del self.read_one_stdout_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
-            del self.read_one_stderr_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
+            if task_id in self.check_one_finished_threads:
+                del self.check_one_finished_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
+            if task_id in self.read_one_stdout_threads:
+                del self.read_one_stdout_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
+            if task_id in self.read_one_stderr_threads:
+                del self.read_one_stderr_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
 
     # =============================================
     # Далее внутренние методы класса:

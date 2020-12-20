@@ -51,7 +51,7 @@ def main():
         test_task(timeout, will_success)
         return
 
-    DbFunctions.init_db(is_test=False)
+    DbFunctions.prepare_to_work(is_test=False)
 
     def apply_proxy(proxy_string: str):
         MyRequests.get_session().proxies = {"http": proxy_string, "https": proxy_string}
@@ -202,6 +202,7 @@ def populate_list(from_title: str = "", to_title: str = ""):
 
 
 def parse_details(skip_parsed_interval, where=""):
+    where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
     query = """
       SELECT id, title, page_url
       FROM public.list
@@ -246,9 +247,19 @@ def parse_details(skip_parsed_interval, where=""):
 
             # Парсинг информации
             all_content = wiki_html.select_one("div.mw-parser-output")
-            is_parent_found, details = parse_levels(all_content, details)
-            if not is_parent_found:
+            details, err_message = parse_levels(all_content, details)
+            if err_message:
                 without_parents += 1
+                DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
+                query = """
+                  UPDATE public.list
+                  SET last_error_message = {}
+                  WHERE id = {};
+                """.format(
+                    quote_string(err_message)
+                    , quote_string(str(list_item[0]))
+                )
+                DbExecuteNonQuery.execute('parse_details:update_details', query)
                 continue
             details = parse_image_wikispecies(all_content, details)
             details = parse_wikipedias_hrefs(wiki_html, details)
@@ -263,6 +274,7 @@ def parse_details(skip_parsed_interval, where=""):
                 , parent_page_url = {}
                 , wikipedias_by_languages = {}
                 , titles_by_languages = {}
+                , last_error_message = NULL
               WHERE id = {};
             """.format(
                 quote_string(details.title)
@@ -277,8 +289,18 @@ def parse_details(skip_parsed_interval, where=""):
             item_counter += 1
 
         except:  # Ошибки базы могут разных видов. Ловим вообще все
-            print('Ошибка:\n', traceback.format_exc())
+            err_message = "Stage 2 error:\n" + traceback.format_exc()
+            print('Ошибка:\n', err_message)
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
+            query = """
+              UPDATE public.list
+              SET last_error_message = {}
+              WHERE id = {};
+            """.format(
+                quote_string(err_message)
+                , quote_string(str(list_item[0]))
+            )
+            DbExecuteNonQuery.execute('parse_details:update_details', query)
             errors += 1
 
         time.sleep(Config.NEXT_PAGE_DELAY)
@@ -301,6 +323,11 @@ class ListItemDetails:
         self.parent_type = None
         self.wikipedias_by_languages = {}
         self.titles_by_languages = {}
+
+
+class MyException(BaseException):
+    def __init__(self, message):
+        self.message = message
 
 
 def parse_image_wikispecies(main_content, details: ListItemDetails):
@@ -367,7 +394,7 @@ def parse_levels(tree_box, details: ListItemDetails):
     # Если текущий уровень почему-то не найден
     if not is_current_found:
         print("Ошибка: текущий уровень не найден!")
-        return False, details
+        return details, "Stage 2 error: current level not found on this page."
 
     # Предыдущий уровень
 
@@ -380,10 +407,10 @@ def parse_levels(tree_box, details: ListItemDetails):
             details.parent_title = matches.group(3)
             details.parent_page_url = matches.group(2)[len("/wiki/"):]
             print("Предыдущий уровень: основной: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
-            return True, details
+            return details, None
         else:
             print("Предыдущий уровень: основной: не найден!")
-            return False, details
+            return details, "Stage 2 error: previous level (main) not found on this page."
     else:
         levels_collapsible_p = tree_box.select_one("table:nth-child(2).wikitable.mw-collapsible > tbody > tr:nth-child(2) > td > p")
         levels_collapsible = str(levels_collapsible_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
@@ -395,13 +422,13 @@ def parse_levels(tree_box, details: ListItemDetails):
                 details.parent_title = matches.group(3)
                 details.parent_page_url = matches.group(2)[len("/wiki/"):]
                 print("Предыдущий уровень: в таблице: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
-                return True, details
+                return details, None
             else:
                 print("Предыдущий уровень: в таблице: не найден!")
-                return False, details
+                return details, "Stage 2 error: previous level (in table) not found on this page."
         else:
             print("Предыдущий уровень: в таблице: не найден - уровней мало!")
-            return False, details
+            return details, "Stage 2 error: previous level (in table) not found on this page - levels too few."
 
 
 def parse_wikipedias_hrefs(wiki_html, details: ListItemDetails):
@@ -420,6 +447,7 @@ def parse_wikipedias_hrefs(wiki_html, details: ListItemDetails):
 
 
 def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
+    where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
     print("Парсим язык: {}, skip_parsed_interval = {}, where = \"{}\"".format(lang_key, skip_parsed_interval, where))
     query = """
       SELECT id, title, image_url, wikipedias_by_languages, titles_by_languages
@@ -492,6 +520,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
               UPDATE public.list
               SET image_url = {}
                 , titles_by_languages = {}
+                , last_error_message = NULL
               WHERE id = {};
             """.format(
                 quote_nullable(cur_image_url)
@@ -502,8 +531,18 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
             item_counter += 1
 
         except:  # Ошибки базы могут разных видов. Ловим вообще все
-            print('Ошибка:\n', traceback.format_exc())
+            err_message = "Stage parse_language error:\n" + traceback.format_exc()
+            print('Ошибка:\n', err_message)
             DbExecuteNonQuery.execute('parse_language:update_details', "ROLLBACK;")
+            query = """
+              UPDATE public.list
+              SET last_error_message = {}
+              WHERE id = {};
+            """.format(
+                quote_string(err_message)
+                , quote_string(str(list_item[0]))
+            )
+            DbExecuteNonQuery.execute('parse_language:update_details', query)
             errors += 1
 
         time.sleep(Config.NEXT_PAGE_DELAY)

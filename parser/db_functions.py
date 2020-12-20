@@ -11,13 +11,17 @@ class DbFunctions:
     default_conn_tag = "default_conn"
 
     @staticmethod
-    def init_db(is_test: bool = False):
+    def prepare_to_work(is_test: bool = False):
         if is_test:
-            print("Инициализация тестовой базы lifetree_test...\n")
+            print("Подготовка работы с тестовой базой lifetree_test...\n")
             DbFunctions.db_name = "lifetree_test"
         else:
-            print("Инициализация основной базы lifetree...\n")
+            print("Подготовка работы с основной базой lifetree...\n")
             DbFunctions.db_name = 'lifetree'
+
+    @staticmethod
+    def init_db(is_test: bool = False):
+        DbFunctions.prepare_to_work(is_test)
 
         # Подключаемся к базе данных по умолчанию, чтобы создать нашу базу, если надо
         general_conn = psycopg2.connect("host='" + Config.DB_HOST + "' port=" + Config.DB_PORT +
@@ -47,6 +51,8 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list.sql"))
         else:
             print("Таблица public.list уже существует, пропускаем этап создания.")
+        print("Миграция public.list_MIGRATE...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list_MIGRATE.sql"))
 
         # Таблица с рангами
         print("\nТаблица с рангами:")
