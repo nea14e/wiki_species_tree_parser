@@ -52,7 +52,7 @@
         </td>
         <td>
 
-          <div class="btn col-auto mr-2 mt-2"
+          <div class="btn col-auto mr-2"
                [ngClass]="logShowingTaskId===task.id ? 'active' : ''"
                (click)="onShowLogClick(task)"
                title="Show log"
@@ -60,7 +60,7 @@
             <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
           </div>
 
-          <div *ngIf="!task.is_running_now" class="btn col-auto mr-2 mt-2"
+          <div *ngIf="!task.is_running_now" class="btn col-auto mr-2"
                (click)="onStartClick(task)"
                title="Run task"
           >
@@ -68,7 +68,7 @@
           </div>
 
           <div *ngIf="!!task.is_running_now && (task.stage==='2' || task.stage==='parse_language')"
-               class="btn col-auto mr-2 mt-2"
+               class="btn col-auto mr-2"
                (click)="onPauseClick(task)"
                title="Pause task"
           >
@@ -76,14 +76,14 @@
           </div>
 
           <div *ngIf="!!task.is_running_now && !(task.stage==='2' || task.stage==='parse_language')"
-               class="btn col-auto mr-2 mt-2"
+               class="btn col-auto mr-2"
                (click)="onStopClick(task)"
                title="Stop task"
           >
             <img src="assets/from-bootstrap/stop-fill.svg" class="btn-img"/>
           </div>
 
-          <div class="btn col-auto mr-2 mt-2"
+          <div class="btn col-auto mr-2"
                [ngClass]="editingTask?.id===task.id ? 'active' : ''"
                (click)="onEditClick(task)"
                [title]="rootData.translationRoot?.translations.edit"
@@ -91,14 +91,14 @@
             <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
           </div>
 
-          <div class="btn col-auto mr-2 mt-2"
+          <div class="btn col-auto mr-2"
                (click)="onDuplicateClick(task)"
                title="Duplicate and edit"
           >
             <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
           </div>
 
-          <div class="btn col-auto mr-2 mt-2"
+          <div class="btn col-auto mr-2"
                (click)="onDeleteClick(task)"
                [title]="rootData.translationRoot?.translations.delete"
           >
