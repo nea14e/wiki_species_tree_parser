@@ -9,7 +9,7 @@ PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
 LOGS_UPDATE_TIMER = 3.0
-LOGS_KEEP_RECORDS_COUNT = 5  # TODO small for test. Set 40.
+LOGS_KEEP_RECORDS_COUNT = 5
 
 
 # Запускает задачи парсера данных и прочие тяжеловесные задачи БД, написанные в файле parser/wiki_parser.py.
@@ -80,7 +80,7 @@ class DbTaskManager:
             args, cwd=PARSER_CWD,
             # shell=True, close_fds=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, encoding='utf-8'
+            universal_newlines=True, encoding='utf-8'
         )
         self.processes_running[task_id] = proc
 
