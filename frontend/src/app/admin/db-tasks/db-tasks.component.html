@@ -9,6 +9,7 @@
   >
     <img src="assets/from-bootstrap/plus.svg" class="btn-img"/>
   </div>
+
 </div>
 
 <div class="row ml-0 mr-0 mb-2">
@@ -52,6 +53,7 @@
         <td>
 
           <div class="btn col-auto mr-2 mt-2"
+               [ngClass]="logShowingTaskId===task.id ? 'active' : ''"
                (click)="onShowLogClick(task)"
                title="Show log"
           >
@@ -82,6 +84,7 @@
           </div>
 
           <div class="btn col-auto mr-2 mt-2"
+               [ngClass]="editingTask?.id===task.id ? 'active' : ''"
                (click)="onEditClick(task)"
                [title]="rootData.translationRoot?.translations.edit"
           >
@@ -109,7 +112,11 @@
 </div>
 
 <div *ngIf="editingTask!==null" class="row">
-  <div class="row ml-0 mr-0 router-hr"></div>
+  <div class="row ml-2 mr-2 router-hr"></div>
+
+  <h4 class="row ml-2 mr-2">
+    Edit task:
+  </h4>
 
   <div class="container-fluid">
 
@@ -252,7 +259,7 @@
       </div>
     </div>
 
-    <div *ngIf="!!editingTask.stage" class="row router-hr"></div>
+    <div *ngIf="!!editingTask.stage" class="row ml-2 mr-2 in-section-hr"></div>
 
     <div *ngIf="!!editingTask.stage" class="row mt-4">
       <div class="col-3">
@@ -298,27 +305,37 @@
 </div>
 
 <div *ngIf="!!logShowingTaskId" class="row ml-0 mr-0">
-  <div class="row ml-0 mr-0 router-hr"></div>
+  <div class="row ml-0 mr-0 in-section-hr"></div>
+
+  <h4 class="row ml-0 mr-0">
+    Logs of #{{logShowingTaskId}}
+  </h4>
 
   <div class="container-fluid">
 
-    <div class="row mt-4">
-      <h3 class="col-6">Log from STDOUT:
-      </h3>
-      <h3 class="col-6">Log from STDERR:
-      </h3>
+    <div class="row mt-2">
+      <h5 class="col-12 ml-4">
+        From STDOUT:
+      </h5>
     </div>
-
-    <div class="row mt-4">
-      <div class="col-6 pr-2">
+    <div class="row">
+      <textarea class="col-12">
         {{logShowingTask?.recent_stdout}}
-      </div>
-      <div class="col-6">
-        {{logShowingTask?.recent_stderr}}
-      </div>
+      </textarea>
     </div>
 
-    <div class="row ml-0 mr-0 mb-2">
+    <div class="row mt-2">
+      <h5 *ngIf="!!logShowingTask?.recent_stderr" class="col-12 ml-4 text-danger">
+        From STDERR:
+      </h5>
+    </div>
+    <div class="row">
+      <textarea *ngIf="!!logShowingTask?.recent_stderr" class="col-12 text-danger">
+        {{logShowingTask?.recent_stderr}}}}
+      </textarea>
+    </div>
+
+    <div class="row ml-0 mr-0 mt-2 mb-2">
       <div class="btn col-auto mr-2 mt-2"
            (click)="onLogBackClick()"
       >

@@ -39,6 +39,17 @@ def main():
             is_test = False
         DbFunctions.init_db(is_test)
         return
+    elif stage_number == 'test_task':  # Task to test tasks progress engine
+        if len(sys.argv) >= 3:
+            will_success = sys.argv[2] == "True"
+        else:
+            will_success = True
+        if len(sys.argv) >= 4:
+            timeout = float(sys.argv[3])
+        else:
+            timeout = 30.0
+        test_task(timeout, will_success)
+        return
 
     DbFunctions.init_db(is_test=False)
 
@@ -100,16 +111,6 @@ def main():
         if len(sys.argv) >= 6:
             apply_proxy(str(sys.argv[5]))
         parse_language(lang_key, skip_parsed_interval, where)  # Добавление языка
-    elif stage_number == 'test_task':  # Task to test tasks progress engine
-        if len(sys.argv) >= 3:
-            will_success = sys.argv[2] == "True"
-        else:
-            will_success = True
-        if len(sys.argv) >= 4:
-            timeout = float(sys.argv[3])
-        else:
-            timeout = 30.0
-        test_task(timeout, will_success)
     else:
         print_usage()
 
@@ -567,18 +568,14 @@ def correct_parents(where: str = None):
 def test_task(timeout: float, will_success: bool):
     elapsed = 0
     while True:
-        if timeout < 10:
+        if timeout > 10:
             time.sleep(10)
             elapsed += 10
             timeout -= 10
+            print("Test task is printing this to stdout every 10 seconds. Elapsed: {} seconds.".format(elapsed))
         else:
             time.sleep(timeout)
             elapsed += timeout
-            timeout = 0
-
-        print("Test task is printing this to stdout every 10 seconds. Elapsed: {} seconds.".format(elapsed))
-
-        if timeout == 0:
             if will_success:
                 print("Test task is printing this to stdout WHEN COMPLETED at {} seconds.".format(elapsed))
                 return

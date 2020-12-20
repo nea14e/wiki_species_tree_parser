@@ -1,14 +1,15 @@
 import os
 import subprocess
 import threading
+import time
 
 from django.db import connections
 
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
-LOGS_UPDATE_TIMER = 30.0
-LOGS_KEEP_RECORDS_COUNT = 5
+LOGS_UPDATE_TIMER = 3.0
+LOGS_KEEP_RECORDS_COUNT = 20
 
 # Запускает задачи парсера данных и прочие тяжеловесные задачи БД, написанные в файле parser/wiki_parser.py.
 class DbTaskManager:
@@ -60,7 +61,7 @@ class DbTaskManager:
             self.finished_ids.remove(task_id)
 
         args = self._get_args_from_task(task)
-        proc = subprocess.Popen(args, cwd=PARSER_CWD, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(args, shell=True, cwd=PARSER_CWD, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
         self.processes_running[task_id] = proc
 
     def _check_task_if_running(self, task_id: int):
@@ -92,12 +93,12 @@ class DbTaskManager:
         elif stage == "1":
             args.append(task["args"]["from_title"])
             args.append(task["args"]["to_title"])
-            if task["args"]["proxy"]:
+            if task["args"].get("proxy", None):
                 args.append(task["args"]["proxy"])
         elif stage == "2":
             args.append(str(bool(task["args"]["skip_parsed_interval"])))
             args.append('"' + str(task["args"]["where"]) + '"')
-            if task["args"]["proxy"]:
+            if task["args"].get("proxy", None):
                 args.append(task["args"]["proxy"])
         elif stage == "3":
             args.append('"' + str(task["args"]["where"]) + '"')
@@ -105,7 +106,7 @@ class DbTaskManager:
             args.append(task["args"]["lang_key"])
             args.append(str(bool(task["args"]["skip_parsed_interval"])))
             args.append('"' + str(task["args"]["where"]) + '"')
-            if task["args"]["proxy"]:
+            if task["args"].get("proxy", None):
                 args.append(task["args"]["proxy"])
         elif stage == "test_task":
             args.append(str(bool(task["args"]["will_success"])))
@@ -114,29 +115,30 @@ class DbTaskManager:
 
     # Обновление логов/состояний процессов по таймеру
     def _update_recent_logs(self):
-        for task_id in self.processes_running.keys():
-            proc = self.processes_running[task_id]  # чтобы избежать ошибки при итерации в цикле по изменённой коллекции
+        try:
+            for task_id in self.processes_running.keys():
+                proc = self.processes_running[task_id]  # чтобы избежать ошибки при итерации в цикле по изменённой коллекции
 
-            if not self._check_task_if_running(task_id):
-                if task_id not in self.finished_ids:
-                    self._mark_task_as_completed(task_id)
-                    self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
+                if not self._check_task_if_running(task_id):
+                    if task_id not in self.finished_ids:
+                        self._mark_task_as_completed(task_id)
+                        self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
 
-            log_content = proc.stdout.read().decode("utf-8")
-            if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_stdout_logs[task_id].append(log_content)
-                if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
-                    self.recent_stdout_logs = self.recent_stdout_logs[1:]
+                log_content = proc.stdout.read().decode("utf-8")
+                if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
+                    self.recent_stdout_logs[task_id].append(log_content)
+                    if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                        self.recent_stdout_logs = self.recent_stdout_logs[1:]
 
-            err_content = proc.stderr.read().decode("utf-8")
-            if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_stderr_logs[task_id].append(err_content)
-                if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
-                    self.recent_stderr_logs = self.recent_stderr_logs[1:]
-                self._set_task_error_message(task_id, err_content)
-
-        self.update_recent_logs_thread = threading.Timer(LOGS_UPDATE_TIMER, self._update_recent_logs)
-        self.update_recent_logs_thread.start()
+                err_content = proc.stderr.read().decode("utf-8")
+                if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
+                    self.recent_stderr_logs[task_id].append(err_content)
+                    if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                        self.recent_stderr_logs = self.recent_stderr_logs[1:]
+                    self._set_task_error_message(task_id, err_content)
+        finally:
+            self.update_recent_logs_thread = threading.Timer(LOGS_UPDATE_TIMER, self._update_recent_logs)
+            self.update_recent_logs_thread.start()
 
     def _mark_task_as_completed(self, task_id: int):
         # успех = возврат кода 0 И лог ошибок пустой

@@ -191,7 +191,6 @@ export class DbTasksComponent implements OnInit {
     this.editingTask = null;
     this.logShowingTaskId = task.id;
     this.logShowingTask = task;
-    console.log('onShowLogClick(): task:', task);  // TODO
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -199,14 +198,12 @@ export class DbTasksComponent implements OnInit {
 
   private updateShowedLog(): void {
     if (!this.logShowingTaskId) {
-      console.log('updateShowedLog(): logShowingTaskId == null');  // TODO
       this.logShowingTask = null;
       return;
     }
 
     const task = this.tasks.find(t => t.id === this.logShowingTaskId);
     if (!task) {
-      console.log('updateShowedLog(): task == null');  // TODO
       this.logShowingTaskId = null;
       this.logShowingTask = null;
       return;
@@ -215,7 +212,6 @@ export class DbTasksComponent implements OnInit {
   }
 
   onLogBackClick(): void {
-    console.log('onLogBackClick()');  // TODO
     this.logShowingTaskId = null;
   }
 }
