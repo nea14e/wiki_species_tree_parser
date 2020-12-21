@@ -46,9 +46,9 @@ urlpatterns = [
     path('api/admin_delete_task', admin_delete_task),
     path('api/admin_start_one_task', admin_start_one_task),
     path('api/admin_stop_one_task', admin_stop_one_task),
-    path(Config.BACKEND_ADMIN_URL_PREFIX + '/count_1', admin_get_count_1),
-    path(Config.BACKEND_ADMIN_URL_PREFIX + '/count_2', admin_get_count_2),
-    path(Config.BACKEND_ADMIN_URL_PREFIX + '/count_3', admin_get_count_3),
+    path(Config.BACKEND_ADMIN_PASSWORD + '/count_1', admin_get_count_1),
+    path(Config.BACKEND_ADMIN_PASSWORD + '/count_2', admin_get_count_2),
+    path(Config.BACKEND_ADMIN_PASSWORD + '/count_3', admin_get_count_3),
 ]
 
 startup_start_tasks()

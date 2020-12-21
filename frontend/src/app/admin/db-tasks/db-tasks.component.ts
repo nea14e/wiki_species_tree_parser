@@ -87,13 +87,26 @@ export class DbTasksComponent implements OnInit {
   onDuplicateClick(task: DbTask): void {
     this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. Copying of object.
     this.editingTask.id = null;  // mark task as new
-    this.editingTask.is_run_on_startup = true;
+    this.setTaskRerunDefaults(this.editingTask);
     this.editingTask.is_launch_now = true;
     this.logShowingTaskId = null;
     this.logShowingTask = null;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
+  }
+
+  setTaskRerunDefaults(task: DbTask): void {
+    task.is_rerun_on_startup = this.isTaskRerunEnabled(task);
+    task.is_resume_on_startup = this.isTaskResumeEnabled(task);
+  }
+
+  isTaskRerunEnabled(task: DbTask): boolean {
+    return task.stage === '0' || task.stage === 'test_task';
+  }
+
+  isTaskResumeEnabled(task: DbTask): boolean {
+    return task.stage === '2' || task.stage === 'parse_language';
   }
 
   onDeleteClick(task: DbTask): void {
@@ -154,6 +167,16 @@ export class DbTasksComponent implements OnInit {
     if (task.is_success === false) {
       return 'Ended with error';
     }
+  }
+
+  getTaskResumeState(task: DbTask): string {
+    if (task.is_rerun_on_startup) {
+      return 'Rerun';
+    }
+    if (task.is_resume_on_startup) {
+      return 'Resume';
+    }
+    return '';
   }
 
   onStartClick(task: DbTask): void {

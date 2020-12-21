@@ -58,7 +58,8 @@ class DbTaskManager:
     # Проходится по списку задач и запускает все помеченные для автозапуска и не завершённые
     def start_tasks_on_startup(self, tasks: list):
         for task in tasks:
-            if bool(task["is_run_on_startup"]) and task["is_success"] is None:
+            if bool(task["is_rerun_on_startup"]) or \
+                    (bool(task["is_resume_on_startup"]) and not bool(task["is_success"])):
                 self.start_one_task(task)
 
     def start_one_task(self, task: dict):
@@ -74,6 +75,9 @@ class DbTaskManager:
         self.recent_stderr_logs[task_id] = list()
         if task_id in self.finished_ids:
             self.finished_ids.remove(task_id)
+
+        if task["is_success"] is not None:
+            self._mark_task_as_uncompleted(task_id)
 
         args = self._get_args_from_task(task)
         proc = subprocess.Popen(
@@ -197,6 +201,18 @@ class DbTaskManager:
 
     # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
     # Не вызывать при отмене задачи пользователем.
+    def _mark_task_as_uncompleted(self, task_id: int):
+        conn = connections["default"]
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE public.tasks
+            SET is_success = NULL
+            WHERE id = %s;
+        """, (task_id,))
+        conn.commit()
+
+    # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
+    # Не вызывать при отмене задачи пользователем.
     def _mark_task_as_completed(self, task_id: int):
         # успех = возврат кода 0 И лог ошибок пустой
         is_success = self.processes_running[task_id].poll() == 0 \
@@ -209,6 +225,7 @@ class DbTaskManager:
             SET is_success = %s
             WHERE id = %s;
         """, (is_success, task_id,))
+        conn.commit()
 
     # Просто обновляем логи ошибок в БД.
     # Не уверен, что при выдаче чего-либо в stderr процесс обязательно завершится,
@@ -222,6 +239,7 @@ class DbTaskManager:
             SET last_crash_message = %s
             WHERE id = %s;
         """, (error_message, task_id,))
+        conn.commit()
 
     # Формирует из недавних логов что-то подходящее для просмотра по заданной задаче
     def _get_task_recent_logs(self, task_id: int) -> (str, str):

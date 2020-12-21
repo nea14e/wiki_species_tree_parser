@@ -114,13 +114,13 @@ def check_admin_request(func):
 
         if (ConfigExample.BACKEND_SECRET_KEY == Config.BACKEND_SECRET_KEY):
             return JsonResponse({"is_ok": False, "message": "You forgot to change Config.BACKEND_SECRET_KEY when copied from Config_EXAMPLE!"})
-        if (ConfigExample.BACKEND_ADMIN_URL_PREFIX == Config.BACKEND_ADMIN_URL_PREFIX):
+        if (ConfigExample.BACKEND_ADMIN_URL_PREFIX == Config.BACKEND_ADMIN_PASSWORD):
             return JsonResponse({"is_ok": False, "message": "You forgot to change Config.BACKEND_ADMIN_URL_PREFIX when copied from Config_EXAMPLE!"})
 
         request = args[0]
         try:
             body = json.loads(request.body)
-            if (str(body["adminKey"]) != Config.BACKEND_ADMIN_URL_PREFIX):
+            if (str(body["adminKey"]) != Config.BACKEND_ADMIN_PASSWORD):
                 return JsonResponse({"is_ok": False, "message": "Wrong admin key"})
         except BaseException:
             return JsonResponse(
@@ -188,10 +188,10 @@ def admin_add_task(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO public.tasks(stage, python_exe, args, is_run_on_startup)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO public.tasks(stage, python_exe, args, is_rerun_on_startup, is_resume_on_startup)
+        VALUES (%s, %s, %s, %s, %s)
         RETURNING id;
-    """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"]))
+    """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_rerun_on_startup"], body["data"]["is_resume_on_startup"]))
     task = body["data"]
     task["id"] = int(cur.fetchone()[0])
     if bool(body["data"]["is_launch_now"]):
@@ -209,9 +209,17 @@ def admin_edit_task(request):
         SET stage = %s,
          python_exe = %s,
          args = %s,
-         is_run_on_startup = %s
+         is_rerun_on_startup = %s,
+         is_resume_on_startup = %s
         WHERE id = %s;
-    """, (body["data"]["stage"], body["data"]["python_exe"], json.dumps(body["data"]["args"]), body["data"]["is_run_on_startup"], body["data"]["id"]))
+    """, (body["data"]["stage"],
+          body["data"]["python_exe"],
+          json.dumps(body["data"]["args"]),
+          body["data"]["is_rerun_on_startup"],
+          body["data"]["is_resume_on_startup"],
+          body["data"]["id"]
+          )
+    )
     task_id = body["data"]["id"]
     task = body["data"]
     if bool(body["data"]["is_launch_now"]):  # запускаем/останавливаем задачу при внесении в неё изменений в зависимости от галочки на форме редактирования

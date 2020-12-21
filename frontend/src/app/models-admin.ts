@@ -6,7 +6,8 @@ export class DbTask {
   stage: string;
   python_exe = 'python3';
   args: DbTaskArgs = new DbTaskArgs();
-  is_run_on_startup = true;
+  is_rerun_on_startup: boolean;
+  is_resume_on_startup: boolean;
   is_launch_now = true;
   is_success = false;
   is_running_now: boolean;

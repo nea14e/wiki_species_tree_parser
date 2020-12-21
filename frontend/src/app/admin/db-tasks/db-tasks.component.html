@@ -45,7 +45,7 @@
           <span *ngIf="task.stage==='test_task'">will_success: {{task.args.will_success}} in {{task.args.timeout}} sec</span>
         </td>
         <td title="Run/resume task automatically on Backend Server's restart">
-          <input type="checkbox" [(ngModel)]="task.is_run_on_startup" disabled>
+          {{getTaskResumeState(task)}}
         </td>
         <td>
           {{getTaskState(task)}}
@@ -67,15 +67,15 @@
             <img src="assets/from-bootstrap/play-fill.svg" class="btn-img"/>
           </div>
 
-          <div *ngIf="!!task.is_running_now && (task.stage==='2' || task.stage==='parse_language')"
+          <div *ngIf="!!task.is_running_now && isTaskResumeEnabled(task)"
                class="btn col-auto mr-2"
                (click)="onPauseClick(task)"
-               title="Pause task"
+               title="Pause task. Tasks of this type can be paused & resumed"
           >
             <img src="assets/from-bootstrap/pause-fill.svg" class="btn-img"/>
           </div>
 
-          <div *ngIf="!!task.is_running_now && !(task.stage==='2' || task.stage==='parse_language')"
+          <div *ngIf="!!task.is_running_now && !isTaskResumeEnabled(task)"
                class="btn col-auto mr-2"
                (click)="onStopClick(task)"
                title="Stop task"
@@ -134,7 +134,7 @@
         stage<span class="text-danger">*</span>:
       </div>
       <div class="col-9">
-        <select [(ngModel)]="editingTask.stage">
+        <select [(ngModel)]="editingTask.stage" (ngModelChange)="setTaskRerunDefaults(editingTask)">
           <option value="0" [selected]="editingTask.stage==='0'">0 - init DB / migrate DB</option>
           <option value="1" [selected]="editingTask.stage==='1'">1 - populate list</option>
           <option value="2" [selected]="editingTask.stage==='2'">2 - parse (items from stage 1)</option>
@@ -206,7 +206,8 @@
         <br/>
         <small>Do not try again failed/skipped items on the interval; always start from last parsed item on the interval</small>
         <br/>
-        <small>CHECK to not waste time on parsing restarts</small>
+        <small>CHECK to not waste time on parsing resumes/restarts</small>
+        <br/>
         <small>UNCHECK to try parse failed items again or remove gaps</small>
       </div>
     </div>
@@ -263,14 +264,25 @@
 
     <div *ngIf="!!editingTask.stage" class="row ml-2 mr-2 in-section-hr"></div>
 
-    <div *ngIf="!!editingTask.stage" class="row mt-4">
+    <div *ngIf="!!editingTask.stage && isTaskRerunEnabled(editingTask)" class="row mt-4">
       <div class="col-3">
-        is_run_on_startup:
+        is_rerun_on_startup:
       </div>
       <div class="col-9">
-        <input type="checkbox" [(ngModel)]="editingTask.is_run_on_startup">
+        <input type="checkbox" [(ngModel)]="editingTask.is_rerun_on_startup">
         <br/>
-        <small>Run/resume task automatically on Backend Server's restart</small>
+        <small>RERUN task automatically on Backend Server's restart (ALWAYS even if task completed already)</small>
+      </div>
+    </div>
+
+    <div *ngIf="!!editingTask.stage && isTaskResumeEnabled(editingTask)" class="row mt-4">
+      <div class="col-3">
+        is_resume_on_startup:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingTask.is_resume_on_startup">
+        <br/>
+        <small>RESUME task automatically on Backend Server's restart (UNTIL task completed successfully)</small>
       </div>
     </div>
 
@@ -281,7 +293,9 @@
       <div class="col-9">
         <input type="checkbox" [(ngModel)]="editingTask.is_launch_now">
         <br/>
-        <small>Starts task if checked and stops if unchecked</small>
+        <small>Start if checked</small>
+        <br/>
+        <small>Stop if unchecked</small>
       </div>
     </div>
 
