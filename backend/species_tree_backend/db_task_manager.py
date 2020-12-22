@@ -8,7 +8,6 @@ from django.db import connections
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
-LOGS_UPDATE_TIMER = 3.0
 LOGS_KEEP_LINES_COUNT = 50
 
 
@@ -183,11 +182,10 @@ class DbTaskManager:
             if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
                 self.recent_stdout_logs[task_id].append(log_content)
                 if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_LINES_COUNT:
-                    self.recent_stdout_logs = self.recent_stdout_logs[1:]
+                    self.recent_stdout_logs[task_id] = self.recent_stdout_logs[task_id][1:]
             else:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
                     return
-            time.sleep(LOGS_UPDATE_TIMER)
 
     # Читает логи процесса из stderr.
     # (Крутится в отдельном потоке для каждой запущенной задачи.
@@ -204,12 +202,11 @@ class DbTaskManager:
             if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
                 self.recent_stderr_logs[task_id].append(err_content)
                 if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_LINES_COUNT:
-                    self.recent_stderr_logs = self.recent_stderr_logs[1:]
+                    self.recent_stderr_logs[task_id] = self.recent_stderr_logs[task_id][1:]
                 self._set_task_error_message(task_id, err_content)
             else:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
                     return
-            time.sleep(LOGS_UPDATE_TIMER)
 
     # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
     # Не вызывать при отмене задачи пользователем.
