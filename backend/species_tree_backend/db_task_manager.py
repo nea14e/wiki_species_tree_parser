@@ -9,7 +9,7 @@ PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
 LOGS_UPDATE_TIMER = 3.0
-LOGS_KEEP_RECORDS_COUNT = 5
+LOGS_KEEP_LINES_COUNT = 50
 
 
 # Запускает задачи парсера данных и прочие тяжеловесные задачи БД, написанные в файле parser/wiki_parser.py.
@@ -173,10 +173,16 @@ class DbTaskManager:
     # Останавливается сам, чуть позже её остановки.)
     def _read_one_stdout_thread(self, task_id: int, proc):
         while True:
-            log_content = proc.stdout.read()
+            log_content = ""
+            while True:
+                char = proc.stdout.read(1)
+                if char == "\n":
+                    break
+                log_content += char
+
             if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
                 self.recent_stdout_logs[task_id].append(log_content)
-                if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_LINES_COUNT:
                     self.recent_stdout_logs = self.recent_stdout_logs[1:]
             else:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
@@ -188,10 +194,16 @@ class DbTaskManager:
     # Останавливается сам, чуть позже её остановки.)
     def _read_one_stderr_thread(self, task_id: int, proc):
         while True:
-            err_content = proc.stderr.read()
+            err_content = ""
+            while True:
+                char = proc.stderr.read(1)
+                if char == "\n":
+                    break
+                err_content += char
+
             if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
                 self.recent_stderr_logs[task_id].append(err_content)
-                if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_RECORDS_COUNT:
+                if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_LINES_COUNT:
                     self.recent_stderr_logs = self.recent_stderr_logs[1:]
                 self._set_task_error_message(task_id, err_content)
             else:

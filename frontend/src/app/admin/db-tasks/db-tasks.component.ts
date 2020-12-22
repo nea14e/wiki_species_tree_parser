@@ -20,6 +20,7 @@ export class DbTasksComponent implements OnInit {
   editingTask: DbTask | null = null;
   logShowingTaskId: number | null = null;
   logShowingTask: DbTask | null = null;
+  logShowingAutoScroll = true;
   knownLanguagesAll: AdminLanguage[] = [];
 
   balloonMessage: string | null = null;
@@ -182,6 +183,7 @@ export class DbTasksComponent implements OnInit {
   onStartClick(task: DbTask): void {
     this.networkAdminService.startOneTask(task, this.rootData.adminPassword).subscribe(adminResponse => {
       this.showBalloon(adminResponse.message);
+      this.logShowingAutoScroll = true;
       this.reloadList();
     }, error => {
       alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
@@ -214,6 +216,7 @@ export class DbTasksComponent implements OnInit {
     this.editingTask = null;
     this.logShowingTaskId = task.id;
     this.logShowingTask = task;
+    this.logShowingAutoScroll = true;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -231,7 +234,16 @@ export class DbTasksComponent implements OnInit {
       this.logShowingTask = null;
       return;
     }
+    const prevTask = this.logShowingTask;
     this.logShowingTask = task;
+
+    if (this.logShowingAutoScroll === true &&
+      (prevTask.recent_stdout !== task.recent_stdout ||
+      prevTask.recent_stderr !== task.recent_stderr)) {
+      setTimeout(() => {
+        window.scrollTo(0, 9999999);
+      }, 250);
+    }
   }
 
   onLogBackClick(): void {
