@@ -8,6 +8,8 @@ from django.db import connections
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
+PROC_STATE_UPDATE_TIMER = 3.0
+LOGS_UPDATE_TIMER = 0.2
 LOGS_KEEP_LINES_COUNT = 50
 
 
@@ -165,7 +167,7 @@ class DbTaskManager:
                     self._mark_task_as_completed(task_id)  # пометить задачу как завершённую (нормально или с ошибкой)
                     self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
                     return
-            time.sleep(LOGS_UPDATE_TIMER)
+            time.sleep(PROC_STATE_UPDATE_TIMER)
 
     # Читает логи процесса из stdout.
     # (Крутится в отдельном потоке для каждой запущенной задачи.
@@ -187,6 +189,8 @@ class DbTaskManager:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
                     return
 
+            time.sleep(LOGS_UPDATE_TIMER)
+
     # Читает логи процесса из stderr.
     # (Крутится в отдельном потоке для каждой запущенной задачи.
     # Останавливается сам, чуть позже её остановки.)
@@ -207,6 +211,8 @@ class DbTaskManager:
             else:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
                     return
+
+            time.sleep(LOGS_UPDATE_TIMER)
 
     # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
     # Не вызывать при отмене задачи пользователем.
