@@ -243,14 +243,18 @@ class DbTaskManager:
 
     # Формирует из недавних логов что-то подходящее для просмотра по заданной задаче
     def _get_task_recent_logs(self, task_id: int) -> (str, str):
-        if task_id not in self.processes_running:
-            return "This task was not run since last Backend Server's launch.", ""
-        if task_id not in self.recent_stdout_logs:
-            return "This task not formed any logs yet.", ""
-        if len(self.recent_stderr_logs[task_id]) > 0:
-            return "\n".join(self.recent_stdout_logs[task_id]), "\n".join(self.recent_stderr_logs[task_id])
-        else:
-            return "\n".join(self.recent_stdout_logs[task_id]), ""
+        def get_logs_internal() -> (str, str):
+            if task_id not in self.processes_running:
+                return "This task was not run since last Backend Server's launch.", ""
+            if task_id not in self.recent_stdout_logs:
+                return "This task not formed any logs yet.", ""
+            if len(self.recent_stderr_logs[task_id]) > 0:
+                return "\n".join(self.recent_stdout_logs[task_id]), "\n".join(self.recent_stderr_logs[task_id])
+            else:
+                return "\n".join(self.recent_stdout_logs[task_id]), ""
+
+        logs, err_logs = get_logs_internal()
+        return logs.replace("\n", "<br/>"), err_logs.replace("\n", "<br/>")
 
     def __del__(self):
         # (Не останавливаем вспомогательные потоки, т.к. они лишь потоки и потому всё равно лягут вместе с сервером)

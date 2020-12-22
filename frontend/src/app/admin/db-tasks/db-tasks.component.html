@@ -330,25 +330,23 @@
   <div class="container-fluid">
 
     <div class="row mt-2">
-      <h5 class="col-12 ml-4">
-        From STDOUT:
+      <h5 class="col-12 ml-0">
+        <b>From STDOUT:</b>
       </h5>
     </div>
     <div class="row">
-      <textarea class="col-12">
-        {{logShowingTask?.recent_stdout}}
-      </textarea>
+      <div class="col-12" [innerHTML]="logShowingTask?.recent_stdout">
+      </div>
     </div>
 
     <div class="row mt-2">
-      <h5 *ngIf="!!logShowingTask?.recent_stderr" class="col-12 ml-4 text-danger">
-        From STDERR:
+      <h5 *ngIf="!!logShowingTask?.recent_stderr" class="col-12 ml-0 text-danger">
+        <b>From STDERR:</b>
       </h5>
     </div>
     <div class="row">
-      <textarea *ngIf="!!logShowingTask?.recent_stderr" class="col-12 text-danger">
-        {{logShowingTask?.recent_stderr}}}}
-      </textarea>
+      <div *ngIf="!!logShowingTask?.recent_stderr" class="col-12 text-danger" [innerHTML]="logShowingTask?.recent_stderr">
+      </div>
     </div>
 
     <div class="row ml-0 mr-0 mt-2 mb-2">
