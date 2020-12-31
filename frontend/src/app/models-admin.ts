@@ -1,6 +1,11 @@
 /* tslint:disable:variable-name */
 import {Translations} from "./models";
 
+export class DbTasksList {
+  tasks: DbTask[] = [];
+  is_test_db: boolean;
+}
+
 export class DbTask {
   id: number | null;
   stage: string;
@@ -16,7 +21,6 @@ export class DbTask {
 }
 
 export class DbTaskArgs {
-  is_test = false;
   from_title: string;
   to_title: string;
   skip_parsed_interval = true;

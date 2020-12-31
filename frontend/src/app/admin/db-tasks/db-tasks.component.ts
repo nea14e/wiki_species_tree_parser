@@ -17,6 +17,7 @@ export class DbTasksComponent implements OnInit {
   autoReloadTimeoutId: number | null = null;
 
   tasks: DbTask[] = [];
+  isTestDb: boolean | null = null;
   editingTask: DbTask | null = null;
   logShowingTaskId: number | null = null;
   logShowingTask: DbTask | null = null;
@@ -41,7 +42,8 @@ export class DbTasksComponent implements OnInit {
 
   private reloadList(): void {
     this.networkAdminService.getDbTasks(this.rootData.adminPassword).subscribe(data => {
-      this.tasks = data;
+      this.tasks = data.tasks;
+      this.isTestDb = data.is_test_db;
       this.updateShowedLog();
       if (!!this.autoReloadTimeoutId) {
         clearTimeout(this.autoReloadTimeoutId);

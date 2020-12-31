@@ -5,6 +5,8 @@ import time
 
 from django.db import connections
 
+from config import Config
+
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
@@ -129,12 +131,13 @@ class DbTaskManager:
     @staticmethod
     def _get_args_from_task(task: dict):
         args = [str(task["python_exe"]), PARSER_PATH]
+        if Config.BACKEND_IS_USE_TEST_DB:
+            args.append("test")
+        else:
+            args.append("no_test")
         stage = str(task["stage"])
         args.append(stage)
-        if stage == "0":
-            if bool(task["args"]["is_test"]):
-                args.append("test")
-        elif stage == "1":
+        if stage == "1":
             args.append(task["args"]["from_title"])
             args.append(task["args"]["to_title"])
             if task["args"].get("proxy", None):

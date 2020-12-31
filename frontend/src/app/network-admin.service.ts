@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, of, throwError} from 'rxjs';
 import {environment} from '../environments/environment';
-import {AdminLanguage, AdminResponse, DbTask} from './models-admin';
+import {AdminLanguage, AdminResponse, DbTask, DbTasksList} from './models-admin';
 import {catchError, switchMap} from 'rxjs/operators';
 
 @Injectable({
@@ -13,11 +13,11 @@ export class NetworkAdminService {
   constructor(private http: HttpClient) {
   }
 
-  public getDbTasks(adminKey: string): Observable<DbTask[]> {
+  public getDbTasks(adminKey: string): Observable<DbTasksList> {
     // Запрос возвращает либо DbTask[], либо AdminResponse.
     // Но во втором случае мы превращаем данные в ошибку, поэтому AdminResponse в ответ никогда не выдаётся.
     return this.pipeAdminQueries(
-      this.http.post<DbTask[] | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_tasks', {adminKey})
+      this.http.post<DbTasksList | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_tasks', {adminKey})
     );
   }
 
