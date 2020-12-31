@@ -89,7 +89,6 @@ export class DbTasksComponent implements OnInit {
     this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. Copying of object.
     this.editingTask.id = null;  // mark task as new
     this.setTaskRerunDefaults(this.editingTask);
-    this.editingTask.is_launch_now = true;
     this.logShowingTaskId = null;
     this.logShowingTask = null;
     setTimeout(() => {
