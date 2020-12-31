@@ -45,6 +45,13 @@
       <br/>{{rootData.translationRoot?.translations.parent_word}}:
       <br/><i class="level-parent-title">{{level.level_parent_title}}</i>
     </small>
+
+    <div *ngIf="level.is_level_has_selected_item===true">
+      <br/>
+      <div style="margin-left: -12px;">
+        <img src="assets/from-bootstrap/caret-down-fill-blue.svg" class="item-down-arrow"/>
+      </div>
+    </div>
   </div>
 
   <div *ngFor="let item of level.items" (click)="onItemClick(item)" class="item p-0" [class]="getItemClass(item)">
