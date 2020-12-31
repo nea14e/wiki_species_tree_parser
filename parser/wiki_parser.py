@@ -5,14 +5,18 @@ import sys
 import traceback
 
 # import requests
+from multiprocessing.queues import Queue
+
 from requests import Session
 from requests.utils import requote_uri
 from bs4 import BeautifulSoup
 import time
 
+from backend.species_tree_backend.db_task_manager import LOGS_ERROR_PREFIX
 from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
 from config import Config
+from logger import Logger
 
 
 class MyRequests:
@@ -24,6 +28,17 @@ class MyRequests:
             cls.session = Session()
         return cls.session
 
+
+def main_from_web(args, log_query: Queue):
+    Logger.log_query = log_query
+    sys.argv = sys.argv + args["args"]
+    try:
+        main()
+    except:
+        error_message = traceback.format_exc()
+        for line in error_message.split("\n"):
+            Logger.print(LOGS_ERROR_PREFIX + line)
+    
 
 def main():
     if len(sys.argv) < 2:
@@ -116,25 +131,25 @@ def main():
 
 
 def print_usage():
-    print("Запускайте через параметры командной строки")
-    print("Для 0 этапа - инициализации базы:")
-    print("python3.6 wiki_parser.py 0 [\"test\" для тестового наполнения]")
-    print("Для 1 этапа - составления списка:")
-    print("python3.6 wiki_parser.py 1 [from_title] [to_title] [proxy_string]")
-    print("Для 2 этапа - получения деталей по списку:")
-    print("python3.6 wiki_parser.py 2 [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL] [proxy_string]")
-    print("Для 3 этапа - построения древовидной структуры:")
-    print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
-    print("Для 4 этапа - подсчёта количества видов в каждом узле дерева:")
-    print("python3.6 wiki_parser.py 4")
-    print("Отдельно - для получения перевода на язык по списку:")
-    print("python3.6 wiki_parser.py parse_language <lang_key> [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL] [proxy_string]")
-    print()
-    print("Где proxy_string = \"протокол://адрес:порт@логин:пароль\" или \"протокол://адрес:порт\"")
+    Logger.print("Запускайте через параметры командной строки")
+    Logger.print("Для 0 этапа - инициализации базы:")
+    Logger.print("python3.6 wiki_parser.py 0 [\"test\" для тестового наполнения]")
+    Logger.print("Для 1 этапа - составления списка:")
+    Logger.print("python3.6 wiki_parser.py 1 [from_title] [to_title] [proxy_string]")
+    Logger.print("Для 2 этапа - получения деталей по списку:")
+    Logger.print("python3.6 wiki_parser.py 2 [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL] [proxy_string]")
+    Logger.print("Для 3 этапа - построения древовидной структуры:")
+    Logger.print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
+    Logger.print("Для 4 этапа - подсчёта количества видов в каждом узле дерева:")
+    Logger.print("python3.6 wiki_parser.py 4")
+    Logger.print("Отдельно - для получения перевода на язык по списку:")
+    Logger.print("python3.6 wiki_parser.py parse_language <lang_key> [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL] [proxy_string]")
+    Logger.print()
+    Logger.print("Где proxy_string = \"протокол://адрес:порт@логин:пароль\" или \"протокол://адрес:порт\"")
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
-    print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
+    Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
     url = "https://species.wikimedia.org/wiki/Special:AllPages"
     if from_title:
@@ -181,21 +196,21 @@ def populate_list(from_title: str = "", to_title: str = ""):
                 item_details_href = str(link["href"])
                 if Config.URL_START_RELATIVE in item_details_href:
                     item_details_href = item_details_href[len(Config.URL_START_RELATIVE):]  # Ссылка (без начала)
-                # print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # debug only
+                # Logger.print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # debug only
                 DbFunctions.add_list_item(item_title, item_details_href)
                 succeeds += 1
             except BaseException:
                 errors += 1
-                print('Ошибка:\n', traceback.format_exc())
+                Logger.print('Ошибка:\n', traceback.format_exc())
 
         if next_page_url and is_go_to_next_page:
-            print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
+            Logger.print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
                 next_page_elem.text, succeeds, skipped, errors))
             html = MyRequests.get_session().get(Config.URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
             wiki_html = BeautifulSoup(html, "html.parser")
             time.sleep(Config.NEXT_PAGE_DELAY)
         else:
-            print(
+            Logger.print(
                 "ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок.".format(succeeds, skipped,
                                                                                                      errors))
             return
@@ -226,7 +241,7 @@ def parse_details(skip_parsed_interval, where=""):
     query += """
       ORDER BY page_url;
     """
-    print("Список для парсинга:\n" + query)
+    Logger.print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_details:list_to_parse", query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list()
@@ -240,8 +255,8 @@ def parse_details(skip_parsed_interval, where=""):
         try:
             details = ListItemDetails(id=list_item[0], title=list_item[1], page_url=list_item[2])
             url = Config.URL_START + details.page_url
-            print('===========================================')
-            print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + url)
+            Logger.print('===========================================')
+            Logger.print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + url)
             html = MyRequests.get_session().get(url).content
             wiki_html = BeautifulSoup(html, "html.parser")
 
@@ -290,7 +305,7 @@ def parse_details(skip_parsed_interval, where=""):
 
         except:  # Ошибки базы могут разных видов. Ловим вообще все
             err_message = "Stage 2 error:\n" + traceback.format_exc()
-            print('Ошибка:\n', err_message)
+            Logger.print('Ошибка:\n', err_message)
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
             query = """
               UPDATE public.list
@@ -304,11 +319,11 @@ def parse_details(skip_parsed_interval, where=""):
             errors += 1
 
         time.sleep(Config.NEXT_PAGE_DELAY)
-    print("\n")
-    print("ПАРСИНГ ДЕТАЛЕЙ ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
-    print("Добавлены детали о " + str(item_counter) + " элементов.")
-    print("Не найдены родители для " + str(without_parents) + " элементов.")
-    print("Ошибки для " + str(errors) + " элементов.")
+    Logger.print("\n")
+    Logger.print("ПАРСИНГ ДЕТАЛЕЙ ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
+    Logger.print("Добавлены детали о " + str(item_counter) + " элементов.")
+    Logger.print("Не найдены родители для " + str(without_parents) + " элементов.")
+    Logger.print("Ошибки для " + str(errors) + " элементов.")
 
 
 class ListItemDetails:
@@ -338,11 +353,11 @@ def parse_image_wikispecies(main_content, details: ListItemDetails):
             if img is not None:
                 if img.get("alt", None) != "edit":  # не картинка карандаша
                     src = img['src']
-                    print("Картинка в Викивидах: " + str(src))
+                    Logger.print("Картинка в Викивидах: " + str(src))
                     details.image_url = src
                     return details
     # Картинки может не быть - всё равно обрабатывать эту страницу дальше
-    print("Картинка в Викивидах НЕ НАЙДЕНА")
+    Logger.print("Картинка в Викивидах НЕ НАЙДЕНА")
     details.image_url = None
     return details
 
@@ -388,12 +403,12 @@ def parse_levels(tree_box, details: ListItemDetails):
             current_level_ind = ind
             details.type = matches.group(1)  # текст до двоеточия
             details.title = matches.group(2)  # текст внутри <a>...</a>
-            print("Текущий уровень: тип: {} название: {}".format(details.type, details.title))
+            Logger.print("Текущий уровень: тип: {} название: {}".format(details.type, details.title))
             break
 
     # Если текущий уровень почему-то не найден
     if not is_current_found:
-        print("Ошибка: текущий уровень не найден!")
+        Logger.print("Ошибка: текущий уровень не найден!")
         return details, "Stage 2 error: current level not found on this page."
 
     # Предыдущий уровень
@@ -406,10 +421,10 @@ def parse_levels(tree_box, details: ListItemDetails):
             details.parent_type = matches.group(1)
             details.parent_title = matches.group(3)
             details.parent_page_url = matches.group(2)[len("/wiki/"):]
-            print("Предыдущий уровень: основной: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
+            Logger.print("Предыдущий уровень: основной: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
             return details, None
         else:
-            print("Предыдущий уровень: основной: не найден!")
+            Logger.print("Предыдущий уровень: основной: не найден!")
             return details, "Stage 2 error: previous level (main) not found on this page."
     else:
         levels_collapsible_p = tree_box.select_one("table:nth-child(2).wikitable.mw-collapsible > tbody > tr:nth-child(2) > td > p")
@@ -421,13 +436,13 @@ def parse_levels(tree_box, details: ListItemDetails):
                 details.parent_type = matches.group(1)
                 details.parent_title = matches.group(3)
                 details.parent_page_url = matches.group(2)[len("/wiki/"):]
-                print("Предыдущий уровень: в таблице: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
+                Logger.print("Предыдущий уровень: в таблице: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
                 return details, None
             else:
-                print("Предыдущий уровень: в таблице: не найден!")
+                Logger.print("Предыдущий уровень: в таблице: не найден!")
                 return details, "Stage 2 error: previous level (in table) not found on this page."
         else:
-            print("Предыдущий уровень: в таблице: не найден - уровней мало!")
+            Logger.print("Предыдущий уровень: в таблице: не найден - уровней мало!")
             return details, "Stage 2 error: previous level (in table) not found on this page - levels too few."
 
 
@@ -442,13 +457,13 @@ def parse_wikipedias_hrefs(wiki_html, details: ListItemDetails):
             details.wikipedias_by_languages[hreflang] = href
             if Config.IS_DEBUG:
                 wikipedia_page_url = Config.WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
-                print("Найдена ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, wikipedia_page_url))
+                Logger.print("Найдена ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, wikipedia_page_url))
     return details
 
 
 def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
     where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
-    print("Парсим язык: {}, skip_parsed_interval = {}, where = \"{}\"".format(lang_key, skip_parsed_interval, where))
+    Logger.print("Парсим язык: {}, skip_parsed_interval = {}, where = \"{}\"".format(lang_key, skip_parsed_interval, where))
     query = """
       SELECT id, title, image_url, wikipedias_by_languages, titles_by_languages
       FROM public.list
@@ -472,7 +487,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
     query += """
       ORDER BY page_url;
     """
-    print("Список для парсинга:\n" + query)
+    Logger.print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_language:list_to_parse", query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list()
@@ -493,14 +508,14 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
             # Заходим на саму страницу Википедии нужного языка,
             # т.к. переведённое название вида не содержится на Викивидах и поэтому надо заходить на Википедию
             wikipedia_page_url = Config.WIKIPEDIA_URL_CONSTRUCTOR.format(lang_key, cur_wikipedias_by_languages[lang_key])
-            print("Парсим Википедию: язык: {}, название: {}, ссылка: {}".format(lang_key, cur_title, wikipedia_page_url))
+            Logger.print("Парсим Википедию: язык: {}, название: {}, ссылка: {}".format(lang_key, cur_title, wikipedia_page_url))
             html = MyRequests.get_session().get(wikipedia_page_url).content
             wiki_html = BeautifulSoup(html, "html.parser")
 
             # Парсим перевод названия вида
             title_on_lang = wiki_html.select_one("#content > h1#firstHeading").text
             if Config.IS_DEBUG:
-                print("...переведённое название: {}".format(title_on_lang))
+                Logger.print("...переведённое название: {}".format(title_on_lang))
             cur_titles_by_languages[lang_key] = title_on_lang
 
             # Парсим картинку, если её ещё не нашли ранее для текущего вида
@@ -511,7 +526,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
                 if image is not None:
                     if image.get("alt", None) != "edit" and image.get("alt", None) != "e":  # картинка карандаша
                         cur_image_url = str(image['src'])
-                        print("...добавили картинку: {}".format(cur_image_url))
+                        Logger.print("...добавили картинку: {}".format(cur_image_url))
                         added_images += 1
 
             # Запись всех подробностей в базу
@@ -532,7 +547,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
 
         except:  # Ошибки базы могут разных видов. Ловим вообще все
             err_message = "Stage parse_language error:\n" + traceback.format_exc()
-            print('Ошибка:\n', err_message)
+            Logger.print('Ошибка:\n', err_message)
             DbExecuteNonQuery.execute('parse_language:update_details', "ROLLBACK;")
             query = """
               UPDATE public.list
@@ -546,18 +561,18 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
             errors += 1
 
         time.sleep(Config.NEXT_PAGE_DELAY)
-    print("\n")
-    print("ПАРСИНГ ЯЗЫКА ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
-    print("Добавлены переводы для " + str(item_counter) + " элементов.")
-    print("Добавлены картинки для " + str(added_images) + " элементов.")
-    print("Ошибки для " + str(errors) + " элементов.")
+    Logger.print("\n")
+    Logger.print("ПАРСИНГ ЯЗЫКА ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
+    Logger.print("Добавлены переводы для " + str(item_counter) + " элементов.")
+    Logger.print("Добавлены картинки для " + str(added_images) + " элементов.")
+    Logger.print("Ошибки для " + str(errors) + " элементов.")
 
 
 def correct_parents(where: str = None):
     """
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_page_url.
     """
-    print("Поправляем ссылки на родителей (построение дерева)...")
+    Logger.print("Поправляем ссылки на родителей (построение дерева)...")
     query = """
         SELECT id, parent_page_url
         FROM public.list
@@ -598,10 +613,10 @@ def correct_parents(where: str = None):
         else:
             # Не нашли
             without_parents += 1
-    print("\n")
-    print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ОКОНЧЕНО!")
-    print("Добавлены родители к " + str(item_counter) + " элементам.")
-    print("Не найдены родители для " + str(without_parents) + " элементов.")
+    Logger.print("\n")
+    Logger.print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ОКОНЧЕНО!")
+    Logger.print("Добавлены родители к " + str(item_counter) + " элементам.")
+    Logger.print("Не найдены родители для " + str(without_parents) + " элементов.")
 
 
 def test_task(timeout: float, will_success: bool):
@@ -611,15 +626,15 @@ def test_task(timeout: float, will_success: bool):
             time.sleep(5)
             elapsed += 5
             timeout -= 5
-            print("Test task is printing this to stdout every 5 seconds. Elapsed: {} seconds.".format(elapsed))
+            Logger.print("Test task is printing this to stdout every 5 seconds. Elapsed: {} seconds.".format(elapsed))
         else:
             time.sleep(timeout)
             elapsed += timeout
             if will_success:
-                print("Test task is printing this to stdout WHEN COMPLETED at {} seconds.".format(elapsed))
+                Logger.print("Test task is printing this to stdout WHEN COMPLETED at {} seconds.".format(elapsed))
                 return
             else:
-                print("Test task is printing this to stdout BEFORE ERROR at {} seconds.".format(elapsed))
+                Logger.print("Test task is printing this to stdout BEFORE ERROR at {} seconds.".format(elapsed))
                 raise Exception("Test task raised this test exception!")
 
 

@@ -5,6 +5,8 @@ import psycopg2
 import psycopg2.extras
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from config import Config
+from logger import Logger
+
 
 class DbFunctions:
     db_name = None  # Смотрите на пару строк ниже
@@ -13,10 +15,10 @@ class DbFunctions:
     @staticmethod
     def prepare_to_work(is_test: bool = False):
         if is_test:
-            print("Подготовка работы с тестовой базой lifetree_test...\n")
+            Logger.print("Подготовка работы с тестовой базой lifetree_test...\n")
             DbFunctions.db_name = "lifetree_test"
         else:
-            print("Подготовка работы с основной базой lifetree...\n")
+            Logger.print("Подготовка работы с основной базой lifetree...\n")
             DbFunctions.db_name = 'lifetree'
 
     @staticmethod
@@ -33,114 +35,114 @@ class DbFunctions:
         is_db_exists = bool(cur.fetchone()[0])
         if not is_db_exists:  # Если база данных ещё не создана
             sql = "CREATE DATABASE {};".format(DbFunctions.db_name)
-            print(str(sql))
+            Logger.print(str(sql))
             cur.execute(sql)
         else:
-            print("База {} уже существует, пропускаем этап создания.".format(DbFunctions.db_name))
+            Logger.print("База {} уже существует, пропускаем этап создания.".format(DbFunctions.db_name))
         general_conn.close()
 
 
-        print("\n\n===================================================")
-        print("Создаём таблицы:")
+        Logger.print("\n\n===================================================")
+        Logger.print("Создаём таблицы:")
 
         # Таблица со списком
-        print("\nТаблица со списком:")
+        Logger.print("\nТаблица со списком:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'list');"
         is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list.sql"))
         else:
-            print("Таблица public.list уже существует, пропускаем этап создания.")
-        print("Миграция public.list_MIGRATE...")
+            Logger.print("Таблица public.list уже существует, пропускаем этап создания.")
+        Logger.print("Миграция public.list_MIGRATE...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list_MIGRATE.sql"))
 
         # Таблица с рангами
-        print("\nТаблица с рангами:")
+        Logger.print("\nТаблица с рангами:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'ranks');"
         is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "ranks.sql"))
         else:
-            print("Таблица public.ranks уже существует, пропускаем этап создания.")
+            Logger.print("Таблица public.ranks уже существует, пропускаем этап создания.")
 
         # Таблица с языками
-        print("\nТаблица с языками:")
+        Logger.print("\nТаблица с языками:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'known_languages');"
         is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages.sql"))
         else:
-            print("Таблица public.known_languages уже существует, пропускаем этап создания.")
-        print("Миграция public.known_languages_MIGRATE...")
+            Logger.print("Таблица public.known_languages уже существует, пропускаем этап создания.")
+        Logger.print("Миграция public.known_languages_MIGRATE...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages_MIGRATE.sql"))
 
         # Таблица с советами дня
-        print("\nТаблица с советами дня:")
+        Logger.print("\nТаблица с советами дня:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'tips_of_the_day');"
         is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day.sql"))
         else:
-            print("Таблица public.tips_of_the_day уже существует, пропускаем этап создания.")
-        print("\nТаблица с советами дня: добавление колонки page_url:")
+            Logger.print("Таблица public.tips_of_the_day уже существует, пропускаем этап создания.")
+        Logger.print("\nТаблица с советами дня: добавление колонки page_url:")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day_ADD_page_url.sql"))
 
         # Таблица с запущенными задачами
-        print("\nТаблица с запущенными задачами:")
+        Logger.print("\nТаблица с запущенными задачами:")
         sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'tasks');"
         is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
         if not is_table_exists:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tasks.sql"))
         else:
-            print("Таблица public.tasks уже существует, пропускаем этап создания.")
+            Logger.print("Таблица public.tasks уже существует, пропускаем этап создания.")
 
         # Заполняем данными
-        print("\n\n===================================================")
-        print("Заполняем данными:")
+        Logger.print("\n\n===================================================")
+        Logger.print("Заполняем данными:")
         if is_test:
-            print("\nТаблица public.list (для теста)...")
+            Logger.print("\nТаблица public.list (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "list_TEST.sql"))
-            print("\nТаблица public.ranks (для теста)...")
+            Logger.print("\nТаблица public.ranks (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
-        print("\nТаблица public.known_languages (для прода/теста)...")
+        Logger.print("\nТаблица public.known_languages (для прода/теста)...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "known_languages_ANY.sql"))
         if is_test:
-            print("\nТаблица public.tips_of_the_day (для теста)...")
+            Logger.print("\nТаблица public.tips_of_the_day (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "tips_of_the_day_TEST.sql"))
         else:
-            print("\nТаблица public.tips_of_the_day (для прода)...")
+            Logger.print("\nТаблица public.tips_of_the_day (для прода)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "tips_of_the_day_PROD.sql"))
 
         # Хранимки для выдачи данных
         # (триггерные функции надо писать в скрипте создания их таблицы)
-        print("\n\n===================================================")
-        print("Хранимки и прочие скрипты:")
-        print("\nХранимка по выдаче перевода...")
+        Logger.print("\n\n===================================================")
+        Logger.print("Хранимки и прочие скрипты:")
+        Logger.print("\nХранимка по выдаче перевода...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_translations.sql"))
-        print("\nХранимка для выдачи дерева по умолчанию: перенакатываем...")
+        Logger.print("\nХранимка для выдачи дерева по умолчанию: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree_default.sql"))
-        print("\nХранимка для выдачи дерева по id: перенакатываем...")
+        Logger.print("\nХранимка для выдачи дерева по id: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree_by_id.sql"))
-        print("\nХранимка для подгрузки потомков дерева по id: перенакатываем...")
+        Logger.print("\nХранимка для подгрузки потомков дерева по id: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_childes_by_id.sql"))
-        print("\nХранимка по поиску: перенакатываем...")
+        Logger.print("\nХранимка по поиску: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
-        print("\nХранимка по выдаче совета дня...")
+        Logger.print("\nХранимка по выдаче совета дня...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tip_of_the_day.sql"))
-        print("\nХранимка по выдаче совета дня по id...")
+        Logger.print("\nХранимка по выдаче совета дня по id...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tip_of_the_day_by_id.sql"))
-        print("\nХранимка по подсчёту листов в дереве: перенакатываем...")
+        Logger.print("\nХранимка по подсчёту листов в дереве: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "service_update_leaves_count.sql"))
 
         # Просто так
-        print("\n\n===================================================")
-        print("Просто так:")
+        Logger.print("\n\n===================================================")
+        Logger.print("Просто так:")
         sql = "SELECT COUNT(1) FROM public.list;"
         list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
-        print("В таблице public.list сейчас {} записей.".format(list_records_count))
+        Logger.print("В таблице public.list сейчас {} записей.".format(list_records_count))
 
-        print("\n\n===================================================")
-        print("\n\n")
+        Logger.print("\n\n===================================================")
+        Logger.print("\n\n")
 
     @staticmethod
     def add_list_item(title, page_url):
@@ -187,8 +189,8 @@ class DbFunctions:
         db_list_iter = DbListItemsIterator(DbFunctions.default_conn_tag, sql)
         result_message = str(db_list_iter.fetchone()[0])
         db_list_iter.commit()  # Обязательно сохранить изменения, сделанные в этом соединении
-        print("Обновление количества видов в каждом узле дерева успешно завершено. Сообщение из БД:")
-        print(result_message)
+        Logger.print("Обновление количества видов в каждом узле дерева успешно завершено. Сообщение из БД:")
+        Logger.print(result_message)
 
 class DbConnectionsHandler:
     connections_pool = {}
@@ -236,7 +238,7 @@ class DbExecuteNonQuery:
 
     @staticmethod
     def execute_file(connection_tag, path):
-        print("execute_file(): ", path)
+        Logger.print("execute_file(): ", path)
         with open(path, "r", encoding="utf-8") as f:
             query = f.read()
         conn1 = DbConnectionsHandler.get_connection(connection_tag)

@@ -1,16 +1,19 @@
 import os
-import subprocess
 import threading
 import time
+from multiprocessing import Process, Manager
 
 from django.db import connections
+from parser.wiki_parser import main_from_web
 
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
 PROC_STATE_UPDATE_TIMER = 3.0
-LOGS_UPDATE_TIMER = 0.2
+LOGS_UPDATE_TIMER = 3.0
 LOGS_KEEP_LINES_COUNT = 50
+
+LOGS_ERROR_PREFIX = "$$$"
 
 
 # Запускает задачи парсера данных и прочие тяжеловесные задачи БД, написанные в файле parser/wiki_parser.py.
@@ -23,8 +26,11 @@ class DbTaskManager:
         # Для паттерна "Singleton"
         DbTaskManager.__instance = self
 
+        self.process_manager = Manager()
+
         # Словарь с самими объектами процессов под каждую запущенную задачу. Ключи - task_id
         self.processes_running = {}
+        self.processes_logs = {}
 
         # Список id задач, процессы для которых были запущены и уже завершились (нормально или с ошибкой).
         # Нужен, чтобы помечать задачи как завершённые только по одному разу на каждый запуск
@@ -81,13 +87,13 @@ class DbTaskManager:
             self._mark_task_as_uncompleted(task_id)
 
         args = self._get_args_from_task(task)
-        proc = subprocess.Popen(
-            args, cwd=PARSER_CWD,
-            # shell=True, close_fds=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            universal_newlines=True, encoding='utf-8'
-        )
-        self.processes_running[task_id] = proc
+        d_args = self.process_manager.dict()
+        d_args["args"] = " ".join(['"' + arg + '"' for arg in args])
+
+        queue = self.process_manager.Queue()
+        self.processes_logs[task_id] = queue
+
+        self.processes_running[task_id] = Process(target=main_from_web, args=(args, queue,))
 
         thread = threading.Thread(target=self._check_one_finished_thread, args=(task_id,))  # Обновление логов/состояний процессов по таймеру
         self.check_one_finished_threads[task_id] = thread
@@ -126,8 +132,7 @@ class DbTaskManager:
 
     # Составляет аргументов  строки для прuцесса парсера
     # (т.к. он изанчально был расчитан на самостоятельный запуск из консоли)
-    @staticmethod
-    def _get_args_from_task(task: dict):
+    def _get_args_from_task(self, task: dict):
         args = [str(task["python_exe"]), PARSER_PATH]
         stage = str(task["stage"])
         args.append(stage)
@@ -175,19 +180,24 @@ class DbTaskManager:
     def _read_one_stdout_thread(self, task_id: int, proc):
         while True:
             log_content = ""
-            while True:
-                char = proc.stdout.read(1)
-                if char == "\n":
-                    break
-                log_content += char
+            while not self.processes_logs[task_id].empty():
+                line = str(self.processes_logs[task_id].get())
 
-            if log_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_stdout_logs[task_id].append(log_content)
-                if len(self.recent_stdout_logs[task_id]) > LOGS_KEEP_LINES_COUNT:
-                    self.recent_stdout_logs[task_id] = self.recent_stdout_logs[task_id][1:]
+                if line[:len(LOGS_ERROR_PREFIX)] != LOGS_ERROR_PREFIX:
+                    self.recent_stdout_logs[task_id].append(log_content)  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
+                else:
+                    self.recent_stderr_logs[task_id].append(log_content)
             else:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
                     return
+
+            log_overflow = len(self.recent_stdout_logs[task_id]) - LOGS_KEEP_LINES_COUNT
+            if log_overflow > 0:
+                self.recent_stdout_logs[task_id] = self.recent_stdout_logs[task_id][log_overflow:]
+
+            err_overflow = len(self.recent_stderr_logs[task_id]) - LOGS_KEEP_LINES_COUNT
+            if err_overflow > 0:
+                self.recent_stderr_logs[task_id] = self.recent_stderr_logs[task_id][err_overflow:]
 
             time.sleep(LOGS_UPDATE_TIMER)
 
