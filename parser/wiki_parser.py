@@ -134,6 +134,8 @@ def print_usage():
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
+    from_title = from_title.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
+    to_title = to_title.strip('"')
     print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
     url = "https://species.wikimedia.org/wiki/Special:AllPages"
@@ -558,6 +560,7 @@ def correct_parents(where: str = None):
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_page_url.
     """
     print("Поправляем ссылки на родителей (построение дерева)...")
+    where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
     query = """
         SELECT id, parent_page_url
         FROM public.list
@@ -566,6 +569,7 @@ def correct_parents(where: str = None):
     if where is not None and where != "":
         query += " AND " + where
     query += ";"
+    print(query)
     list_iterator = DbListItemsIterator('correct_parents:list', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list()
