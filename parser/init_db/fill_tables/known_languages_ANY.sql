@@ -2,7 +2,7 @@ WITH cte(lang_key, comment, translations) AS (
   VALUES ('ru', 'Русский',
     '{
         "site_title": "Дерево видов",
-        "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Фотографии и информация для построения дерева взяты из проекта Викивиды",
+        "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Дерево видов. Этот сайт - просто просмотрщик данных из Викивидов/Википедии.",
         "translated_only": "Переведённые названия",
         "latin_only": "Только латынь",
         "both_languages": "Оба языка",
@@ -47,7 +47,7 @@ WITH cte(lang_key, comment, translations) AS (
     ('en', 'English',
       '{
         "site_title": "Species tree",
-        "site_description": "Biological systematics of more than 100,000 species of animals, plants, bacteria and fungi. Photos and information for building a tree are taken from the Wikispecies/Wikipedia project",
+        "site_description": "Biological systematics of more than 100,000 species of animals, plants, bacteria and fungi. Species tree. This site is just the viewer of data from Wikispecies/Wikipedia.",
         "translated_only": "Translated titles",
         "latin_only": "Latin only",
         "both_languages": "Both languages",
