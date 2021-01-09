@@ -5,7 +5,7 @@ import psycopg2
 import psycopg2.extras
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from config import Config
-from logger import Logger
+from .logger import Logger
 
 
 class DbFunctions:

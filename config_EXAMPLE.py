@@ -33,3 +33,9 @@ class Config:
     URL_START_RELATIVE = "/wiki/"
     WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"
     WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"
+
+    PROC_STATE_UPDATE_TIMER = 3.0
+    LOGS_UPDATE_TIMER = 3.0
+    LOGS_KEEP_LINES_COUNT = 50
+
+    LOGS_ERROR_PREFIX = "$$$"

@@ -12,11 +12,10 @@ from requests.utils import requote_uri
 from bs4 import BeautifulSoup
 import time
 
-from backend.species_tree_backend.db_task_manager import LOGS_ERROR_PREFIX
-from db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
+from .db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
 from config import Config
-from logger import Logger
+from .logger import Logger
 
 
 class MyRequests:
@@ -29,15 +28,18 @@ class MyRequests:
         return cls.session
 
 
-def main_from_web(args, log_query: Queue):
+def main_from_web(args: str, log_query: Queue):
     Logger.log_query = log_query
-    sys.argv = sys.argv + args["args"]
+    args = args.split(Config.PARSER_ARGS_DELIMITER)
+    args = [arg.strip('"') for arg in args]
+    Logger.print("PARSER PROCESS STARTED: args:", *args)
+    sys.argv = args
     try:
         main()
     except:
         error_message = traceback.format_exc()
         for line in error_message.split("\n"):
-            Logger.print(LOGS_ERROR_PREFIX + line)
+            Logger.print(Config.LOGS_ERROR_PREFIX + line)
 
 
 def main():
@@ -148,8 +150,6 @@ def print_usage():
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
-    from_title = from_title.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
-    to_title = to_title.strip('"')
     Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
     url = "https://species.wikimedia.org/wiki/Special:AllPages"
@@ -218,7 +218,6 @@ def populate_list(from_title: str = "", to_title: str = ""):
 
 
 def parse_details(skip_parsed_interval, where=""):
-    where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
     query = """
       SELECT id, title, page_url
       FROM public.list
@@ -463,7 +462,6 @@ def parse_wikipedias_hrefs(wiki_html, details: ListItemDetails):
 
 
 def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
-    where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
     Logger.print("Парсим язык: {}, skip_parsed_interval = {}, where = \"{}\"".format(lang_key, skip_parsed_interval, where))
     query = """
       SELECT id, title, image_url, wikipedias_by_languages, titles_by_languages
@@ -574,7 +572,6 @@ def correct_parents(where: str = None):
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_page_url.
     """
     Logger.print("Поправляем ссылки на родителей (построение дерева)...")
-    where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
     query = """
         SELECT id, parent_page_url
         FROM public.list
@@ -623,6 +620,7 @@ def correct_parents(where: str = None):
 
 
 def test_task(timeout: float, will_success: bool):
+    Logger.print("Test task started for timeout = {0} seconds, will_success = {1}.".format(timeout, will_success))
     elapsed = 0
     while True:
         if timeout > 5:

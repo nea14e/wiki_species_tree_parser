@@ -4,18 +4,14 @@ import time
 from multiprocessing import Process, Manager
 
 from django.db import connections
-from parser.wiki_parser import main_from_web
 
 from config import Config
+from parser.wiki_parser import main_from_web
 
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
-PROC_STATE_UPDATE_TIMER = 3.0
-LOGS_UPDATE_TIMER = 3.0
-LOGS_KEEP_LINES_COUNT = 50
 
-LOGS_ERROR_PREFIX = "$$$"
 
 
 # Запускает задачи парсера данных и прочие тяжеловесные задачи БД, написанные в файле parser/wiki_parser.py.
@@ -27,8 +23,6 @@ class DbTaskManager:
     def __init__(self):
         # Для паттерна "Singleton"
         DbTaskManager.__instance = self
-
-        self.process_manager = Manager()
 
         # Словарь с самими объектами процессов под каждую запущенную задачу. Ключи - task_id
         self.processes_running = {}
@@ -46,7 +40,6 @@ class DbTaskManager:
         # Словари с запущенными вспомогательными потоками для взаимодействия с процессами от каждой задачи:
         self.check_one_finished_threads = {}  # ...для проверки, когда он закончится
         self.read_one_stdout_threads = {}  # ...для чтения логов из stdout
-        self.read_one_stderr_threads = {}  # ...для чтения логов из stderr
 
     # ДЛЯ ДОСТУПА СНАРУЖИ ВСЕГДА используйте этот метод. Объект нашего класса должен быть ТОЛЬКО ОДИН на всё приложение!
     # Дело в том, что он запускает тяжеловесные задачи парсера и мониторит их, и нечего их запускать из двух объектов.
@@ -88,25 +81,24 @@ class DbTaskManager:
         if task["is_success"] is not None:
             self._mark_task_as_uncompleted(task_id)
 
-        args = self._get_args_from_task(task)
-        d_args = self.process_manager.dict()
-        d_args["args"] = " ".join(['"' + arg + '"' for arg in args])
+        process_manager = Manager()
 
-        queue = self.process_manager.Queue()
+        args = self._get_args_from_task(task)
+        args = Config.PARSER_ARGS_DELIMITER.join(['"' + arg + '"' for arg in args])
+
+        queue = process_manager.Queue()
         self.processes_logs[task_id] = queue
 
-        self.processes_running[task_id] = Process(target=main_from_web, args=(args, queue,))
+        proc = Process(target=main_from_web, args=(args, queue,))
+        self.processes_running[task_id] = proc
+        proc.start()
 
         thread = threading.Thread(target=self._check_one_finished_thread, args=(task_id,))  # Обновление логов/состояний процессов по таймеру
         self.check_one_finished_threads[task_id] = thread
         thread.start()
 
-        thread = threading.Thread(target=self._read_one_stdout_thread, args=(task_id, proc,))  # Обновление логов/состояний процессов по таймеру
+        thread = threading.Thread(target=self._read_one_stdout_thread, args=(task_id,))  # Обновление логов/состояний процессов по таймеру
         self.read_one_stdout_threads[task_id] = thread
-        thread.start()
-
-        thread = threading.Thread(target=self._read_one_stderr_thread, args=(task_id, proc,))  # Обновление логов/состояний процессов по таймеру
-        self.read_one_stderr_threads[task_id] = thread
         thread.start()
 
     def _check_task_if_running(self, task_id: int):
@@ -114,8 +106,7 @@ class DbTaskManager:
             return False
         if task_id not in self.processes_running:  # если задачу ещё не запускали (процесс под неё ещё не был создан)
             return False
-        proc = self.processes_running[task_id]
-        return proc.poll() is None  # если кода возврата у процесса ещё нет, то он ещё работает
+        return self.processes_running[task_id].is_alive()
 
     def stop_one_task(self, task_id: int):
         if task_id in self.processes_running:
@@ -125,8 +116,6 @@ class DbTaskManager:
                 del self.check_one_finished_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
             if task_id in self.read_one_stdout_threads:
                 del self.read_one_stdout_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
-            if task_id in self.read_one_stderr_threads:
-                del self.read_one_stderr_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
 
     # =============================================
     # Далее внутренние методы класса:
@@ -135,7 +124,8 @@ class DbTaskManager:
     # Составляет аргументов  строки для прuцесса парсера
     # (т.к. он изанчально был расчитан на самостоятельный запуск из консоли)
     def _get_args_from_task(self, task: dict):
-        args = [str(task["python_exe"]), PARSER_PATH]
+        # args = [str(task["python_exe"]), PARSER_PATH]
+        args = [PARSER_PATH]
         if Config.BACKEND_IS_USE_TEST_DB:
             args.append("test")
         else:
@@ -175,18 +165,18 @@ class DbTaskManager:
                     self._mark_task_as_completed(task_id)  # пометить задачу как завершённую (нормально или с ошибкой)
                     self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
                     return
-            time.sleep(PROC_STATE_UPDATE_TIMER)
+            time.sleep(Config.PROC_STATE_UPDATE_TIMER)
 
     # Читает логи процесса из stdout.
     # (Крутится в отдельном потоке для каждой запущенной задачи.
     # Останавливается сам, чуть позже её остановки.)
-    def _read_one_stdout_thread(self, task_id: int, proc):
+    def _read_one_stdout_thread(self, task_id: int):
         while True:
             log_content = ""
             while not self.processes_logs[task_id].empty():
                 line = str(self.processes_logs[task_id].get())
 
-                if line[:len(LOGS_ERROR_PREFIX)] != LOGS_ERROR_PREFIX:
+                if line[:len(Config.LOGS_ERROR_PREFIX)] != Config.LOGS_ERROR_PREFIX:
                     self.recent_stdout_logs[task_id].append(log_content)  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
                 else:
                     self.recent_stderr_logs[task_id].append(log_content)
@@ -194,38 +184,15 @@ class DbTaskManager:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
                     return
 
-            log_overflow = len(self.recent_stdout_logs[task_id]) - LOGS_KEEP_LINES_COUNT
+            log_overflow = len(self.recent_stdout_logs[task_id]) - Config.LOGS_KEEP_LINES_COUNT
             if log_overflow > 0:
                 self.recent_stdout_logs[task_id] = self.recent_stdout_logs[task_id][log_overflow:]
 
-            err_overflow = len(self.recent_stderr_logs[task_id]) - LOGS_KEEP_LINES_COUNT
+            err_overflow = len(self.recent_stderr_logs[task_id]) - Config.LOGS_KEEP_LINES_COUNT
             if err_overflow > 0:
                 self.recent_stderr_logs[task_id] = self.recent_stderr_logs[task_id][err_overflow:]
 
-            time.sleep(LOGS_UPDATE_TIMER)
-
-    # Читает логи процесса из stderr.
-    # (Крутится в отдельном потоке для каждой запущенной задачи.
-    # Останавливается сам, чуть позже её остановки.)
-    def _read_one_stderr_thread(self, task_id: int, proc):
-        while True:
-            err_content = ""
-            while True:
-                char = proc.stderr.read(1)
-                if char == "\n":
-                    break
-                err_content += char
-
-            if err_content:  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
-                self.recent_stderr_logs[task_id].append(err_content)
-                if len(self.recent_stderr_logs[task_id]) > LOGS_KEEP_LINES_COUNT:
-                    self.recent_stderr_logs[task_id] = self.recent_stderr_logs[task_id][1:]
-                self._set_task_error_message(task_id, err_content)
-            else:
-                if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
-                    return
-
-            time.sleep(LOGS_UPDATE_TIMER)
+            time.sleep(Config.LOGS_UPDATE_TIMER)
 
     # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
     # Не вызывать при отмене задачи пользователем.
@@ -243,7 +210,7 @@ class DbTaskManager:
     # Не вызывать при отмене задачи пользователем.
     def _mark_task_as_completed(self, task_id: int):
         # успех = возврат кода 0 И лог ошибок пустой
-        is_success = self.processes_running[task_id].poll() == 0 \
+        is_success = self.processes_running[task_id].is_alive() \
                 and len(self.recent_stderr_logs[task_id]) == 0
 
         conn = connections["default"]
