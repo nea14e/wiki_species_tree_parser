@@ -209,8 +209,7 @@ class DbTaskManager:
     # Не вызывать при отмене задачи пользователем.
     def _mark_task_as_completed(self, task_id: int):
         # успех = возврат кода 0 И лог ошибок пустой
-        is_success = self.processes_running[task_id].is_alive() \
-                and len(self.recent_stderr_logs[task_id]) == 0
+        is_success = len(self.recent_stderr_logs[task_id]) == 0
 
         conn = connections["default"]
         cur = conn.cursor()
