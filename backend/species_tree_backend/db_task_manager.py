@@ -172,14 +172,13 @@ class DbTaskManager:
     # Останавливается сам, чуть позже её остановки.)
     def _read_one_stdout_thread(self, task_id: int):
         while True:
-            log_content = ""
             while not self.processes_logs[task_id].empty():
                 line = str(self.processes_logs[task_id].get())
 
                 if line[:len(Config.LOGS_ERROR_PREFIX)] != Config.LOGS_ERROR_PREFIX:
-                    self.recent_stdout_logs[task_id].append(log_content)  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
+                    self.recent_stdout_logs[task_id].append(line)  # не стираем предыдущие логи, если новых нет (когда процесс упал/завершился)
                 else:
-                    self.recent_stderr_logs[task_id].append(log_content)
+                    self.recent_stderr_logs[task_id].append(line[len(Config.LOGS_ERROR_PREFIX):])
             else:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
                     return
