@@ -11,6 +11,6 @@ class Logger:
         if Logger.log_query is not None:
             if Config.IS_DEBUG:
                 print(*args)
-            Logger.log_query.put("".join(args))
+            Logger.log_query.put(" ".join(args))
         else:
             print(*args)
