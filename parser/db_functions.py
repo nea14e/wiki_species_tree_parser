@@ -186,6 +186,7 @@ class DbFunctions:
         sql = """
                 SELECT public.service_update_leaves_count();
             """
+        print(sql)
         db_list_iter = DbListItemsIterator(DbFunctions.default_conn_tag, sql)
         result_message = str(db_list_iter.fetchone()[0])
         db_list_iter.commit()  # Обязательно сохранить изменения, сделанные в этом соединении

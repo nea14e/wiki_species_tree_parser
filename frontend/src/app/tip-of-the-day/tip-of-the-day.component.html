@@ -12,20 +12,22 @@
 
 <div class="row ml-0 mr-0">
   <div class="btn col-auto mr-2 mt-2"
+       [title]="rootData.translationRoot?.translations.show_in_tree"
        (click)="isShowInTreeDisabled() ? $event.stopPropagation() : onShowInTreeClick()"
        [class]="isShowInTreeDisabled() ? 'disabled' : ''">
     <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
-    {{rootData.translationRoot?.translations.show_in_tree}}
   </div>
-  <div class="btn col-auto mr-2 mt-2" (click)="onShareClick()">
+  <div class="btn col-auto mr-2 mt-2"
+       [title]="rootData.translationRoot?.translations.copy_link_to_share"
+       (click)="onShareClick()">
     <img src="assets/from-bootstrap/share.svg" class="btn-img"/>
-    {{rootData.translationRoot?.translations.copy_link_to_share}}
   </div>
-  <div class="btn col-auto mr-2 mt-2" (click)="onNextTipClick()">
+  <div class="btn col-auto mr-2 mt-2"
+       [title]="rootData.translationRoot?.translations.next_fact"
+       (click)="onNextTipClick()">
     <img src="assets/from-bootstrap/chevron-double-right.svg" class="btn-img"/>
-    {{rootData.translationRoot?.translations.next_fact}}
   </div>
-  <div class="btn col-auto mr-2 mt-2" (click)="onToTreeClick()">
+  <div class="btn col-auto ml-5 mr-2 mt-2" (click)="onToTreeClick()">
     <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
     {{rootData.translationRoot?.translations.to_tree}}
   </div>

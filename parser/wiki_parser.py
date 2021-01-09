@@ -38,85 +38,58 @@ def main_from_web(args, log_query: Queue):
         error_message = traceback.format_exc()
         for line in error_message.split("\n"):
             Logger.print(LOGS_ERROR_PREFIX + line)
-    
+
 
 def main():
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print_usage()
         return
-    stage_number = str(sys.argv[1])
+
+    is_test = sys.argv[1] == "test"
+
+    stage_number = str(sys.argv[2])
 
     # Выберите нужное и подставьте сюда перед запуском
     if stage_number == '0':
-        if len(sys.argv) >= 3:
-            is_test = bool(str(sys.argv[2]).lower() == "test")
-        else:
-            is_test = False
         DbFunctions.init_db(is_test)
         return
     elif stage_number == 'test_task':  # Task to test tasks progress engine
-        if len(sys.argv) >= 3:
-            will_success = sys.argv[2] == "True"
+        if len(sys.argv) >= 4:
+            will_success = sys.argv[3] == "True"
         else:
             will_success = True
-        if len(sys.argv) >= 4:
-            timeout = float(sys.argv[3])
+        if len(sys.argv) >= 5:
+            timeout = float(sys.argv[4])
         else:
             timeout = 30.0
         test_task(timeout, will_success)
         return
 
-    DbFunctions.prepare_to_work(is_test=False)
+    DbFunctions.prepare_to_work(is_test=is_test)
 
     def apply_proxy(proxy_string: str):
         MyRequests.get_session().proxies = {"http": proxy_string, "https": proxy_string}
 
     if stage_number == '1':
-        if len(sys.argv) >= 3:
-            from_title = sys.argv[2]
+        if len(sys.argv) >= 4:
+            from_title = sys.argv[3]
         else:
             from_title = ""
-        if len(sys.argv) >= 4:
-            to_title = sys.argv[3]
+        if len(sys.argv) >= 5:
+            to_title = sys.argv[4]
         else:
             to_title = ""
-        if len(sys.argv) >= 5:
-            apply_proxy(str(sys.argv[4]))
+        if len(sys.argv) >= 6:
+            apply_proxy(str(sys.argv[5]))
         populate_list(from_title, to_title)  # 1 этап
     elif stage_number == '2':
-        if len(sys.argv) >= 3:
-            if sys.argv[2] == "True":
-                skip_parsed_interval = True
-            elif sys.argv[2] == "False":
-                skip_parsed_interval = False
-            else:
-                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[2]))
-        else:
-            skip_parsed_interval = True
-        if len(sys.argv) >= 4:
-            where = sys.argv[3]
-        else:
-            where = ""
-        if len(sys.argv) >= 5:
-            apply_proxy(str(sys.argv[4]))
-        parse_details(skip_parsed_interval, where)  # 2 этап
-    elif stage_number == '3':
-        if len(sys.argv) >= 3:
-            where = sys.argv[2]
-        else:
-            where = ""
-        correct_parents(where)  # 3 этап
-    elif stage_number == '4':
-        DbFunctions.update_leaves_count()
-    elif stage_number == 'parse_language':
-        lang_key = str(sys.argv[2])
         if len(sys.argv) >= 4:
             if sys.argv[3] == "True":
                 skip_parsed_interval = True
             elif sys.argv[3] == "False":
                 skip_parsed_interval = False
             else:
-                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[2]))
+                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[3]))
         else:
             skip_parsed_interval = True
         if len(sys.argv) >= 5:
@@ -125,6 +98,32 @@ def main():
             where = ""
         if len(sys.argv) >= 6:
             apply_proxy(str(sys.argv[5]))
+        parse_details(skip_parsed_interval, where)  # 2 этап
+    elif stage_number == '3':
+        if len(sys.argv) >= 4:
+            where = sys.argv[3]
+        else:
+            where = ""
+        correct_parents(where)  # 3 этап
+    elif stage_number == '4':
+        DbFunctions.update_leaves_count()
+    elif stage_number == 'parse_language':
+        lang_key = str(sys.argv[3])
+        if len(sys.argv) >= 5:
+            if sys.argv[4] == "True":
+                skip_parsed_interval = True
+            elif sys.argv[4] == "False":
+                skip_parsed_interval = False
+            else:
+                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[3]))
+        else:
+            skip_parsed_interval = True
+        if len(sys.argv) >= 6:
+            where = sys.argv[5]
+        else:
+            where = ""
+        if len(sys.argv) >= 7:
+            apply_proxy(str(sys.argv[6]))
         parse_language(lang_key, skip_parsed_interval, where)  # Добавление языка
     else:
         print_usage()
@@ -149,6 +148,8 @@ def print_usage():
 
 
 def populate_list(from_title: str = "", to_title: str = ""):
+    from_title = from_title.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
+    to_title = to_title.strip('"')
     Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
     url = "https://species.wikimedia.org/wiki/Special:AllPages"
@@ -573,6 +574,7 @@ def correct_parents(where: str = None):
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_page_url.
     """
     Logger.print("Поправляем ссылки на родителей (построение дерева)...")
+    where = where.strip('"')  # убираем лишние кавычки, которые нужны для командной строки
     query = """
         SELECT id, parent_page_url
         FROM public.list
@@ -581,6 +583,7 @@ def correct_parents(where: str = None):
     if where is not None and where != "":
         query += " AND " + where
     query += ";"
+    print(query)
     list_iterator = DbListItemsIterator('correct_parents:list', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list()

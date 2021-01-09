@@ -179,7 +179,10 @@ def admin_get_tasks(request):
     """)
     tasks = list(cur.fetchone()[0])
     tasks = DbTaskManager.get_instance().get_tasks_states(tasks)  # добавлем к задачам их состояние запущена/не запущена, последние логи
-    return JsonResponse(tasks, safe=False)  # unsafe указывается только для запросов БД на языке SQL
+    return JsonResponse(
+        {"tasks": tasks, "is_test_db": Config.BACKEND_IS_USE_TEST_DB},
+        safe=False
+    )  # unsafe указывается только для запросов БД на языке SQL
 
 
 @check_admin_request

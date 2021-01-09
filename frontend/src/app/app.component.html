@@ -1,38 +1,35 @@
-<body class="container-fluid">
+<body class="container-fluid mb-2">
 <h1>{{translationRoot?.translations.site_title}}</h1>
-<h4>{{translationRoot?.translations.site_description}}</h4>
+<h4 style="font-size: 1.3rem">{{translationRoot?.translations.site_description}}</h4>
 
 <div class="row ml-0 mr-0 mb-2">
-  <div class="btn col-auto mr-4" (click)="onTipClick()">
+  <div class="btn col-auto mr-2" (click)="onTipClick()">
     <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
     {{translationRoot?.translations.tip_of_the_day_word}}
   </div>
-  <div class="btn col-auto mr-4" (click)="onToTreeClick()">
+  <div class="btn col-auto mr-2" (click)="onToTreeClick()">
     <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
     {{translationRoot?.translations.to_tree}}
   </div>
-  <div class="btn col-auto mr-4" (click)="onSearchClick()">
+  <div class="btn col-auto mr-2" (click)="onSearchClick()">
     <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
     {{translationRoot?.translations.search_word}}
   </div>
-  <div class="btn col-auto mr-4" (click)="onAuthorsClick()">
+  <div class="btn col-auto mr-2" (click)="onAuthorsClick()">
     <img src="assets/from-bootstrap/vector-pen.svg" class="btn-img"/>
     {{translationRoot?.translations.authors_word}}
   </div>
-</div>
-
-<div class="row ml-0 mr-0 mb-2">
-  <div class="btn col-auto mr-2 mt-2"
+  <div class="btn col-auto ml-auto mr-2"
        (click)="onBackClick()"
-       [title]="translationRoot?.translations.go_back"
   >
     <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+    {{translationRoot?.translations.go_back}}
   </div>
-  <div class="btn col-auto mr-2 mt-2"
+  <div class="btn col-auto mr-2"
        (click)="onForwardClick()"
-       [title]="translationRoot?.translations.go_forward"
   >
     <img src="assets/from-bootstrap/arrow-right.svg" class="btn-img"/>
+    {{translationRoot?.translations.go_forward}}
   </div>
 </div>
 

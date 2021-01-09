@@ -13,8 +13,12 @@
 </div>
 
 <div class="row ml-0 mr-0 mb-2">
-  <h4 *ngIf="!!balloonMessage" class="text-success">{{balloonMessage}}</h4>
-  <h4 *ngIf="!balloonMessage">(No pending messages)</h4>
+  <div>
+    <h4 *ngIf="!!balloonMessage" class="text-success">{{balloonMessage}}</h4>
+    <h4 *ngIf="!balloonMessage && isTestDb===true">You are working with TEST database</h4>
+    <h4 *ngIf="!balloonMessage && isTestDb===false" class="text-warning">You are working with PRODUCTION database</h4>
+    <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
+  </div>
 </div>
 
 <div class="row ml-0 mr-0">
@@ -36,7 +40,7 @@
         <td>{{task.id}}</td>
         <td>{{task.stage}}</td>
         <td>
-          <span *ngIf="task.stage==='0'">is_test: {{task.args.is_test}}</span>
+          <span *ngIf="task.stage==='0'">-</span>
           <span *ngIf="task.stage==='1'">"{{task.args.from_title}}" - "{{task.args.to_title}}"</span>
           <span *ngIf="task.stage==='2'">skip_parsed_interval: {{task.args.skip_parsed_interval}}, "{{task.args.where}}"</span>
           <span *ngIf="task.stage==='3'">where: "{{task.args.where}}"</span>
@@ -168,15 +172,6 @@
       </div>
     </div>
 
-    <div *ngIf="editingTask.stage==='0'" class="row mt-4">
-      <div class="col-3">
-        is_test<span class="text-danger">*</span>:
-      </div>
-      <div class="col-9">
-        <input type="checkbox" [(ngModel)]="editingTask.args.is_test">
-      </div>
-    </div>
-
     <div *ngIf="editingTask.stage==='1'" class="row mt-4">
       <div class="col-3">
         from_title<span class="text-danger">*</span>:
@@ -296,6 +291,14 @@
         <small>Start if checked</small>
         <br/>
         <small>Stop if unchecked</small>
+      </div>
+    </div>
+
+    <div class="row ml-0 mr-0 mt-4 mb-2">
+      <div>
+        <div *ngIf="isTestDb===true">You are working with TEST database</div>
+        <div *ngIf="isTestDb===false" class="text-warning">You are working with PRODUCTION database</div>
+        <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
       </div>
     </div>
 

@@ -17,6 +17,7 @@ export class DbTasksComponent implements OnInit {
   autoReloadTimeoutId: number | null = null;
 
   tasks: DbTask[] = [];
+  isTestDb: boolean | null = null;
   editingTask: DbTask | null = null;
   logShowingTaskId: number | null = null;
   logShowingTask: DbTask | null = null;
@@ -41,7 +42,8 @@ export class DbTasksComponent implements OnInit {
 
   private reloadList(): void {
     this.networkAdminService.getDbTasks(this.rootData.adminPassword).subscribe(data => {
-      this.tasks = data;
+      this.tasks = data.tasks;
+      this.isTestDb = data.is_test_db;
       this.updateShowedLog();
       if (!!this.autoReloadTimeoutId) {
         clearTimeout(this.autoReloadTimeoutId);
@@ -69,8 +71,6 @@ export class DbTasksComponent implements OnInit {
 
   onCreateClick(): void {
     this.editingTask = new DbTask();
-    this.logShowingTaskId = null;
-    this.logShowingTask = null;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -78,8 +78,6 @@ export class DbTasksComponent implements OnInit {
 
   onEditClick(task: DbTask): void {
     this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. To can be enabled to cancel changes
-    this.logShowingTaskId = null;
-    this.logShowingTask = null;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -88,10 +86,6 @@ export class DbTasksComponent implements OnInit {
   onDuplicateClick(task: DbTask): void {
     this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. Copying of object.
     this.editingTask.id = null;  // mark task as new
-    this.setTaskRerunDefaults(this.editingTask);
-    this.editingTask.is_launch_now = true;
-    this.logShowingTaskId = null;
-    this.logShowingTask = null;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -213,7 +207,6 @@ export class DbTasksComponent implements OnInit {
   }
 
   onShowLogClick(task: DbTask): void {
-    this.editingTask = null;
     this.logShowingTaskId = task.id;
     this.logShowingTask = task;
     this.logShowingAutoScroll = true;

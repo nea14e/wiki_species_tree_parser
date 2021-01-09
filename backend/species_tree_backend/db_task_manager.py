@@ -6,6 +6,8 @@ from multiprocessing import Process, Manager
 from django.db import connections
 from parser.wiki_parser import main_from_web
 
+from config import Config
+
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
@@ -134,12 +136,13 @@ class DbTaskManager:
     # (т.к. он изанчально был расчитан на самостоятельный запуск из консоли)
     def _get_args_from_task(self, task: dict):
         args = [str(task["python_exe"]), PARSER_PATH]
+        if Config.BACKEND_IS_USE_TEST_DB:
+            args.append("test")
+        else:
+            args.append("no_test")
         stage = str(task["stage"])
         args.append(stage)
-        if stage == "0":
-            if bool(task["args"]["is_test"]):
-                args.append("test")
-        elif stage == "1":
+        if stage == "1":
             args.append(task["args"]["from_title"])
             args.append(task["args"]["to_title"])
             if task["args"].get("proxy", None):
