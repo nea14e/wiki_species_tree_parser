@@ -162,7 +162,6 @@ class DbTaskManager:
         while True:
             if not self._check_task_if_running(task_id):
                 if task_id not in self.finished_ids:
-                    self._mark_task_as_completed(task_id)  # пометить задачу как завершённую (нормально или с ошибкой)
                     self.finished_ids.append(task_id)  # удалить процесс из self.processes_running нельзя, т.к. цикл по нему, да и не надо
                     return
             time.sleep(Config.PROC_STATE_UPDATE_TIMER)
@@ -181,6 +180,9 @@ class DbTaskManager:
                     self.recent_stderr_logs[task_id].append(line[len(Config.LOGS_ERROR_PREFIX):])
             else:
                 if task_id in self.finished_ids:  # если логи закончились и процесс завершился - прекратить их чтение
+                    self._mark_task_as_completed(task_id)  # пометить задачу как завершённую (нормально или с ошибкой)
+                    # важно, что понять, завершилась ли задача с успехом, мы можем, только прочитав все её логи,
+                    # что происходит в этом методе уже ПОСЛЕ завершения задачи. Поэтому _mark_task_as_completed() именно тут.
                     return
 
             log_overflow = len(self.recent_stdout_logs[task_id]) - Config.LOGS_KEEP_LINES_COUNT
