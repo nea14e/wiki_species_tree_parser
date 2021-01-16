@@ -96,6 +96,15 @@ class DbFunctions:
         else:
             Logger.print("Таблица public.tasks уже существует, пропускаем этап создания.")
 
+        # Таблица с админ-пользователями
+        Logger.print("\nТаблица с админ-пользователями:")
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'admin_users');"
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "admin_users.sql"))
+        else:
+            Logger.print("Таблица public.admin_users уже существует, пропускаем этап создания.")
+
         # Заполняем данными
         Logger.print("\n\n===================================================")
         Logger.print("Заполняем данными:")
