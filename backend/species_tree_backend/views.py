@@ -260,6 +260,74 @@ def admin_stop_one_task(request):
 
 
 # ====================================
+# Администрирование - управление админ-пользователями
+# ====================================
+
+@check_admin_request
+def admin_get_admin_users(request):
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT COALESCE(json_agg(t ORDER BY t.description), '[]')
+        FROM (
+               SELECT *
+               FROM public.admin_users
+          ) t;
+    """)
+    admin_users = list(cur.fetchone()[0])
+    return JsonResponse(
+        {"admin_users": admin_users, "is_test_db": Config.BACKEND_IS_USE_TEST_DB},
+        safe=False
+    )  # unsafe указывается только для запросов БД на языке SQL
+
+
+@check_admin_request
+def admin_add_admin_user(request):
+    body = json.loads(request.body)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO public.admin_users(description, password)
+        VALUES (%s, %s)
+        RETURNING id;
+    """, (body["data"]["description"], body["data"]["password"]))
+    admin_user_id = int(cur.fetchone()[0])
+    return JsonResponse({"is_ok": True, "message": "User {id} added successfully.".format(id=admin_user_id)})
+
+
+@check_admin_request
+def admin_edit_admin_user(request):
+    body = json.loads(request.body)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE public.admin_users
+        SET description = %s,
+         password = %s,
+         is_blocked = %s
+        WHERE id = %s;
+    """, (body["data"]["description"],
+          body["data"]["password"],
+          body["data"]["is_blocked"],
+          body["data"]["id"]
+          )
+    )
+    return JsonResponse({"is_ok": True, "message": "User {id} edited successfully.".format(id=body["data"]["id"])})
+
+
+@check_admin_request
+def admin_delete_admin_user(request):
+    body = json.loads(request.body)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        DELETE FROM public.admin_users
+        WHERE id = %s;
+    """, (body["id"],))
+    return JsonResponse({"is_ok": True, "message": "User {id} deleted successfully.".format(id=body["id"])})
+
+
+# ====================================
 # Администрирование через URL из браузера напрямую
 # ====================================
 
