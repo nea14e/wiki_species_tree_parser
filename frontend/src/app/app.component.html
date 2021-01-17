@@ -53,6 +53,12 @@
       <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
       {{translationRoot?.translations.admin_db_tasks}}
     </div>
+    <div class="btn col-auto mr-2 mt-2"
+         (click)="onToAdminUsersClick()"
+    >
+      <img src="assets/from-bootstrap/people.svg" class="btn-img"/>
+      {{translationRoot?.translations.admin_users}}
+    </div>
     <div class="btn col-auto mt-2"
          (click)="adminLogout()"
          [title]="translationRoot?.translations.admin_logout"

@@ -31,6 +31,18 @@ export class DbTaskArgs {
   will_success = true;
 }
 
+export class AdminUsersList {
+  admin_users: AdminUser[] = [];
+  is_test_db: boolean;
+}
+
+export class AdminUser {
+  id: number;
+  description: string;
+  password: string;
+  is_blocked: boolean;
+}
+
 export class AdminLanguage {
   lang_key: string;
   comment: string;
