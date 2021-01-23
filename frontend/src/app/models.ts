@@ -44,6 +44,7 @@ export interface Translations {
   bookmarks_use_cookies_question: string;
   network_error: string;
   // Admin:
+  admin_panel: string;
   admin_password_placeholder: string;
   admin_password_error: string;
   admin_logout: string;

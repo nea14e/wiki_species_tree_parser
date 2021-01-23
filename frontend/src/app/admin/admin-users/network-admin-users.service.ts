@@ -40,4 +40,10 @@ export class NetworkAdminUsersService extends BaseNetworkAdminService {
     );
   }
 
+  public getKnownLanguagesAll(adminKey: string): Observable<AdminLanguage[]> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminLanguage[] | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_known_languages_all', {adminKey})
+    );
+  }
+
 }

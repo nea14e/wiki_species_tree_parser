@@ -287,10 +287,10 @@ def admin_add_admin_user(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO public.admin_users(description, password)
-        VALUES (%s, %s)
+        INSERT INTO public.admin_users(description, password, rights_list, is_blocked)
+        VALUES (%s, %s, %s, %s)
         RETURNING id;
-    """, (body["data"]["description"], body["data"]["password"]))
+    """, (body["data"]["description"], body["data"]["password"], json.dumps(body["data"]["rights_list"]), body["data"]["is_blocked"]))
     admin_user_id = int(cur.fetchone()[0])
     return JsonResponse({"is_ok": True, "message": "User {id} added successfully.".format(id=admin_user_id)})
 
@@ -304,10 +304,12 @@ def admin_edit_admin_user(request):
         UPDATE public.admin_users
         SET description = %s,
          password = %s,
+         rights_list = %s,
          is_blocked = %s
         WHERE id = %s;
     """, (body["data"]["description"],
           body["data"]["password"],
+          json.dumps(body["data"]["rights_list"]),
           body["data"]["is_blocked"],
           body["data"]["id"]
           )

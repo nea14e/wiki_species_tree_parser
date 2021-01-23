@@ -1,5 +1,15 @@
 /* tslint:disable:variable-name */
-import {Translations} from "./models";
+import {Translations} from './models';
+
+export class Right {
+  constructor(public r: string) {
+  }
+}
+
+export const RIGHTS = {
+  ALL_EXCEPT_CONTROL_USER: new Right('[All except control users]'),
+  ADD_EDIT_ANY_LANGUAGES: new Right('[Add/edit any languages, translations]'),
+};
 
 export class DbTasksList {
   tasks: DbTask[] = [];
@@ -40,7 +50,8 @@ export class AdminUser {
   id: number;
   description: string;
   password: string;
-  is_blocked: boolean;
+  rights_list: Right[] = [];
+  is_blocked = false;
 }
 
 export class AdminLanguage {

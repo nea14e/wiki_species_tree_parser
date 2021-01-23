@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {RootDataKeeperService} from '../../root-data-keeper.service';
-import {AdminUser, DbTask} from '../../models-admin';
+import {AdminLanguage, AdminUser, Right, RIGHTS} from '../../models-admin';
 import {NetworkAdminUsersService} from './network-admin-users.service';
 
 @Component({
@@ -16,12 +16,15 @@ export class AdminUsersComponent implements OnInit {
   users: AdminUser[] = [];
   editingUser: AdminUser | null = null;
   isTestDb: boolean | null = null;
+  knownLanguagesAll: AdminLanguage[] = [];
+  RIGHTS = RIGHTS;
 
   constructor(public rootData: RootDataKeeperService,
               private networkAdminService: NetworkAdminUsersService) { }
 
   ngOnInit(): void {
     this.reloadList();
+    this.loadKnownLanguage();
   }
 
   private reloadList(): void {
@@ -33,10 +36,17 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  private loadKnownLanguage(): void {
+    this.networkAdminService.getKnownLanguagesAll(this.rootData.adminPassword).subscribe(data => {
+      this.knownLanguagesAll = data;
+    }, error => {
+      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+    });
+  }
+
   onCreateClick(): void {
     this.users = this.users.filter(u => !!u.id);
     this.editingUser = new AdminUser();
-    this.users.push(this.editingUser);
     console.log(this.users);
   }
 
@@ -92,5 +102,13 @@ export class AdminUsersComponent implements OnInit {
   isEditingUser(user: AdminUser): boolean {
     return (!!this.editingUser && !!this.editingUser.id && this.editingUser.id === user.id) ||
       (!!this.editingUser && !this.editingUser.id && !user.id);
+  }
+
+  onAddRightClick(): void {
+    this.editingUser.rights_list.push(new Right(null));
+  }
+
+  onDeleteRightClick(ind: number): void {
+    this.editingUser.rights_list.splice(ind, 1);
   }
 }

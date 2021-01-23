@@ -11,6 +11,14 @@
   </div>
 </div>
 
+<div class="row ml-0 mr-0 mt-4 mb-2">
+  <div>
+    <div *ngIf="isTestDb===true">You are working with TEST database</div>
+    <div *ngIf="isTestDb===false" class="text-warning">You are working with PRODUCTION database</div>
+    <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
+  </div>
+</div>
+
 <div class="row ml-0 mr-0">
   <table class="table">
     <thead>
@@ -27,33 +35,14 @@
           [style.background]="getColorForUser(user)"
       >
         <td>{{user.id}}</td>
+        <td>{{user.description}}</td>
+        <td>{{user.password}}</td>
         <td>
-          <div *ngIf="!isEditingUser(user)">
-            {{user.description}}
-          </div>
-          <div *ngIf="isEditingUser(user)">
-            <input type="text" [(ngModel)]="editingUser.description">
-          </div>
-        </td>
-        <td>
-          <div *ngIf="!isEditingUser(user)">
-            {{user.password}}
-          </div>
-          <div *ngIf="isEditingUser(user)">
-            <input type="text" [(ngModel)]="editingUser.password">
-          </div>
-        </td>
-        <td>
-          <div *ngIf="!isEditingUser(user)">
-            <input type="checkbox" disabled [(ngModel)]="user.is_blocked">
-          </div>
-          <div *ngIf="isEditingUser(user)">
-            <input type="checkbox" [(ngModel)]="editingUser.is_blocked">
-          </div>
+          <input type="checkbox" disabled [(ngModel)]="user.is_blocked">
         </td>
         <td>
           <div class="btn col-auto mr-2"
-               *ngIf="!isEditingUser(user)"
+               [ngClass]="editingUser?.id===user.id ? 'active' : ''"
                (click)="onEditClick(user)"
                [title]="rootData.translationRoot?.translations.edit"
           >
@@ -67,25 +56,119 @@
           >
             <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
           </div>
-
-          <div class="btn col-auto mr-2"
-               *ngIf="isEditingUser(user)"
-               (click)="onSaveClick()"
-               [title]="rootData.translationRoot?.translations.save"
-          >
-            <img src="assets/from-bootstrap/check.svg" class="btn-img"/>
-          </div>
-
-          <div class="btn col-auto mr-2"
-               *ngIf="isEditingUser(user)"
-               (click)="onCancelClick()"
-               [title]="rootData.translationRoot?.translations.cancel"
-          >
-            <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
-          </div>
-
         </td>
       </tr>
     </tbody>
   </table>
+</div>
+
+<div *ngIf="editingUser!==null" class="row">
+  <div class="row ml-2 mr-2 router-hr"></div>
+
+  <h4 class="row ml-2 mr-2">
+    Edit user:
+  </h4>
+
+  <div class="container-fluid">
+
+    <div class="row mt-4">
+      <div class="col-3">
+        id:
+      </div>
+      <div class="col-9">
+        {{editingUser.id}}
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        description<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingUser.description">
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        password<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingUser.password">
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        is_blocked<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingUser.is_blocked">
+      </div>
+    </div>
+
+    <div class="row ml-2 mr-2 in-section-hr"></div>
+
+    <div *ngFor="let right of editingUser.rights_list; let ind = index" class="row mt-4">
+      <div class="col-3">
+        right<span class="text-danger">*</span>:
+      </div>
+      <div class="col-auto">
+        <select [(ngModel)]="right.r">
+          <option [value]="RIGHTS.ALL_EXCEPT_CONTROL_USER.r" [selected]="right.r === RIGHTS.ALL_EXCEPT_CONTROL_USER.r">
+            {{RIGHTS.ALL_EXCEPT_CONTROL_USER.r}}
+          </option>
+          <option [value]="RIGHTS.ADD_EDIT_ANY_LANGUAGES.r" [selected]="right.r === RIGHTS.ADD_EDIT_ANY_LANGUAGES.r">
+            {{RIGHTS.ADD_EDIT_ANY_LANGUAGES.r}}
+          </option>
+          <option *ngFor="let lang of knownLanguagesAll" [value]="lang.lang_key" [selected]="right.r === lang.lang_key">
+            Edit translations: {{lang.lang_key}} - {{lang.comment}}
+          </option>
+        </select>
+      </div>
+      <div class="btn col-auto mr-2"
+           (click)="onDeleteRightClick(ind)"
+           [title]="rootData.translationRoot?.translations.delete"
+      >
+        <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        Add right:
+      </div>
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onAddRightClick()"
+           [title]="rootData.translationRoot?.translations.create"
+      >
+        <img src="assets/from-bootstrap/plus.svg" class="btn-img"/>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-auto">
+        <small>Note: only super-admin with password from Config.py can access this {{rootData.translationRoot?.translations.admin_users}} page.</small>
+      </div>
+    </div>
+
+    <div class="row ml-0 mr-0 mb-2">
+
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onCancelClick()"
+      >
+        <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.cancel}}
+      </div>
+
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onSaveClick()"
+      >
+        <img src="assets/from-bootstrap/check-2.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.save}}
+      </div>
+
+    </div>
+
+  </div>
 </div>

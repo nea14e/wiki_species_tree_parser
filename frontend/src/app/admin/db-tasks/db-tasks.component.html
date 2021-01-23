@@ -12,11 +12,10 @@
 
 </div>
 
-<div class="row ml-0 mr-0 mb-2">
+<div class="row ml-0 mr-0 mt-4 mb-2">
   <div>
-    <h4 *ngIf="!!balloonMessage" class="text-success">{{balloonMessage}}</h4>
-    <h4 *ngIf="!balloonMessage && isTestDb===true">You are working with TEST database</h4>
-    <h4 *ngIf="!balloonMessage && isTestDb===false" class="text-warning">You are working with PRODUCTION database</h4>
+    <div *ngIf="isTestDb===true">You are working with TEST database</div>
+    <div *ngIf="isTestDb===false" class="text-warning">You are working with PRODUCTION database</div>
     <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
   </div>
 </div>
