@@ -32,7 +32,7 @@ export class AdminUsersComponent implements OnInit {
       this.users = data.admin_users;
       this.isTestDb = data.is_test_db;
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
@@ -40,7 +40,7 @@ export class AdminUsersComponent implements OnInit {
     this.networkAdminService.getKnownLanguagesAll(this.rootData.adminPassword).subscribe(data => {
       this.knownLanguagesAll = data;
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
@@ -71,14 +71,14 @@ export class AdminUsersComponent implements OnInit {
         this.editingUser = null;
         this.reloadList();
       }, error => {
-        alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+        alert(error);
       });
     } else {
       this.networkAdminService.createAdminUser(this.editingUser, this.rootData.adminPassword).subscribe(() => {
         this.editingUser = null;
         this.reloadList();
       }, error => {
-        alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+        alert(error);
       });
     }
   }
@@ -90,7 +90,7 @@ export class AdminUsersComponent implements OnInit {
     this.networkAdminService.deleteAdminUser(user.id, this.rootData.adminPassword).subscribe(() => {
       this.reloadList();
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 

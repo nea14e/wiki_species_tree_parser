@@ -1,8 +1,31 @@
 import {Observable, of, throwError} from 'rxjs';
-import {AdminResponse} from '../models-admin';
+import {AdminLanguage, AdminResponse, AdminLoginInfo} from '../models-admin';
 import {catchError, switchMap} from 'rxjs/operators';
+import {HttpClient} from '@angular/common/http';
+import {environment} from '../../environments/environment';
+import {RootDataKeeperService} from '../root-data-keeper.service';
+import {Injectable} from '@angular/core';
 
+@Injectable({
+  providedIn: 'root'
+})
 export class BaseNetworkAdminService {
+
+  constructor(protected http: HttpClient,
+              public rootData: RootDataKeeperService) {
+  }
+
+  public tryLogin(adminKey: string): Observable<AdminLoginInfo> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminLoginInfo | AdminResponse>(environment.BACKEND_API_URL + 'admin_try_login', {adminKey})
+    );
+  }
+
+  public getKnownLanguagesAll(adminKey: string): Observable<AdminLanguage[]> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminLanguage[] | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_known_languages_all', {adminKey})
+    );
+  }
 
   /*
       Оборачиваем все Observable сетевых запросов админки в этот метод.
@@ -16,12 +39,18 @@ export class BaseNetworkAdminService {
         catchError(() => {
           // Заменяем все ошибки запросов (где в ответ не пришли данные с текстом ошибки) на null,
           // чтобы в Observable() снаружи можно было отличить эти два случая ошибок
-          return throwError(null);
+          const translatedMessage = this.rootData.translationRoot?.translations.network_error;
+          const defaultMessage = 'Network error. Try again later.';
+          return throwError(translatedMessage || defaultMessage);
         }),
         switchMap(response => {
           if ('is_ok' in response) {
             if (response.is_ok === false) {
-              return throwError(response.message);  // Послать дальше по трубе ошибку
+              if (!!response.message_translation_key) {
+                return throwError(this.rootData.translationRoot?.translations[response.message_translation_key]);
+              } else {
+                return throwError(response.message);  // Послать дальше по трубе ошибку
+              }
             }
           }
           return of(response as T);  // Послать дальше по трубе данные

@@ -142,6 +142,8 @@ class DbFunctions:
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tip_of_the_day_by_id.sql"))
         Logger.print("\nХранимка по подсчёту листов в дереве: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "service_update_leaves_count.sql"))
+        Logger.print("\nХранимка по проверке прав пользователей-админов: перенакатываем...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "check_right.sql"))
 
         # Просто так
         Logger.print("\n\n===================================================")

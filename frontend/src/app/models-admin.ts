@@ -7,6 +7,7 @@ export class Right {
 }
 
 export const RIGHTS = {
+  SUPER_ADMIN: new Right('[SUPER_ADMIN]'),
   ALL_EXCEPT_CONTROL_USER: new Right('[All except control users]'),
   ADD_EDIT_ANY_LANGUAGES: new Right('[Add/edit any languages, translations]'),
 };
@@ -54,6 +55,24 @@ export class AdminUser {
   is_blocked = false;
 }
 
+export class AdminLoginInfo {
+  description: string;
+  rights_list: Right[] = [];
+
+  checkRight(r: string): boolean {
+    return this.rights_list.some(right => right.r === r);
+  }
+
+  canDbTasks(): boolean {
+    return this.checkRight(RIGHTS.SUPER_ADMIN.r) ||
+        this.checkRight(RIGHTS.ALL_EXCEPT_CONTROL_USER.r);
+  }
+
+  canManageAdminUsers(): boolean {
+    return this.checkRight(RIGHTS.SUPER_ADMIN.r);
+  }
+}
+
 export class AdminLanguage {
   lang_key: string;
   comment: string;
@@ -62,5 +81,6 @@ export class AdminLanguage {
 
 export class AdminResponse {
   is_ok: boolean;
+  message_translation_key: string | null;
   message: string;
 }

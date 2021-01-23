@@ -5,7 +5,7 @@ CREATE TABLE public.admin_users
       PRIMARY KEY,
   description text                  NOT NULL,
   password    text                  NOT NULL,
-  rights_list json                  NOT NULL,
+  rights_list jsonb                 NOT NULL,
   is_blocked  boolean DEFAULT FALSE NOT NULL
 );
 

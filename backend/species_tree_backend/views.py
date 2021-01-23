@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from species_tree_backend.http_headers_parser import get_language_key
 
 from species_tree_backend.db_task_manager import DbTaskManager
+
+from species_tree_backend.rights import RIGHTS
 from config import Config
 from config_EXAMPLE import Config as ConfigExample
 
@@ -108,34 +110,91 @@ def get_tip_of_the_day_by_id(request, _id: int = None):
 # Администрирование через фронтэнд
 # ====================================
 
-# Это декоратор для всех функций, где надо проверять ключ админа в теле запроса
-def check_admin_request(func):
-    def wrapped(*args, **kw):
+# Это декоратор для всех функций, где надо проверять, имеет ли админ-пользователь такое право.
+# Право указывается при использовании декоратора на конкретной функции. None означает требовать,
+# чтобы пользователь был супер-админом, пароль которого находится не в БД, а в файле Config.py.
+# Тело запроса должно содержать пароль пользователя.
+def check_right_request(right):
+    def decorator(func):
+        def wrapped(*args, **kw):
+    
+            if ConfigExample.BACKEND_SECRET_KEY == Config.BACKEND_SECRET_KEY:
+                return JsonResponse({"is_ok": False,
+                                     "message": "You forgot to change Config.BACKEND_SECRET_KEY when copied from Config_EXAMPLE!"})
+            if ConfigExample.BACKEND_ADMIN_URL_PREFIX == Config.BACKEND_ADMIN_PASSWORD:
+                return JsonResponse({"is_ok": False,
+                                     "message": "You forgot to change Config.BACKEND_ADMIN_URL_PREFIX when copied from Config_EXAMPLE!"})
+    
+            request = args[0]
+            # noinspection PyBroadException
+            try:
+                body = json.loads(request.body)
+                password = str(body["adminKey"])
+                if password != Config.BACKEND_ADMIN_PASSWORD:
+                    if right is None:
+                        return JsonResponse({"is_ok": False,
+                                             "message_translation_key": "admin_error_super_admin_only",
+                                             "message": "Only super-admin have this permission."})
+                    conn = connections["default"]
+                    cur = conn.cursor()
+                    cur.execute("""
+                        SELECT public.check_right(%s, %s);
+                    """, (password, right,))
+                    db_response = str(cur.fetchone()[0])
+                    if db_response != 'OK':
+                        return JsonResponse({"is_ok": False,
+                                             "message_translation_key": db_response,
+                                             "message": "You do not have this permission."})
+            except BaseException:
+                return JsonResponse(
+                    {
+                        "is_ok": False,
+                        "message": "All admin's requests must be of HTTP POST type with 'adminKey' provided in POST's json object."
+                    }
+                )
+    
+            return func(*args, **kw)
+        return wrapped
+    return decorator
 
-        if (ConfigExample.BACKEND_SECRET_KEY == Config.BACKEND_SECRET_KEY):
-            return JsonResponse({"is_ok": False, "message": "You forgot to change Config.BACKEND_SECRET_KEY when copied from Config_EXAMPLE!"})
-        if (ConfigExample.BACKEND_ADMIN_URL_PREFIX == Config.BACKEND_ADMIN_PASSWORD):
-            return JsonResponse({"is_ok": False, "message": "You forgot to change Config.BACKEND_ADMIN_URL_PREFIX when copied from Config_EXAMPLE!"})
 
-        request = args[0]
-        try:
-            body = json.loads(request.body)
-            if (str(body["adminKey"]) != Config.BACKEND_ADMIN_PASSWORD):
-                return JsonResponse({"is_ok": False, "message": "Wrong admin key"})
-        except BaseException:
-            return JsonResponse(
-                {
-                    "is_ok": False,
-                    "message": "All admin's requests must be of HTTP POST type with 'adminKey' provided in POST's json object."
-                }
-            )
+# проверка прав внутри
+def admin_try_login(request):
+    body = json.loads(request.body)
+    password = str(body["adminKey"])
 
-        return func(*args, **kw)
+    if password == Config.BACKEND_ADMIN_PASSWORD:
+        user = {
+            "description": "Super-admin",
+            "rights_list": [{"r": RIGHTS.SUPER_ADMIN}]
+        }
+    else:
+        conn = connections["default"]
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT json_build_object(
+                       'description', description,
+                       'rights_list', rights_list,
+                       'is_blocked', is_blocked
+                     )
+            FROM public.admin_users
+            WHERE password = %s
+            LIMIT 1;
+        """, (password,))
+        row = cur.fetchone()
+        if row is None:
+            return JsonResponse({"is_ok": False,
+                                 "message_translation_key": "admin_error_wrong_password",
+                                 "message": "Wrong password."})
+        user = row[0]
+        if bool(user["is_blocked"]):
+            return JsonResponse({"is_ok": False,
+                                 "message_translation_key": "admin_error_blocked",
+                                 "message": "This user have been blocked."})
+    return JsonResponse(user, safe=False)  # unsafe указывается только для функций БД на языке SQL
 
-    return wrapped
 
-
-@check_admin_request
+# для этого права не нужны
 def admin_get_known_languages_all(request):
     conn = connections["default"]
     cur = conn.cursor()
@@ -166,7 +225,7 @@ def startup_start_tasks():
     # Это обычный метод, не API
 
 
-@check_admin_request
+@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
 def admin_get_tasks(request):
     conn = connections["default"]
     cur = conn.cursor()
@@ -185,7 +244,7 @@ def admin_get_tasks(request):
     )  # unsafe указывается только для запросов БД на языке SQL
 
 
-@check_admin_request
+@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
 def admin_add_task(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -202,7 +261,7 @@ def admin_add_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} added successfully.".format(id=task["id"])})
 
 
-@check_admin_request
+@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
 def admin_edit_task(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -232,7 +291,7 @@ def admin_edit_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} edited successfully.".format(id=task["id"])})
 
 
-@check_admin_request
+@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
 def admin_delete_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().stop_one_task(body["id"])  # сначала останавливаем задачу (там проверят, если она не была запущена)
@@ -245,14 +304,14 @@ def admin_delete_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} deleted successfully.".format(id=body["id"])})
 
 
-@check_admin_request
+@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
 def admin_start_one_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().start_one_task(body["data"])
     return JsonResponse({"is_ok": True, "message": "Task {id} started successfully.".format(id=body["data"]["id"])})
 
 
-@check_admin_request
+@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
 def admin_stop_one_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().stop_one_task(body["id"])
@@ -263,7 +322,7 @@ def admin_stop_one_task(request):
 # Администрирование - управление админ-пользователями
 # ====================================
 
-@check_admin_request
+@check_right_request(None)
 def admin_get_admin_users(request):
     conn = connections["default"]
     cur = conn.cursor()
@@ -281,7 +340,7 @@ def admin_get_admin_users(request):
     )  # unsafe указывается только для запросов БД на языке SQL
 
 
-@check_admin_request
+@check_right_request(None)
 def admin_add_admin_user(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -295,7 +354,7 @@ def admin_add_admin_user(request):
     return JsonResponse({"is_ok": True, "message": "User {id} added successfully.".format(id=admin_user_id)})
 
 
-@check_admin_request
+@check_right_request(None)
 def admin_edit_admin_user(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -317,7 +376,7 @@ def admin_edit_admin_user(request):
     return JsonResponse({"is_ok": True, "message": "User {id} edited successfully.".format(id=body["data"]["id"])})
 
 
-@check_admin_request
+@check_right_request(None)
 def admin_delete_admin_user(request):
     body = json.loads(request.body)
     conn = connections["default"]

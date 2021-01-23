@@ -3,15 +3,17 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {BaseNetworkAdminService} from '../network-admin.service';
 import {environment} from '../../../environments/environment';
-import {AdminLanguage, AdminResponse, AdminUser, AdminUsersList, DbTask, DbTasksList} from '../../models-admin';
+import {AdminResponse, AdminUser, AdminUsersList, DbTask, DbTasksList} from '../../models-admin';
+import {RootDataKeeperService} from '../../root-data-keeper.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NetworkAdminUsersService extends BaseNetworkAdminService {
 
-  constructor(private http: HttpClient) {
-    super();
+  constructor(protected http: HttpClient,
+              public rootData: RootDataKeeperService) {
+    super(http, rootData);
   }
 
   public getAdminUsers(adminKey: string): Observable<AdminUsersList> {
@@ -37,12 +39,6 @@ export class NetworkAdminUsersService extends BaseNetworkAdminService {
   public deleteAdminUser(id: number, adminKey: string): Observable<AdminResponse> {
     return this.pipeAdminQueries(
       this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_delete_admin_user', {adminKey, id})
-    );
-  }
-
-  public getKnownLanguagesAll(adminKey: string): Observable<AdminLanguage[]> {
-    return this.pipeAdminQueries(
-      this.http.post<AdminLanguage[] | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_known_languages_all', {adminKey})
     );
   }
 

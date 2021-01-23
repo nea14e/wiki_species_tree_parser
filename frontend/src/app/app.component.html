@@ -46,14 +46,20 @@
     >
   </div>
 
+  <div class="row ml-0 mr-0 mb-2">
+    <div class="col-12" [class]="isAdminMode ? 'text-success' : 'text-danger'">{{adminLoginResult}}</div>
+  </div>
+
   <div *ngIf="!!rootData.adminPassword" class="row ml-0 mr-0 mb-2">
-    <div class="btn col-auto mr-2 mt-2"
+    <div *ngIf="rootData.canDbTasks()"
+         class="btn col-auto mr-2 mt-2"
          (click)="onToDbTasksClick()"
     >
       <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
       {{translationRoot?.translations.admin_db_tasks}}
     </div>
-    <div class="btn col-auto mr-2 mt-2"
+    <div *ngIf="rootData.canManageAdminUsers()"
+         class="btn col-auto mr-2 mt-2"
          (click)="onToAdminUsersClick()"
     >
       <img src="assets/from-bootstrap/people.svg" class="btn-img"/>

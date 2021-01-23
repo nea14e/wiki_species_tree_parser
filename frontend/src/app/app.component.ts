@@ -5,6 +5,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {RootDataKeeperService} from './root-data-keeper.service';
 import {Location} from '@angular/common';
 import {Title} from '@angular/platform-browser';
+import {BaseNetworkAdminService} from './admin/network-admin.service';
+import {AdminLoginInfo, RIGHTS} from './models-admin';
 
 @Component({
   selector: 'app-root',
@@ -15,9 +17,11 @@ export class AppComponent implements OnInit {
 
   translationRoot: TranslationRoot;
   isAdminMode = false;  // активируется по URL "/admin" и его продолжениям
+  adminLoginResult: string | null = null;
 
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
+              private networkAdminService: BaseNetworkAdminService,
               private activatedRoute: ActivatedRoute,
               private router: Router,
               private location: Location,
@@ -91,7 +95,25 @@ export class AppComponent implements OnInit {
   }
 
   onAdminPasswordChange(): void {
-    this.router.navigate(['authors'])  // navigate to some another component previously to refresh db-tasks
-      .then(() => this.router.navigate(['admin/db-tasks']));  // Show db tasks admin panel
+    this.networkAdminService.tryLogin(this.rootData.adminPassword).subscribe(data => {
+      this.isAdminMode = true;
+      this.adminLoginResult = this.translationRoot?.translations.admin_welcome_part_1
+        + data.description
+        + this.translationRoot?.translations.admin_welcome_part_2
+        + JSON.stringify(data.rights_list);
+      this.rootData.adminLoginInfo = data;
+      this.adminRedirectWithRights();
+    }, error => {
+      this.adminLoginResult = error;
+      this.rootData.adminLoginInfo = null;
+      this.onTipClick();
+    });
+  }
+
+  private adminRedirectWithRights(): void {
+    if (this.rootData.adminLoginInfo?.checkRight(RIGHTS.ALL_EXCEPT_CONTROL_USER.r)) {
+      this.router.navigate(['authors'])  // navigate to some another component previously to refresh db-tasks
+        .then(() => this.router.navigate(['admin/db-tasks']));  // Show db tasks admin panel
+    }
   }
 }

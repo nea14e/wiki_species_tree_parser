@@ -36,7 +36,7 @@ export class DbTasksComponent implements OnInit {
     this.networkAdminService.getKnownLanguagesAll(this.rootData.adminPassword).subscribe(data => {
       this.knownLanguagesAll = data;
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
@@ -52,7 +52,7 @@ export class DbTasksComponent implements OnInit {
         this.reloadList();
       }, this.LIST_AUTORELOAD_INTERVAL);  // обновлять список каждые несколько секунд
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
@@ -112,7 +112,7 @@ export class DbTasksComponent implements OnInit {
       this.showBalloon(adminResponse.message);
       this.reloadList();
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
@@ -127,7 +127,7 @@ export class DbTasksComponent implements OnInit {
         this.editingTask = null;
         this.reloadList();
       }, error => {
-        alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+        alert(error);
       });
     } else {
       this.networkAdminService.saveTask(this.editingTask, this.rootData.adminPassword).subscribe(adminResponse => {
@@ -135,7 +135,7 @@ export class DbTasksComponent implements OnInit {
         this.editingTask = null;
         this.reloadList();
       }, error => {
-        alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+        alert(error);
       });
     }
   }
@@ -180,7 +180,7 @@ export class DbTasksComponent implements OnInit {
       this.logShowingAutoScroll = true;
       this.reloadList();
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
@@ -189,7 +189,7 @@ export class DbTasksComponent implements OnInit {
       this.showBalloon(adminResponse.message);
       this.reloadList();
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
@@ -202,7 +202,7 @@ export class DbTasksComponent implements OnInit {
       this.showBalloon(adminResponse.message);
       this.reloadList();
     }, error => {
-      alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
+      alert(error);
     });
   }
 
