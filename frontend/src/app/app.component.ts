@@ -4,6 +4,7 @@ import {TranslationRoot} from './models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {RootDataKeeperService} from './root-data-keeper.service';
 import {Location} from '@angular/common';
+import {Title} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -19,12 +20,14 @@ export class AppComponent implements OnInit {
               private networkService: NetworkService,
               private activatedRoute: ActivatedRoute,
               private router: Router,
-              private location: Location) {}
+              private location: Location,
+              private titleService: Title) {}
 
   ngOnInit(): void {
     this.networkService.getTranslations().subscribe(data => {
       this.translationRoot = data;
       this.rootData.translationRoot = data;
+      this.titleService.setTitle(data.translations.site_title);
     }, () => {
       alert('Please check network or try again later.');  // Здесь переводы ещё не загружены, поэтому английский.
       // В остальных местах испрользуйте alert(this.rootData.translationRoot.translations.network_error);
