@@ -75,6 +75,8 @@ class DbFunctions:
             Logger.print("Таблица public.known_languages уже существует, пропускаем этап создания.")
         Logger.print("Миграция public.known_languages_MIGRATE...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages_MIGRATE.sql"))
+        Logger.print("Миграция public.known_languages_MIGRATE_2...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "known_languages_MIGRATE_2.sql"))
 
         # Таблица с советами дня
         Logger.print("\nТаблица с советами дня:")
@@ -115,6 +117,8 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "ranks_TEST.sql"))
         Logger.print("\nТаблица public.known_languages (для прода/теста)...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "known_languages_ANY.sql"))
+        Logger.print("\nТаблица public.known_languages (для прода/теста) - выбор основного языка для администрирования...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "known_languages_ANY_set_main.sql"))
         if is_test:
             Logger.print("\nТаблица public.tips_of_the_day (для теста)...")
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "fill_tables", "tips_of_the_day_TEST.sql"))
