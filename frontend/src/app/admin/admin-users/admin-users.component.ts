@@ -100,8 +100,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   isEditingUser(user: AdminUser): boolean {
-    return (!!this.editingUser && !!this.editingUser.id && this.editingUser.id === user.id) ||
-      (!!this.editingUser && !this.editingUser.id && !user.id);
+    return this.editingUser?.id === user.id;
   }
 
   onAddRightClick(): void {
