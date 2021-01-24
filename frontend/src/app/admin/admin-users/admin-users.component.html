@@ -42,7 +42,7 @@
         </td>
         <td>
           <div class="btn col-auto mr-2"
-               [ngClass]="editingUser?.id===user.id ? 'active' : ''"
+               [ngClass]="isEditingUser(user) ? 'active' : ''"
                (click)="onEditClick(user)"
                [title]="rootData.translationRoot?.translations.edit"
           >
