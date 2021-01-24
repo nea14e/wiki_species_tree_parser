@@ -44,12 +44,14 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_password_error": "Неверный пароль администратора",
         "admin_logout": "Выйти из администрирования",
         "admin_db_tasks": "Задачи БД",
+        "admin_tips_list": "Список фактов",
         "admin_users": "Пользователи-администраторы",
         "create": "Добавить новый",
         "edit": "Редактировать",
         "delete": "Удалить",
         "save": "Сохранить",
-        "cancel": "Отмена"
+        "cancel": "Отмена",
+        "success": "Успешно выполнено."
       }'::jsonb
   ),
     ('en', 'English',
@@ -97,12 +99,14 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_password_error": "Wrond admin password",
         "admin_logout": "Logout from admin",
         "admin_db_tasks": "DB tasks",
+        "admin_tips_list": "Tips list",
         "admin_users": "Admin users",
         "create": "Create",
         "edit": "Edit",
         "delete": "Delete",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "success": "Done successfully."
       }'::jsonb
     )
 ),

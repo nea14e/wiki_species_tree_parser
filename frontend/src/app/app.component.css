@@ -48,3 +48,40 @@
   background-color: #c3a8c3;
   margin: 1rem 0;
 }
+
+/*
+=========================================
+    Элементы "больших" списков (поиск, перевод советов и др.)
+=========================================
+*/
+
+::ng-deep :root {
+  --search-item-size: 5rem;
+}
+
+.plain-list-item {
+  width: 100%;
+  height: var(--search-item-size);
+  margin: 4px;
+  position: relative;
+  border: 1px solid var(--item-accent);
+  box-sizing: content-box;
+  background-color: var(--item-color-0);
+  cursor: pointer;
+}
+
+.plain-list-item-img-container {
+  width: var(--search-item-size);
+  height: var(--search-item-size);
+  overflow: hidden;
+  position: relative;
+  background-color: var(--item-color-1);
+}
+
+.plain-list-item-img-content {
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

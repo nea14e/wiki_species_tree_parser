@@ -6,7 +6,7 @@ import {RootDataKeeperService} from './root-data-keeper.service';
 import {Location} from '@angular/common';
 import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
-import {AdminLoginInfo, RIGHTS} from './models-admin';
+import {RIGHTS} from './models-admin';
 
 @Component({
   selector: 'app-root',
@@ -82,6 +82,10 @@ export class AppComponent implements OnInit {
 
   onToDbTasksClick(): void {
     this.router.navigate(['admin/db-tasks']);
+  }
+
+  onToTipTranslationClick(): void {
+    this.router.navigate(['admin/tip-translation']);
   }
 
   onToAdminUsersClick(): void {

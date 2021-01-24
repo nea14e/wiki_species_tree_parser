@@ -55,12 +55,14 @@ export interface Translations {
   admin_password_error: string;
   admin_logout: string;
   admin_db_tasks: string;
+  admin_tips_list: string;
   admin_users: string;
   create: string;
   edit: string;
   delete: string;
   save: string;
   cancel: string;
+  success: string;
 }
 
 export interface TipOfTheDay {

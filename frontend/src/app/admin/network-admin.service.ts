@@ -1,5 +1,5 @@
 import {Observable, of, throwError} from 'rxjs';
-import {AdminLanguage, AdminResponse, AdminLoginInfo} from '../models-admin';
+import {AdminLanguage, AdminResponse, AdminLoginInfo, AdminMainLanguage} from '../models-admin';
 import {catchError, switchMap} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
@@ -24,6 +24,12 @@ export class BaseNetworkAdminService {
   public getKnownLanguagesAll(adminKey: string): Observable<AdminLanguage[]> {
     return this.pipeAdminQueries(
       this.http.post<AdminLanguage[] | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_known_languages_all', {adminKey})
+    );
+  }
+
+  public getMainAdminLanguage(adminKey: string): Observable<AdminMainLanguage> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminMainLanguage | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_main_admin_language', {adminKey})
     );
   }
 

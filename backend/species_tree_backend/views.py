@@ -107,7 +107,7 @@ def get_tip_of_the_day_by_id(request, _id: int = None):
 
 
 # ====================================
-# Администрирование через фронтэнд
+# Администрирование через фронтэнд - ОБЩЕЕ
 # ====================================
 
 # Это декоратор для всех функций, где надо проверять, имеет ли админ-пользователь такое право.
@@ -207,6 +207,28 @@ def admin_get_known_languages_all(request):
     """)
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
+
+
+# для этого права не нужны
+def admin_get_main_admin_language(request):
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT json_build_object(
+                    'lang_key', lang_key,
+                    'comment', comment
+                )
+        FROM public.known_languages
+        WHERE is_main_for_admins = TRUE
+        LIMIT 1;
+    """)
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
+
+
+# ====================================
+# Администрирование через фронтэнд - ЗАДАЧИ БД
+# ====================================
 
 
 # Это обычный метод, не API
@@ -319,7 +341,27 @@ def admin_stop_one_task(request):
 
 
 # ====================================
-# Администрирование - управление админ-пользователями
+# Администрирование - ПЕРЕВОДЫ СОВЕТОВ
+# ====================================
+
+# читать советы могут все админы
+def admin_get_all_tips_translations(request):
+    accept_language = request.headers['Accept-Language']
+    language_key = get_language_key(accept_language)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_all_tips_translations(_language_key := %s);
+    """, (language_key,))
+    tips = list(cur.fetchone()[0])
+    return JsonResponse(
+        {"tips": tips, "is_test_db": Config.BACKEND_IS_USE_TEST_DB},
+        safe=False
+    )  # unsafe указывается только для запросов БД на языке SQL
+
+
+# ====================================
+# Администрирование - УПРАВЛЕНИЕ АДМИН-ПОЛЬЗОВАТЕЛЯМИ
 # ====================================
 
 @check_right_request(None)
@@ -328,10 +370,7 @@ def admin_get_admin_users(request):
     cur = conn.cursor()
     cur.execute("""
         SELECT COALESCE(json_agg(t ORDER BY t.description), '[]')
-        FROM (
-               SELECT *
-               FROM public.admin_users
-          ) t;
+        FROM public.admin_users t
     """)
     admin_users = list(cur.fetchone()[0])
     return JsonResponse(

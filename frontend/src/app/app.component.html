@@ -58,6 +58,13 @@
       <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
       {{translationRoot?.translations.admin_db_tasks}}
     </div>
+    <div *ngIf="rootData.canSeeTipTranslation()"
+         class="btn col-auto mr-2 mt-2"
+         (click)="onToTipTranslationClick()"
+    >
+      <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
+      {{translationRoot?.translations.admin_tips_list}}
+    </div>
     <div *ngIf="rootData.canManageAdminUsers()"
          class="btn col-auto mr-2 mt-2"
          (click)="onToAdminUsersClick()"

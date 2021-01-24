@@ -27,6 +27,10 @@ export class RootDataKeeperService {
       && this.adminLoginInfo.rights_list.some(right => right.r === RIGHTS.SUPER_ADMIN.r || RIGHTS.ALL_EXCEPT_CONTROL_USER.r);
   }
 
+  canSeeTipTranslation(): boolean {
+    return !!this.adminLoginInfo;
+  }
+
   canManageAdminUsers(): boolean {
     return !!this.adminLoginInfo
       && this.adminLoginInfo.rights_list.some(right => right.r === RIGHTS.SUPER_ADMIN.r);

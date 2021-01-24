@@ -42,6 +42,30 @@ export class DbTaskArgs {
   will_success = true;
 }
 
+export class TipsTranslationList {
+  tips: TipForTranslation[] = [];
+  is_test_db: boolean;
+}
+
+export class TipForTranslation {
+  id: number;
+  tip_on_languages: TranslationsByLanguages;
+  species_id: number;
+  page_url: string;
+  image_url: string;
+  titles_by_languages: TranslationsByLanguages;
+  wikipedias_by_languages: TranslationsByLanguages;
+  title_by_latin: string;
+  title_by_admin: string;
+  title_by_language: string;
+  rank_by_admin: string;
+  rank_by_language: string;
+}
+
+export class TranslationsByLanguages {
+  [key: string]: string | null;
+}
+
 export class AdminUsersList {
   admin_users: AdminUser[] = [];
   is_test_db: boolean;
@@ -64,6 +88,11 @@ export class AdminLanguage {
   lang_key: string;
   comment: string;
   translations: Translations;
+}
+
+export class AdminMainLanguage {
+  lang_key: string;
+  comment: string;
 }
 
 export class AdminResponse {
