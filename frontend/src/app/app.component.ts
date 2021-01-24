@@ -111,7 +111,7 @@ export class AppComponent implements OnInit {
   }
 
   private adminRedirectWithRights(): void {
-    if (this.rootData.adminLoginInfo?.checkRight(RIGHTS.ALL_EXCEPT_CONTROL_USER.r)) {
+    if (this.rootData.checkRight(RIGHTS.ALL_EXCEPT_CONTROL_USER.r)) {
       this.router.navigate(['authors'])  // navigate to some another component previously to refresh db-tasks
         .then(() => this.router.navigate(['admin/db-tasks']));  // Show db tasks admin panel
     }

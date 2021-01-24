@@ -58,19 +58,6 @@ export class AdminUser {
 export class AdminLoginInfo {
   description: string;
   rights_list: Right[] = [];
-
-  checkRight(r: string): boolean {
-    return this.rights_list.some(right => right.r === r);
-  }
-
-  canDbTasks(): boolean {
-    return this.checkRight(RIGHTS.SUPER_ADMIN.r) ||
-        this.checkRight(RIGHTS.ALL_EXCEPT_CONTROL_USER.r);
-  }
-
-  canManageAdminUsers(): boolean {
-    return this.checkRight(RIGHTS.SUPER_ADMIN.r);
-  }
 }
 
 export class AdminLanguage {
