@@ -15,7 +15,7 @@ DO $do$
             RETURNS trigger AS
           $f$
           BEGIN
-            IF new.is_main_for_admins = TRUE THEN
+            IF new.is_main_for_admins = TRUE AND old.is_main_for_admins = FALSE THEN
               UPDATE public.known_languages
               SET is_main_for_admins = FALSE
               WHERE (lang_key != new.lang_key OR new.lang_key IS NULL);
