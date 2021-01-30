@@ -24,21 +24,21 @@ export class NetworkTipTranslationService extends BaseNetworkAdminService {
     );
   }
 
-  public createTip(tip: TipForTranslation, adminKey: string): Observable<AdminResponse> {
+  public createTip(tip: TipForTranslation, langKey: string, adminKey: string): Observable<AdminResponse> {
     return this.pipeAdminQueries(
-      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_add_task', {adminKey, data: tip})
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_add_tip', {adminKey, langKey, data: tip})
     );
   }
 
-  public saveTip(tip: TipForTranslation, adminKey: string): Observable<AdminResponse> {
+  public saveTip(tip: TipForTranslation, langKey: string, adminKey: string): Observable<AdminResponse> {
     return this.pipeAdminQueries(
-      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_edit_task', {adminKey, data: tip})
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_edit_tip', {adminKey, langKey, data: tip})
     );
   }
 
   public deleteTip(id: number, adminKey: string): Observable<AdminResponse> {
     return this.pipeAdminQueries(
-      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_delete_task', {adminKey, id})
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_delete_tip', {adminKey, id})
     );
   }
 

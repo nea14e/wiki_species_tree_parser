@@ -49,6 +49,11 @@
   <div class="row ml-0 mr-0 mb-2">
     <div class="col-12" [class]="isAdminMode ? 'text-success' : 'text-danger'">{{adminLoginResult}}</div>
   </div>
+  <div class="row ml-0 mr-0 mb-2">
+    <div class="col-12" [class]="isAdminMode ? 'text-success' : 'text-danger'">
+      <small>{{this.translationRoot?.translations.admin_welcome_part_2}}: {{JSON.stringify(rootData.adminLoginInfo?.rights_list)}}</small>
+    </div>
+  </div>
 
   <div *ngIf="!!rootData.adminPassword" class="row ml-0 mr-0 mb-2">
     <div *ngIf="rootData.canDbTasks()"

@@ -115,11 +115,14 @@
       </div>
       <div class="col-auto">
         <select [(ngModel)]="right.r">
-          <option [value]="RIGHTS.ALL_EXCEPT_CONTROL_USER.r" [selected]="right.r === RIGHTS.ALL_EXCEPT_CONTROL_USER.r">
-            {{RIGHTS.ALL_EXCEPT_CONTROL_USER.r}}
+          <option [value]="RIGHTS.CONTROL_DB_TASKS.r" [selected]="right.r === RIGHTS.CONTROL_DB_TASKS.r">
+            {{RIGHTS.CONTROL_DB_TASKS.r}}
           </option>
           <option [value]="RIGHTS.ADD_EDIT_ANY_LANGUAGES.r" [selected]="right.r === RIGHTS.ADD_EDIT_ANY_LANGUAGES.r">
             {{RIGHTS.ADD_EDIT_ANY_LANGUAGES.r}}
+          </option>
+          <option [value]="RIGHTS.ADD_EDIT_ANY_TIPS.r" [selected]="right.r === RIGHTS.ADD_EDIT_ANY_TIPS.r">
+            {{RIGHTS.ADD_EDIT_ANY_TIPS.r}}
           </option>
           <option *ngFor="let lang of knownLanguagesAll" [value]="lang.lang_key" [selected]="right.r === lang.lang_key">
             Edit translations: {{lang.lang_key}} - {{lang.comment}}

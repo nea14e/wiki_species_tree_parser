@@ -111,10 +111,11 @@ def get_tip_of_the_day_by_id(request, _id: int = None):
 # ====================================
 
 # Это декоратор для всех функций, где надо проверять, имеет ли админ-пользователь такое право.
-# Право указывается при использовании декоратора на конкретной функции. None означает требовать,
+# Право указывается при использовании декоратора на конкретной функции. Пустой список [] означает требовать,
 # чтобы пользователь был супер-админом, пароль которого находится не в БД, а в файле Config.py.
-# Тело запроса должно содержать пароль пользователя.
-def check_right_request(right):
+# Супер-админ имеет безусловные права на всё.
+# Тело запроса у декорируемой функции должно содержать пароль пользователя.
+def check_right_request(rights: list):
     def decorator(func):
         def wrapped(*args, **kw):
     
@@ -130,16 +131,17 @@ def check_right_request(right):
             try:
                 body = json.loads(request.body)
                 password = str(body["adminKey"])
-                if password != Config.BACKEND_ADMIN_PASSWORD:
-                    if right is None:
+                if password != Config.BACKEND_ADMIN_PASSWORD:  # Если проверка на супепадмина не пройдена
+                    if not rights:  # Если только суперадмин
                         return JsonResponse({"is_ok": False,
                                              "message_translation_key": "admin_error_super_admin_only",
                                              "message": "Only super-admin have this permission."})
+                    # Проверяем хранимкой остальные права. Должно быть хотя бы 1 из списка.
                     conn = connections["default"]
                     cur = conn.cursor()
                     cur.execute("""
-                        SELECT public.check_right(%s, %s);
-                    """, (password, right,))
+                        SELECT public.check_rights(%s, %s);
+                    """, (password, json.dumps(rights),))
                     db_response = str(cur.fetchone()[0])
                     if db_response != 'OK':
                         return JsonResponse({"is_ok": False,
@@ -247,7 +249,7 @@ def startup_start_tasks():
     # Это обычный метод, не API
 
 
-@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
+@check_right_request([RIGHTS.CONTROL_DB_TASKS])
 def admin_get_tasks(request):
     conn = connections["default"]
     cur = conn.cursor()
@@ -266,7 +268,7 @@ def admin_get_tasks(request):
     )  # unsafe указывается только для запросов БД на языке SQL
 
 
-@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
+@check_right_request([RIGHTS.CONTROL_DB_TASKS])
 def admin_add_task(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -283,7 +285,7 @@ def admin_add_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} added successfully.".format(id=task["id"])})
 
 
-@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
+@check_right_request([RIGHTS.CONTROL_DB_TASKS])
 def admin_edit_task(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -313,7 +315,7 @@ def admin_edit_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} edited successfully.".format(id=task["id"])})
 
 
-@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
+@check_right_request([RIGHTS.CONTROL_DB_TASKS])
 def admin_delete_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().stop_one_task(body["id"])  # сначала останавливаем задачу (там проверят, если она не была запущена)
@@ -326,14 +328,14 @@ def admin_delete_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} deleted successfully.".format(id=body["id"])})
 
 
-@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
+@check_right_request([RIGHTS.CONTROL_DB_TASKS])
 def admin_start_one_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().start_one_task(body["data"])
     return JsonResponse({"is_ok": True, "message": "Task {id} started successfully.".format(id=body["data"]["id"])})
 
 
-@check_right_request(RIGHTS.ALL_EXCEPT_CONTROL_USER)
+@check_right_request([RIGHTS.CONTROL_DB_TASKS])
 def admin_stop_one_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().stop_one_task(body["id"])
@@ -360,11 +362,55 @@ def admin_get_all_tips_translations(request):
     )  # unsafe указывается только для запросов БД на языке SQL
 
 
+@check_right_request([RIGHTS.ADD_EDIT_ANY_LANGUAGES, RIGHTS.ADD_EDIT_ANY_TIPS])
+def admin_add_tip(request):
+    body = json.loads(request.body)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO public.tips_of_the_day (tip_on_languages, page_url)
+        VALUES (%s, %s)
+        RETURNING id;
+    """, (json.dumps(body["data"]["tip_on_languages"]), body["data"]["page_url"]))
+    admin_user_id = int(cur.fetchone()[0])
+    return JsonResponse({"is_ok": True, "message": "User {id} added successfully.".format(id=admin_user_id)})
+
+
+@check_right_request([RIGHTS.ADD_EDIT_ANY_LANGUAGES, RIGHTS.ADD_EDIT_ANY_TIPS])
+def admin_edit_tip(request):
+    body = json.loads(request.body)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE public.tips_of_the_day
+        SET tip_on_languages = %s,
+            page_url = %s 
+        WHERE id = %s 
+    """, (json.dumps(body["data"]["tip_on_languages"]),
+          body["data"]["page_url"],
+          body["data"]["id"]
+          )
+    )
+    return JsonResponse({"is_ok": True, "message": "User {id} edited successfully.".format(id=body["data"]["id"])})
+
+
+@check_right_request([RIGHTS.ADD_EDIT_ANY_LANGUAGES, RIGHTS.ADD_EDIT_ANY_TIPS])
+def admin_delete_tip(request):
+    body = json.loads(request.body)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        DELETE FROM public.tips_of_the_day
+        WHERE id = %s;
+    """, (body["id"],))
+    return JsonResponse({"is_ok": True, "message": "User {id} deleted successfully.".format(id=body["id"])})
+
+
 # ====================================
 # Администрирование - УПРАВЛЕНИЕ АДМИН-ПОЛЬЗОВАТЕЛЯМИ
 # ====================================
 
-@check_right_request(None)
+@check_right_request([])
 def admin_get_admin_users(request):
     conn = connections["default"]
     cur = conn.cursor()
@@ -379,7 +425,7 @@ def admin_get_admin_users(request):
     )  # unsafe указывается только для запросов БД на языке SQL
 
 
-@check_right_request(None)
+@check_right_request([])
 def admin_add_admin_user(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -393,7 +439,7 @@ def admin_add_admin_user(request):
     return JsonResponse({"is_ok": True, "message": "User {id} added successfully.".format(id=admin_user_id)})
 
 
-@check_right_request(None)
+@check_right_request([])
 def admin_edit_admin_user(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -415,7 +461,7 @@ def admin_edit_admin_user(request):
     return JsonResponse({"is_ok": True, "message": "User {id} edited successfully.".format(id=body["data"]["id"])})
 
 
-@check_right_request(None)
+@check_right_request([])
 def admin_delete_admin_user(request):
     body = json.loads(request.body)
     conn = connections["default"]

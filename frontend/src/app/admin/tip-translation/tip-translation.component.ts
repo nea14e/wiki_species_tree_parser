@@ -19,11 +19,9 @@ export class TipTranslationComponent implements OnInit {
 
   tips: TipForTranslation[] = [];
   editingTip: TipForTranslation | null = null;
-  isTranslateFromYourLang = false;
   editingForLanguage: AdminLanguage | null = null;
   isTestDb: boolean | null = null;
   knownLanguagesAll: AdminLanguage[] = [];
-  mainAdminLanguage: AdminMainLanguage | null = null;
 
   constructor(public rootData: RootDataKeeperService,
               private networkAdminService: NetworkTipTranslationService,
@@ -33,7 +31,7 @@ export class TipTranslationComponent implements OnInit {
   ngOnInit(): void {
     this.reloadData();
     this.networkAdminService.getMainAdminLanguage(this.rootData.adminPassword).subscribe(data => {
-      this.mainAdminLanguage = data;
+      this.rootData.mainAdminLanguage = data;
       // список обновляется по таймеру
     }, error => {
       alert(error);
@@ -61,24 +59,16 @@ export class TipTranslationComponent implements OnInit {
     });
   }
 
-  canManageTips(): boolean {
-    return !!this.rootData.adminLoginInfo
-      && this.rootData.adminLoginInfo.rights_list.some(right =>
-        right.r === RIGHTS.SUPER_ADMIN.r ||
-        right.r === RIGHTS.ALL_EXCEPT_CONTROL_USER.r
-      );
-  }
-
   getFromLangShortTitle(): string {
-    if (this.isTranslateFromYourLang === true) {
+    if (this.rootData.isTranslateFromYourLang === true) {
       return this.rootData.translationRoot?.lang_key + ' - ' + this.rootData.translationRoot?.comment;
     } else {
-      return this.mainAdminLanguage?.lang_key + ' - ' + this.mainAdminLanguage?.comment;
+      return this.rootData.mainAdminLanguage?.lang_key + ' - ' + this.rootData.mainAdminLanguage?.comment;
     }
   }
 
   getTipShortRank(tip: TipForTranslation): string {
-    if (this.isTranslateFromYourLang === true && !!tip.rank_by_language) {
+    if (this.rootData.isTranslateFromYourLang === true && !!tip.rank_by_language) {
       return tip.rank_by_language;
     } else {
       return tip.rank_by_admin;
@@ -86,7 +76,7 @@ export class TipTranslationComponent implements OnInit {
   }
 
   getTipShortTitle(tip: TipForTranslation): string {
-    if (this.isTranslateFromYourLang === true && !!tip.title_by_language) {
+    if (this.rootData.isTranslateFromYourLang === true && !!tip.title_by_language) {
       return tip.title_by_language;
     } else if (!!tip.title_by_admin) {
       return tip.title_by_admin;
@@ -96,10 +86,10 @@ export class TipTranslationComponent implements OnInit {
   }
 
   getTipTranslationSource(tip: TipForTranslation): string {
-    if (this.isTranslateFromYourLang === true && !!tip.tip_on_languages[this.rootData.translationRoot?.lang_key]) {
+    if (this.rootData.isTranslateFromYourLang === true && !!tip.tip_on_languages[this.rootData.translationRoot?.lang_key]) {
       return tip.tip_on_languages[this.rootData.translationRoot?.lang_key];
-    } else if (!!tip.tip_on_languages[this.mainAdminLanguage?.lang_key]) {
-      return tip.tip_on_languages[this.mainAdminLanguage?.lang_key];
+    } else if (!!tip.tip_on_languages[this.rootData.mainAdminLanguage?.lang_key]) {
+      return tip.tip_on_languages[this.rootData.mainAdminLanguage?.lang_key];
     } else {
       return tip.tip_on_languages.ru || '[No tip source found]';
     }
@@ -153,8 +143,18 @@ export class TipTranslationComponent implements OnInit {
   }
 
   onSaveClick(): void {
+    const langKey = this.editingForLanguage !== null
+      ? this.editingForLanguage.lang_key
+      : (this.rootData.isTranslateFromYourLang === false
+        ? this.rootData.mainAdminLanguage?.lang_key
+        : this.rootData.translationRoot?.lang_key);
+
     if (!this.editingTip.id) {
-      this.networkAdminService.createTip(this.editingTip, this.rootData.adminPassword).subscribe(adminResponse => {
+      this.networkAdminService.createTip(
+        this.editingTip,
+        langKey,
+        this.rootData.adminPassword
+      ).subscribe(adminResponse => {
         alert(this.rootData.translationRoot?.translations.success);
         this.editingTip = null;
         // список обновляется по таймеру
@@ -162,7 +162,11 @@ export class TipTranslationComponent implements OnInit {
         alert(error);
       });
     } else {
-      this.networkAdminService.saveTip(this.editingTip, this.rootData.adminPassword).subscribe(adminResponse => {
+      this.networkAdminService.saveTip(
+        this.editingTip,
+        langKey,
+        this.rootData.adminPassword
+      ).subscribe(adminResponse => {
         alert(this.rootData.translationRoot?.translations.success);
         this.editingTip = null;
         // список обновляется по таймеру
@@ -173,7 +177,7 @@ export class TipTranslationComponent implements OnInit {
   }
 
   getPreviewForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {
-    if (lang.lang_key === this.mainAdminLanguage.lang_key) {
+    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
       return !!tip.tip_on_languages[lang.lang_key]
         ? 'V!'
         : 'X!';
@@ -187,7 +191,7 @@ export class TipTranslationComponent implements OnInit {
     if (this.isEditingTip(tip)) {
       return 'lightblue';
     }
-    if (lang.lang_key === this.mainAdminLanguage.lang_key) {
+    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
       return !!tip.tip_on_languages[lang.lang_key]
         ? '#66a366'
         : '#c45050';

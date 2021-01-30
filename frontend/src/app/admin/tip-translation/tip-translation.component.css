@@ -1,0 +1,7 @@
+.table-bordered {
+  border-collapse: separate !important;
+
+}.table-bordered th, .table-bordered td {
+  /*border-collapse: separate !important;*/
+  border: 1px black !important;
+}

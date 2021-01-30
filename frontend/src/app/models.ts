@@ -57,6 +57,10 @@ export interface Translations {
   admin_db_tasks: string;
   admin_tips_list: string;
   admin_users: string;
+  admin_translate_from_your_current_language: string;
+  admin_translate_from_main_admin_language: string;
+  show_details: string;
+  language: string;
   create: string;
   edit: string;
   delete: string;

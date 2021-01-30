@@ -7,9 +7,10 @@ export class Right {
 }
 
 export const RIGHTS = {
-  SUPER_ADMIN: new Right('[SUPER_ADMIN]'),
-  ALL_EXCEPT_CONTROL_USER: new Right('[All except control users]'),
-  ADD_EDIT_ANY_LANGUAGES: new Right('[Add/edit any languages, translations]'),
+  SUPER_ADMIN: new Right('[SUPER_ADMIN]'),  // фиктивное право, которое есть только у суперадмина и выдать никому его нельзя
+  CONTROL_DB_TASKS: new Right('[CONTROL_DB_TASKS]'),
+  ADD_EDIT_ANY_LANGUAGES: new Right('[ADD_EDIT_ANY_LANGUAGES]'),
+  ADD_EDIT_ANY_TIPS: new Right('[ADD_EDIT_ANY_TIPS]'),
 };
 
 export class DbTasksList {

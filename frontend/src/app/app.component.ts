@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
   translationRoot: TranslationRoot;
   isAdminMode = false;  // активируется по URL "/admin" и его продолжениям
   adminLoginResult: string | null = null;
+  JSON = JSON;
 
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
@@ -101,10 +102,7 @@ export class AppComponent implements OnInit {
   onAdminPasswordChange(): void {
     this.networkAdminService.tryLogin(this.rootData.adminPassword).subscribe(data => {
       this.isAdminMode = true;
-      this.adminLoginResult = this.translationRoot?.translations.admin_welcome_part_1
-        + data.description
-        + this.translationRoot?.translations.admin_welcome_part_2
-        + JSON.stringify(data.rights_list);
+      this.adminLoginResult = this.translationRoot?.translations.admin_welcome_part_1 + data.description;
       this.rootData.adminLoginInfo = data;
       this.adminRedirectWithRights();
     }, error => {
@@ -115,7 +113,7 @@ export class AppComponent implements OnInit {
   }
 
   private adminRedirectWithRights(): void {
-    if (this.rootData.checkRight(RIGHTS.ALL_EXCEPT_CONTROL_USER.r)) {
+    if (this.rootData.canDbTasks()) {
       this.router.navigate(['authors'])  // navigate to some another component previously to refresh db-tasks
         .then(() => this.router.navigate(['admin/db-tasks']));  // Show db tasks admin panel
     }

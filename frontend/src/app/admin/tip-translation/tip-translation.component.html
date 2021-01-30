@@ -4,7 +4,7 @@
 <div class="row ml-0 mr-0 mb-2">
 
   <div class="btn col-auto mr-2 mt-2"
-       *ngIf="canManageTips()"
+       *ngIf="rootData.canManageTips()"
        (click)="onCreateClick()"
        [title]="rootData.translationRoot?.translations.create"
   >
@@ -20,19 +20,38 @@
   </div>
 </div>
 
+<div class="row ml-0 mr-0 mt-4 mb-3">
+  {{rootData.translationRoot?.translations.language}}:&nbsp;&nbsp;&nbsp;
+  <label class="align-self-center mr-4">
+    <input type="radio" name="admin_translate_from"
+           [title]="rootData.translationRoot?.translations.admin_translate_from_your_current_language"
+           [value]="true"
+           [(ngModel)]="rootData.isTranslateFromYourLang"
+    >
+    {{rootData.translationRoot?.translations.admin_translate_from_your_current_language}}
+  </label>
+  <label class="align-self-center mr-4">
+    <input type="radio" name="admin_translate_from"
+           [title]="rootData.translationRoot?.translations.admin_translate_from_main_admin_language"
+           [value]="false"
+           [(ngModel)]="rootData.isTranslateFromYourLang"
+    >
+    {{rootData.translationRoot?.translations.admin_translate_from_main_admin_language}}
+  </label>
+</div>
+
 <div class="row ml-0 mr-0">
-  <table class="table container-fluid">
+  <table class="table table-bordered container-fluid">
     <thead>
     <tr>
       <th></th>
       <th>
         {{getFromLangShortTitle()}}
       </th>
-      <th></th>
+      <th>Actions</th>
       <th *ngFor="let lang of knownLanguagesAll">
         {{lang.lang_key}}
       </th>
-      <th *ngIf="canManageTips()">Actions</th>
     </tr>
     </thead>
     <tbody>
@@ -52,18 +71,21 @@
         </div>
       </td>
       <td>
-        <div class="btn col-auto mr-2 mt-2"
+        <div class="btn col-auto mr-2 mt-3"
              [title]="rootData.translationRoot?.translations.show_in_tree"
              (click)="!hasSpeciesAttached(tip) ? $event.stopPropagation() : onShowInTreeClick(tip)"
              [class]="!hasSpeciesAttached(tip) ? 'disabled' : ''">
+          <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
+        </div>
+
+        <div *ngIf="!rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
+             (click)="onEditClick(tip)"
+             [title]="rootData.translationRoot?.translations.show_details"
+        >
           <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
         </div>
-      </td>
-      <td *ngFor="let lang of knownLanguagesAll" [style.background]="getColorForTipCell(tip, lang)">
-        {{getPreviewForTipCell(tip, lang)}}
-      </td>
-      <td *ngIf="canManageTips()">
-        <div class="btn col-auto mr-2"
+
+        <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
              [ngClass]="isEditingTip(tip) ? 'active' : ''"
              (click)="onEditClick(tip)"
              [title]="rootData.translationRoot?.translations.edit"
@@ -71,14 +93,15 @@
           <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
         </div>
 
-        <div class="btn col-auto mr-2"
-             *ngIf="!isEditingTip(tip)"
+        <div *ngIf="rootData.canManageTips() && !isEditingTip(tip)" class="btn col-auto mr-2 mt-3"
              (click)="onDeleteClick(tip)"
              [title]="rootData.translationRoot?.translations.delete"
         >
           <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
         </div>
-
+      </td>
+      <td *ngFor="let lang of knownLanguagesAll" [style.background]="getColorForTipCell(tip, lang)">
+        {{getPreviewForTipCell(tip, lang)}}
       </td>
     </tr>
     </tbody>
@@ -95,16 +118,13 @@
 
   <div class="container-fluid">
 
-    <div class="row mt-4">
+    <div class="row ml-2 mr-2 mt-2">
       <div class="col-3">
-        tip id:
-      </div>
-      <div class="col-9">
-        {{editingTip.id}}
+        tip id: {{editingTip.id}}
       </div>
     </div>
 
-    <div *ngIf="hasSpeciesAttached(editingTip)" class="row mt-4">
+    <div *ngIf="hasSpeciesAttached(editingTip)" class="row ml-4 mr-2 mt-2">
       <div class="plain-list-item-img-container">
         <img *ngIf="!!editingTip.image_url" [src]="editingTip.image_url"
              class="plain-list-item-img-content">
@@ -112,24 +132,24 @@
 
       <div class="col-auto mr-auto d-flex">
         <div class="align-self-center">
-          {{rootData.translationRoot?.translations.rank_word}} {{getTipShortRank(editingTip)}}
+          {{rootData.translationRoot?.translations.rank_word}}: {{getTipShortRank(editingTip)}}
           <br/><i>Latin: {{editingTip.title_by_latin}}</i>
         </div>
       </div>
     </div>
 
-    <div class="row mt-4">
-      <div class="btn col-auto mr-2 mt-2"
+    <div class="row ml-2 mr-2 mt-2">
+      <div class="btn col-auto ml-3"
            (click)="!hasSpeciesAttached(editingTip) ? $event.stopPropagation() : onShowInTreeClick(editingTip)"
            [class]="!hasSpeciesAttached(editingTip) ? 'disabled' : ''">
-        <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
+        <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
         {{rootData.translationRoot?.translations.show_in_tree}}
       </div>
     </div>
 
-    <div class="row ml-2 mr-2">
+    <div class="row ml-2 mr-2 mt-5">
       <div class="col-12">
-        <h4>{{getFromLangShortTitle()}}:</h4>
+        <b>{{getFromLangShortTitle()}}:</b>
       </div>
     </div>
 
@@ -141,18 +161,18 @@
 
     <div class="row ml-2 mr-2">
       <div class="col-12">
-        <div *ngIf="isTranslateFromYourLang===true">
+        <div *ngIf="rootData.isTranslateFromYourLang===true">
           <textarea [(ngModel)]="editingTip.tip_on_languages[rootData.translationRoot?.lang_key]">
           </textarea>
         </div>
-        <div *ngIf="isTranslateFromYourLang===false">
-          <textarea [(ngModel)]="editingTip.tip_on_languages[mainAdminLanguage?.lang_key]">
+        <div *ngIf="rootData.isTranslateFromYourLang===false">
+          <textarea [(ngModel)]="editingTip.tip_on_languages[rootData.mainAdminLanguage?.lang_key]">
           </textarea>
         </div>
       </div>
     </div>
 
-    <div class="row ml-0 mr-0 mb-2">
+    <div class="row ml-0 mr-0 mt-4 mb-2">
       <div class="btn col-auto mr-2 mt-2"
            (click)="onCancelClick()"
       >
@@ -160,7 +180,7 @@
         {{rootData.translationRoot?.translations.cancel}}
       </div>
 
-      <div class="btn col-auto mr-2 mt-2"
+      <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-2"
            (click)="onSaveClick()"
       >
         <img src="assets/from-bootstrap/check-2.svg" class="btn-img"/>
@@ -195,18 +215,18 @@
       </div>
     </div>
 
-    <div *ngIf="hasSpeciesAttached(editingTip)" class="row mt-4">
-      <div class="btn col-auto mr-2 mt-2"
+    <div *ngIf="hasSpeciesAttached(editingTip)" class="row ml-2 mr-2 mt-4">
+      <div class="btn col-auto ml-3 mr-2 mt-2"
            (click)="hasSpeciesAttached(editingTip) ? $event.stopPropagation() : onShowInTreeClick(editingTip)"
            [class]="hasSpeciesAttached(editingTip) ? 'disabled' : ''">
-        <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
+        <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
         {{rootData.translationRoot?.translations.show_in_tree}}
       </div>
     </div>
 
-    <div class="row ml-2 mr-2">
+    <div class="row ml-2 mr-2 mt-5">
       <div class="col-6">
-        <h4>{{getFromLangShortTitle()}}:</h4>
+        <b>{{getFromLangShortTitle()}}:</b>
       </div>
       <div class="col-6">
         <h4>{{editingForLanguage?.lang_key}} - {{editingForLanguage?.comment}}:</h4>
@@ -232,7 +252,7 @@
       </div>
     </div>
 
-    <div class="row ml-0 mr-0 mb-2">
+    <div class="row ml-0 mr-0 mt-4 mb-2">
       <div class="btn col-auto mr-2 mt-2"
            (click)="onCancelClick()"
       >
