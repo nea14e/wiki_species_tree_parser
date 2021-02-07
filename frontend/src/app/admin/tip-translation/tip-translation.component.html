@@ -65,8 +65,9 @@
       <td>
         <div class="col-auto mr-auto d-flex">
           <div class="align-self-center">
-            <small>{{getTipShortRank(tip)}}</small>
-            <br/><b>{{getTipShortTitle(tip)}}</b>
+            <small *ngIf="!!tip.page_url">{{getTipShortRank(tip)}}</small>
+            <br *ngIf="!!tip.page_url"/><b *ngIf="!!tip.page_url">{{getTipShortTitle(tip)}}</b>
+            <br *ngIf="!!tip.page_url"/><small [innerHTML]="getTipShortContent(tip)"></small>
           </div>
         </div>
       </td>
@@ -93,6 +94,13 @@
           <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
         </div>
 
+        <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
+             (click)="onDuplicateClick(tip)"
+             title="Duplicate and edit"
+        >
+          <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
+        </div>
+
         <div *ngIf="rootData.canManageTips() && !isEditingTip(tip)" class="btn col-auto mr-2 mt-3"
              (click)="onDeleteClick(tip)"
              [title]="rootData.translationRoot?.translations.delete"
@@ -113,7 +121,9 @@
   <div class="row ml-2 mr-2 router-hr"></div>
 
   <h4 class="row ml-2 mr-2">
-    Edit tip:
+    {{!!editingTip.id
+    ? rootData.translationRoot?.translations.admin_edit_tip
+    : rootData.translationRoot?.translations.admin_create_tip}}:
   </h4>
 
   <div class="container-fluid">
@@ -162,11 +172,13 @@
     <div class="row ml-2 mr-2">
       <div class="col-12">
         <div *ngIf="rootData.isTranslateFromYourLang===true">
-          <textarea [(ngModel)]="editingTip.tip_on_languages[rootData.translationRoot?.lang_key]">
+          <textarea [disabled]="!rootData.canManageTips()"
+                    [(ngModel)]="editingTip.tip_on_languages[rootData.translationRoot?.lang_key]">
           </textarea>
         </div>
         <div *ngIf="rootData.isTranslateFromYourLang===false">
-          <textarea [(ngModel)]="editingTip.tip_on_languages[rootData.mainAdminLanguage?.lang_key]">
+          <textarea [disabled]="!rootData.canManageTips()"
+                    [(ngModel)]="editingTip.tip_on_languages[rootData.mainAdminLanguage?.lang_key]">
           </textarea>
         </div>
       </div>
@@ -196,7 +208,7 @@
   <div class="row ml-2 mr-2 router-hr"></div>
 
   <h4 class="row ml-2 mr-2">
-    Edit translation:
+    {{rootData.translationRoot?.translations.admin_edit_translation}}:
   </h4>
 
   <div class="container-fluid">

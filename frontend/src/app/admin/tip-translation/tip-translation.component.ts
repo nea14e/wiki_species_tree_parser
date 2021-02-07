@@ -42,12 +42,12 @@ export class TipTranslationComponent implements OnInit {
     this.networkAdminService.getTipsTranslations(this.rootData.adminPassword).subscribe(data => {
       this.tips = data.tips;
       this.isTestDb = data.is_test_db;
-      if (!!this.autoReloadTimeoutId) {
+      /*if (!!this.autoReloadTimeoutId) {
         clearTimeout(this.autoReloadTimeoutId);
       }
       this.autoReloadTimeoutId = setTimeout(() => {
         this.reloadData();
-      }, this.LIST_AUTORELOAD_INTERVAL);  // обновлять список каждые несколько секунд
+      }, this.LIST_AUTORELOAD_INTERVAL);  // обновлять список каждые несколько секунд*/
     }, error => {
       alert(error);
     });
@@ -85,6 +85,21 @@ export class TipTranslationComponent implements OnInit {
     }
   }
 
+  getTipShortContent(tip: TipForTranslation): string {
+    const maxLineLen = 30;
+    if (!!tip.page_url) {
+      return this.getTipTranslationSource(tip).substring(0, maxLineLen);
+    } else {
+      const text = this.getTipTranslationSource(tip).substring(0, 4 * maxLineLen);
+      // Разбиваем переводами строк по 30 символов длиной
+      let result = text.substr(0, maxLineLen) + '<br/>';
+      result += text.substr(maxLineLen, maxLineLen) + '<br/>';
+      result += text.substr(2 * maxLineLen, maxLineLen) + '<br/>';
+      result += text.substr(3 * maxLineLen, maxLineLen) + '<br/>';
+      return result;
+    }
+  }
+
   getTipTranslationSource(tip: TipForTranslation): string {
     if (this.rootData.isTranslateFromYourLang === true && !!tip.tip_on_languages[this.rootData.translationRoot?.lang_key]) {
       return tip.tip_on_languages[this.rootData.translationRoot?.lang_key];
@@ -97,6 +112,8 @@ export class TipTranslationComponent implements OnInit {
 
   onCreateClick(): void {
     this.editingTip = new TipForTranslation();
+    this.editingTip.tip_on_languages = {};
+    this.editingTip.page_url = null;
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -112,19 +129,19 @@ export class TipTranslationComponent implements OnInit {
   onDuplicateClick(tip: TipForTranslation): void {
     this.editingTip = JSON.parse(JSON.stringify((tip)));  // deep copy of object. Copying of object.
     this.editingTip.id = null;  // mark task as new
+    this.editingTip.tip_on_languages = {};
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
   }
 
   onDeleteClick(tip: TipForTranslation): void {
-    if (!confirm('Delete task?')) {
+    if (!confirm(this.rootData.translationRoot?.translations.delete)) {
       return;
     }
     this.networkAdminService.deleteTip(tip.id, this.rootData.adminPassword).subscribe(() => {
-      alert(this.rootData.translationRoot?.translations.success);
       this.editingTip = null;
-      // список обновляется по таймеру
+      this.reloadData();
     }, error => {
       alert(error);
     });
@@ -154,10 +171,9 @@ export class TipTranslationComponent implements OnInit {
         this.editingTip,
         langKey,
         this.rootData.adminPassword
-      ).subscribe(adminResponse => {
-        alert(this.rootData.translationRoot?.translations.success);
+      ).subscribe(() => {
         this.editingTip = null;
-        // список обновляется по таймеру
+        this.reloadData();
       }, error => {
         alert(error);
       });
@@ -166,10 +182,9 @@ export class TipTranslationComponent implements OnInit {
         this.editingTip,
         langKey,
         this.rootData.adminPassword
-      ).subscribe(adminResponse => {
-        alert(this.rootData.translationRoot?.translations.success);
+      ).subscribe(() => {
         this.editingTip = null;
-        // список обновляется по таймеру
+        this.reloadData();
       }, error => {
         alert(error);
       });

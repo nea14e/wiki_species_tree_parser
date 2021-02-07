@@ -368,8 +368,8 @@ def admin_add_tip(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO public.tips_of_the_day (tip_on_languages, page_url)
-        VALUES (%s, %s)
+        INSERT INTO public.tips_of_the_day (id, tip_on_languages, page_url)
+        VALUES ((SELECT MAX(id) + 1 FROM public.tips_of_the_day), %s, %s)
         RETURNING id;
     """, (json.dumps(body["data"]["tip_on_languages"]), body["data"]["page_url"]))
     admin_user_id = int(cur.fetchone()[0])
