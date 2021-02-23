@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import {NetworkAdminService} from '../../network-admin.service';
+import {NetworkAdminService} from '../network-admin.service';
 import {RootDataKeeperService} from '../../root-data-keeper.service';
-import {AdminLanguage, DbTask} from '../../models-admin';
+import {AdminLanguage, DbTask} from '../models-admin';
 
 @Component({
   selector: 'app-db-tasks',

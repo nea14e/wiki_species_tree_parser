@@ -1,5 +1,5 @@
 /* tslint:disable:variable-name */
-import {Translations} from "./models";
+import {Translations} from "../models";
 
 export class DbTasksList {
   tasks: DbTask[] = [];
