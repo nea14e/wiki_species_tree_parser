@@ -1,0 +1,146 @@
+<div class="row router-hr"></div>
+<h3>{{rootData.translationRoot?.translations.admin_admin_users}}</h3>
+
+<div class="row ml-0 mr-0 mb-2">
+
+  <div class="btn col-auto mr-2 mt-2"
+       (click)="onCreateClick()"
+       [title]="rootData.translationRoot?.translations.create"
+  >
+    <img src="assets/from-bootstrap/plus.svg" class="btn-img"/>
+  </div>
+
+</div>
+
+<div class="row ml-0 mr-0 mb-2">
+  <div>
+    <h4 *ngIf="!!balloonMessage" class="text-success">{{balloonMessage}}</h4>
+    <h4 *ngIf="!balloonMessage && isTestDb===true">You are working with TEST database</h4>
+    <h4 *ngIf="!balloonMessage && isTestDb===false" class="text-warning">You are working with PRODUCTION database</h4>
+    <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
+  </div>
+</div>
+
+<div class="row ml-0 mr-0">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Description</th>
+        <th>Password</th>
+        <th>Is Blocked</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users"
+          [style.background]="getColorForAdminUser(user)"
+      >
+        <td>{{user.id}}</td>
+        <td>{{user.description}}</td>
+        <td>{{user.password}}</td>
+        <td>
+          <input type="checkbox" [(ngModel)]="user.is_blocked" [disabled]="true">
+        </td>
+        <td>
+          <div class="btn col-auto mr-2"
+               [ngClass]="editingUser?.id===user.id ? 'active' : ''"
+               (click)="onEditClick(user)"
+               [title]="rootData.translationRoot?.translations.edit"
+          >
+            <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
+          </div>
+
+          <div class="btn col-auto mr-2"
+               (click)="onDuplicateClick(user)"
+               title="Duplicate and edit"
+          >
+            <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
+          </div>
+
+          <div class="btn col-auto mr-2"
+               (click)="onDeleteClick(user)"
+               [title]="rootData.translationRoot?.translations.delete"
+          >
+            <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
+          </div>
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="editingUser!==null" class="row">
+  <div class="row ml-2 mr-2 router-hr"></div>
+
+  <h4 class="row ml-2 mr-2">
+    Edit admin user:
+  </h4>
+
+  <div class="container-fluid">
+
+    <div class="row mt-4">
+      <div class="col-3">
+        id:
+      </div>
+      <div class="col-9">
+        {{editingUser.id}}
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        description<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingUser.description" style="width: 100%;">
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        password<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="text" [(ngModel)]="editingUser.password" style="width: 100%;">
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-3">
+        is_blocked<span class="text-danger">*</span>:
+      </div>
+      <div class="col-9">
+        <input type="checkbox" [(ngModel)]="editingUser.is_blocked">
+      </div>
+    </div>
+
+    <div class="row ml-0 mr-0 mt-4 mb-2">
+      <div>
+        <div *ngIf="isTestDb===true">You are working with TEST database</div>
+        <div *ngIf="isTestDb===false" class="text-warning">You are working with PRODUCTION database</div>
+        <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
+      </div>
+    </div>
+
+    <div class="row ml-0 mr-0 mb-2">
+
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onCancelClick()"
+      >
+        <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.cancel}}
+      </div>
+
+      <div class="btn col-auto mr-2 mt-2"
+           (click)="onSaveClick()"
+      >
+        <img src="assets/from-bootstrap/check-2.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.save}}
+      </div>
+
+    </div>
+
+  </div>
+</div>

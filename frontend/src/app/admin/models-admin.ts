@@ -1,5 +1,5 @@
 /* tslint:disable:variable-name */
-import {Translations} from "../models";
+import {Translations} from '../models';
 
 export class DbTasksList {
   tasks: DbTask[] = [];
@@ -29,6 +29,18 @@ export class DbTaskArgs {
   proxy: string;
   timeout = 35;
   will_success = true;
+}
+
+export class AdminUserList {
+  admin_users: AdminUser[] = [];
+  is_test_db: boolean;
+}
+
+export class AdminUser {
+  id: number;
+  description: string;
+  password: string;
+  is_blocked = false;
 }
 
 export class AdminLanguage {

@@ -269,7 +269,7 @@ def admin_get_admin_users(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.id), '[]')
+        SELECT COALESCE(json_agg(t ORDER BY t.description, t.id), '[]')
         FROM (
                SELECT *
                FROM public.admin_users
@@ -310,6 +310,7 @@ def admin_edit_admin_user(request):
     """, (body["data"]["description"],
           body["data"]["password"],
           body["data"]["is_blocked"],
+          body["data"]["id"],
           )
     )
     admin_user_id = body["data"]["id"]

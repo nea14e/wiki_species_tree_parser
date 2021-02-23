@@ -48,6 +48,7 @@ export interface Translations {
   admin_password_error: string;
   admin_logout: string;
   admin_db_tasks: string;
+  admin_admin_users: string;
   create: string;
   edit: string;
   delete: string;

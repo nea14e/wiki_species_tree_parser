@@ -77,6 +77,10 @@ export class AppComponent implements OnInit {
     this.router.navigate(['admin/db-tasks']);
   }
 
+  onToAdminUsersClick(): void {
+    this.router.navigate(['admin/admin-users']);
+  }
+
   adminLogout(): void {
     this.isAdminMode = false;
     this.rootData.adminPassword = null;

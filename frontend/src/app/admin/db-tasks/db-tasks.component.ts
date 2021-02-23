@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {NetworkAdminService} from '../network-admin.service';
+import {DbTasksNetworkService} from './db-tasks-network.service';
 import {RootDataKeeperService} from '../../root-data-keeper.service';
 import {AdminLanguage, DbTask} from '../models-admin';
 
@@ -28,7 +28,7 @@ export class DbTasksComponent implements OnInit {
   balloonTimeoutId: number | null = null;
 
   constructor(public rootData: RootDataKeeperService,
-              private networkAdminService: NetworkAdminService) { }
+              private networkAdminService: DbTasksNetworkService) { }
 
   ngOnInit(): void {
     this.reloadList();
