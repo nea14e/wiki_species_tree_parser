@@ -13,9 +13,6 @@ import {AdminUsersNetworkService} from './admin-users-network.service';
 })
 export class AdminUsersComponent implements OnInit {
 
-  LIST_AUTORELOAD_INTERVAL = 2000;  // TODO remove it
-  autoReloadTimeoutId: number | null = null;
-
   users: AdminUser[] = [];
   isTestDb: boolean | null = null;
   editingUser: AdminUser | null = null;
@@ -41,12 +38,6 @@ export class AdminUsersComponent implements OnInit {
     this.networkAdminService.getAdminUsers(this.rootData.adminPassword).subscribe(data => {
       this.users = data.admin_users;
       this.isTestDb = data.is_test_db;
-      if (!!this.autoReloadTimeoutId) {
-        clearTimeout(this.autoReloadTimeoutId);
-      }
-      this.autoReloadTimeoutId = setTimeout(() => {
-        this.reloadList();
-      }, this.LIST_AUTORELOAD_INTERVAL);  // обновлять список каждые несколько секунд
     }, error => {
       alert(error || this.rootData.translationRoot.translations.network_error);  // пришедший текст ошибки или стандартный
     });
