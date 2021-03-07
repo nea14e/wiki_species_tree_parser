@@ -11,19 +11,14 @@
 }
 
 .btn {
-  background-color: thistle;
-  border: 2px solid darkviolet;
+  background-color: #cddbfb;
+  border: 2px solid black;
   font-size: 1.3rem;
   border-radius: 0.5rem;
 }
 
 .btn:hover:not(:disabled):not(.disabled) {
-  background-color: orchid;
-  border: 2px solid black;
-}
-
-.btn.active:not(:disabled):not(.disabled) {
-  background-color: var(--item-accent);
+  background-color: #849dd6;
   border: 2px solid black;
 }
 
@@ -69,6 +64,8 @@
   box-sizing: content-box;
   background-color: var(--item-color-0);
   cursor: pointer;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 .plain-list-item-img-container {
