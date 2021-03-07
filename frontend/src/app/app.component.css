@@ -14,6 +14,7 @@
   background-color: thistle;
   border: 2px solid darkviolet;
   font-size: 1.3rem;
+  border-radius: 0.5rem;
 }
 
 .btn:hover:not(:disabled):not(.disabled) {
