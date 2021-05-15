@@ -1,5 +1,6 @@
 class RIGHTS:
     SUPER_ADMIN = "[SUPER_ADMIN]"  # Это право не может быть никому выдано и проверяется по паролю из Config.py
-    CONTROL_DB_TASKS = "[CONTROL_DB_TASKS]"
-    ADD_EDIT_ANY_LANGUAGES = "[ADD_EDIT_ANY_LANGUAGES]"
-    ADD_EDIT_ANY_TIPS = "[ADD_EDIT_ANY_TIPS]"
+    EDIT_DB_TASKS = "[EDIT_DB_TASKS]"
+    EDIT_LANGUAGES_LIST = "[EDIT_LANGUAGES_LIST]"
+    EDIT_TIPS_LIST = "[EDIT_TIPS_LIST]"
+    # Кроме того, есть права переводить на каждый из языков
