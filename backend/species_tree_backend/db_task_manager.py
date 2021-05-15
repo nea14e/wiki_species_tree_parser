@@ -32,6 +32,9 @@ class DbTaskManager:
         # Словарь с очередями process_manager.Queue() для получения сообщений от задач. Ключи - task_id
         self.processes_logs = {}
 
+        # Список id задач, процессы для которых были завершены пользователем принудительно
+        # Нужен, чтобы не помечать их как завершённые успешно или с ошибкой, а оставить is_success = None
+        self.killed_by_user_ids = []
         # Список id задач, процессы для которых были запущены и уже завершились (нормально или с ошибкой).
         # Нужен, чтобы помечать задачи как завершённые только по одному разу на каждый запуск
         self.finished_ids = []
@@ -79,6 +82,8 @@ class DbTaskManager:
         if task_id in self.recent_stderr_logs:
             del self.recent_stderr_logs[task_id]
         self.recent_stderr_logs[task_id] = list()
+        if task_id in self.killed_by_user_ids:
+            self.killed_by_user_ids.remove(task_id)
         if task_id in self.finished_ids:
             self.finished_ids.remove(task_id)
 
@@ -116,8 +121,12 @@ class DbTaskManager:
 
     def stop_one_task(self, task_id: int):
         if task_id in self.processes_running:
-            self.processes_running[task_id].kill()
+            self.recent_stdout_logs[task_id].append("[Task has been stopped by user.]")
+            self.killed_by_user_ids.append(task_id)
             self.finished_ids.append(task_id)
+
+            self.processes_running[task_id].kill()
+
             if task_id in self.check_one_finished_threads:
                 del self.check_one_finished_threads[task_id]  # служебный поток из этого словаря остановится сам, когда ему надо
             if task_id in self.read_one_stdout_threads:
@@ -216,8 +225,12 @@ class DbTaskManager:
     # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестарте сервера.
     # Не вызывать при отмене задачи пользователем.
     def _mark_task_as_completed(self, task_id: int):
-        # успех = возврат кода 0 И лог ошибок пустой
-        is_success = len(self.recent_stderr_logs[task_id]) == 0
+        if task_id in self.killed_by_user_ids:
+            # если завершена принудительно пользователем, то успех = None
+            is_success = None
+        else:
+            # успех = лог ошибок пустой
+            is_success = len(self.recent_stderr_logs[task_id]) == 0
 
         self.tasks[task_id]["is_success"] = is_success  # у автосгенерированных задач при выдаче берётся отсюда
 
