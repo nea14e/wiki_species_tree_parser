@@ -1,5 +1,6 @@
 import json
 
+import django
 from django.db import connections
 from django.http import JsonResponse
 
@@ -232,19 +233,34 @@ def admin_get_main_admin_language(request):
 # Администрирование через фронтэнд - ЗАДАЧИ БД
 # ====================================
 
+MIGRATION_TASK = {
+    "id": -1,
+    "stage": "0",
+    "python_exe": "python3",
+    "args": "{}",
+    "is_rerun_on_startup": True,
+    "is_resume_on_startup": False,
+    "is_success": None,
+    "last_crash_message": None,
+    "is_auto_created": True
+}
 
 # Это обычный метод, не API
 def startup_start_tasks():
     conn = connections["default"]
     cur = conn.cursor()
-    cur.execute("""
-        SELECT COALESCE(json_agg(t ORDER BY t.stage, t.id), '[]')
-        FROM (
-               SELECT *
-               FROM public.tasks
-          ) t;
-    """)
-    tasks = list(cur.fetchone()[0])
+    try:
+        cur.execute("""
+            SELECT COALESCE(json_agg(t ORDER BY t.stage, t.id), '[]')
+            FROM (
+                   SELECT *
+                   FROM public.tasks
+              ) t;
+        """)
+        tasks = list(cur.fetchone()[0])
+    except django.db.utils.ProgrammingError:
+        tasks = []
+    tasks.append(MIGRATION_TASK)
     DbTaskManager.get_instance().start_tasks_on_startup(tasks)  # запускаем (точнее, продолжаем) задачи парсинга по умолчанию
     # Это обычный метод, не API
 
@@ -261,6 +277,7 @@ def admin_get_tasks(request):
           ) t;
     """)
     tasks = list(cur.fetchone()[0])
+    tasks.append(MIGRATION_TASK)
     tasks = DbTaskManager.get_instance().get_tasks_states(tasks)  # добавлем к задачам их состояние запущена/не запущена, последние логи
     return JsonResponse(
         {"tasks": tasks, "is_test_db": Config.BACKEND_IS_USE_TEST_DB},

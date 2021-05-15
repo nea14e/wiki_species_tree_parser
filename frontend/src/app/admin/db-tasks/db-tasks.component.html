@@ -37,9 +37,17 @@
           [style.background]="getColorForTask(task)"
       >
         <td>{{task.id}}</td>
-        <td>{{task.stage}}</td>
         <td>
-          <span *ngIf="task.stage==='0'">-</span>
+          <span *ngIf="task.stage==='0'">0 - init DB / migrate DB</span>
+          <span *ngIf="task.stage==='1'">1 - populate list</span>
+          <span *ngIf="task.stage==='2'">2 - parse</span>
+          <span *ngIf="task.stage==='3'">3 - correct parents</span>
+          <span *ngIf="task.stage==='4'">4 - update leaves count</span>
+          <span *ngIf="task.stage==='parse_language'">parse_language</span>
+          <span *ngIf="task.stage==='test_task'">test_task</span>
+        </td>
+        <td>
+          <span *ngIf="task.is_auto_created===true">[Created automatically]</span>
           <span *ngIf="task.stage==='1'">"{{task.args.from_title}}" - "{{task.args.to_title}}"</span>
           <span *ngIf="task.stage==='2'">skip_parsed_interval: {{task.args.skip_parsed_interval}}, "{{task.args.where}}"</span>
           <span *ngIf="task.stage==='3'">where: "{{task.args.where}}"</span>
@@ -87,22 +95,24 @@
           </div>
 
           <div class="btn col-auto mr-2"
-               [ngClass]="editingTask?.id===task.id ? 'active' : ''"
-               (click)="onEditClick(task)"
+               [ngClass]="(editingTask?.id===task.id ? 'active' : '') + (isEditTaskDisabled(task) ? 'disabled' : '')"
+               (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onEditClick(task)"
                [title]="rootData.translationRoot?.translations.edit"
           >
             <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
           </div>
 
           <div class="btn col-auto mr-2"
-               (click)="onDuplicateClick(task)"
+               [ngClass]="isEditTaskDisabled(task) ? 'disabled' : ''"
+               (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onDuplicateClick(task)"
                title="Duplicate and edit"
           >
             <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
           </div>
 
           <div class="btn col-auto mr-2"
-               (click)="onDeleteClick(task)"
+               [ngClass]="isEditTaskDisabled(task) ? 'disabled' : ''"
+               (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onDeleteClick(task)"
                [title]="rootData.translationRoot?.translations.delete"
           >
             <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
@@ -138,7 +148,6 @@
       </div>
       <div class="col-9">
         <select [(ngModel)]="editingTask.stage" (ngModelChange)="setTaskRerunDefaults(editingTask)">
-          <option value="0" [selected]="editingTask.stage==='0'">0 - init DB / migrate DB</option>
           <option value="1" [selected]="editingTask.stage==='1'">1 - populate list</option>
           <option value="2" [selected]="editingTask.stage==='2'">2 - parse (items from stage 1)</option>
           <option value="3" [selected]="editingTask.stage==='3'">3 - correct parents (items from stage 2)</option>

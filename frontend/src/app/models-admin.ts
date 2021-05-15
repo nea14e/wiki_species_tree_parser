@@ -30,6 +30,7 @@ export class DbTask {
   is_running_now: boolean;
   recent_stdout: string;
   recent_stderr: string;
+  is_auto_created = false;
 }
 
 export class DbTaskArgs {

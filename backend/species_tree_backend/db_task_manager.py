@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 import time
@@ -24,8 +25,11 @@ class DbTaskManager:
         # Для паттерна "Singleton"
         DbTaskManager.__instance = self
 
-        # Словарь с самими объектами процессов под каждую запущенную задачу. Ключи - task_id
+        # Словарь с самими объектами задач под каждую запущенную задачу. Ключи - task_id
+        self.tasks = {}
+        # Словарь с объектами процессов под каждую запущенную задачу. Ключи - task_id
         self.processes_running = {}
+        # Словарь с очередями process_manager.Queue() для получения сообщений от задач. Ключи - task_id
         self.processes_logs = {}
 
         # Список id задач, процессы для которых были запущены и уже завершились (нормально или с ошибкой).
@@ -93,6 +97,8 @@ class DbTaskManager:
         self.processes_running[task_id] = proc
         proc.start()
 
+        self.tasks[task_id] = task
+
         thread = threading.Thread(target=self._check_one_finished_thread, args=(task_id,))  # Обновление логов/состояний процессов по таймеру
         self.check_one_finished_threads[task_id] = thread
         thread.start()
@@ -121,8 +127,8 @@ class DbTaskManager:
     # Далее внутренние методы класса:
     # =============================================
 
-    # Составляет аргументов  строки для прuцесса парсера
-    # (т.к. он изанчально был расчитан на самостоятельный запуск из консоли)
+    # Составляет аргументов строки для процесса парсера
+    # (т.к. он изначально был рассчитан на самостоятельный запуск из консоли)
     def _get_args_from_task(self, task: dict):
         # args = [str(task["python_exe"]), PARSER_PATH]
         args = [PARSER_PATH]
@@ -195,7 +201,7 @@ class DbTaskManager:
 
             time.sleep(Config.LOGS_UPDATE_TIMER)
 
-    # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
+    # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестарте сервера.
     # Не вызывать при отмене задачи пользователем.
     def _mark_task_as_uncompleted(self, task_id: int):
         conn = connections["default"]
@@ -207,11 +213,13 @@ class DbTaskManager:
         """, (task_id,))
         conn.commit()
 
-    # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестрарте сервера.
+    # Помечает в БД задачу как завершённую (нормально или с ошибкой), влияет на автозапуск задач при рестарте сервера.
     # Не вызывать при отмене задачи пользователем.
     def _mark_task_as_completed(self, task_id: int):
         # успех = возврат кода 0 И лог ошибок пустой
         is_success = len(self.recent_stderr_logs[task_id]) == 0
+
+        self.tasks[task_id]["is_success"] = is_success  # у автосгенерированных задач при выдаче берётся отсюда
 
         conn = connections["default"]
         cur = conn.cursor()

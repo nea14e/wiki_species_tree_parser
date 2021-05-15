@@ -76,6 +76,10 @@ export class DbTasksComponent implements OnInit {
     }, 250);
   }
 
+  isEditTaskDisabled(task: DbTask): boolean {
+    return task.is_auto_created === true;
+  }
+
   onEditClick(task: DbTask): void {
     this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. To can be enabled to cancel changes
     setTimeout(() => {
