@@ -113,9 +113,15 @@ export class AppComponent implements OnInit {
   }
 
   private adminRedirectWithRights(): void {
-    if (this.rootData.canDbTasks()) {
+    if (this.rootData.canManageDbTasks()) {
       this.router.navigate(['authors'])  // navigate to some another component previously to refresh db-tasks
         .then(() => this.router.navigate(['admin/db-tasks']));  // Show db tasks admin panel
+      return;
+    }
+    if (this.rootData.canSeeTipTranslation()) {
+      this.router.navigate(['authors'])  // navigate to some another component previously to refresh db-tasks
+        .then(() => this.router.navigate(['tip-translation']));  // Show db tasks admin panel
+      return;
     }
   }
 }

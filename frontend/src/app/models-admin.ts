@@ -8,10 +8,10 @@ export class Right {
 
 export const RIGHTS = {
   SUPER_ADMIN: new Right('[SUPER_ADMIN]'),  // фиктивное право, которое есть только у суперадмина и выдать никому его нельзя
-  CONTROL_DB_TASKS: new Right('[CONTROL_DB_TASKS]'),
-  ADD_EDIT_ANY_LANGUAGES: new Right('[ADD_EDIT_ANY_LANGUAGES]'),
-  ADD_EDIT_ANY_TIPS: new Right('[ADD_EDIT_ANY_TIPS]'),
-};
+  EDIT_DB_TASKS: new Right('[EDIT_DB_TASKS]'),
+  EDIT_LANGUAGES_LIST: new Right('[EDIT_LANGUAGES_LIST]'),
+  EDIT_TIPS_LIST: new Right('[EDIT_TIPS_LIST]'),
+};  // Кроме того, есть права переводить на каждый из языков
 
 export class DbTasksList {
   tasks: DbTask[] = [];

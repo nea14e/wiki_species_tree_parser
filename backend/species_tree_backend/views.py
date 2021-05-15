@@ -265,7 +265,7 @@ def startup_start_tasks():
     # Это обычный метод, не API
 
 
-@check_right_request([RIGHTS.CONTROL_DB_TASKS])
+@check_right_request([RIGHTS.EDIT_DB_TASKS])
 def admin_get_tasks(request):
     conn = connections["default"]
     cur = conn.cursor()
@@ -285,7 +285,7 @@ def admin_get_tasks(request):
     )  # unsafe указывается только для запросов БД на языке SQL
 
 
-@check_right_request([RIGHTS.CONTROL_DB_TASKS])
+@check_right_request([RIGHTS.EDIT_DB_TASKS])
 def admin_add_task(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -302,7 +302,7 @@ def admin_add_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} added successfully.".format(id=task["id"])})
 
 
-@check_right_request([RIGHTS.CONTROL_DB_TASKS])
+@check_right_request([RIGHTS.EDIT_DB_TASKS])
 def admin_edit_task(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -332,7 +332,7 @@ def admin_edit_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} edited successfully.".format(id=task["id"])})
 
 
-@check_right_request([RIGHTS.CONTROL_DB_TASKS])
+@check_right_request([RIGHTS.EDIT_DB_TASKS])
 def admin_delete_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().stop_one_task(body["id"])  # сначала останавливаем задачу (там проверят, если она не была запущена)
@@ -345,14 +345,14 @@ def admin_delete_task(request):
     return JsonResponse({"is_ok": True, "message": "Task {id} deleted successfully.".format(id=body["id"])})
 
 
-@check_right_request([RIGHTS.CONTROL_DB_TASKS])
+@check_right_request([RIGHTS.EDIT_DB_TASKS])
 def admin_start_one_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().start_one_task(body["data"])
     return JsonResponse({"is_ok": True, "message": "Task {id} started successfully.".format(id=body["data"]["id"])})
 
 
-@check_right_request([RIGHTS.CONTROL_DB_TASKS])
+@check_right_request([RIGHTS.EDIT_DB_TASKS])
 def admin_stop_one_task(request):
     body = json.loads(request.body)
     DbTaskManager.get_instance().stop_one_task(body["id"])
@@ -379,7 +379,7 @@ def admin_get_all_tips_translations(request):
     )  # unsafe указывается только для запросов БД на языке SQL
 
 
-@check_right_request([RIGHTS.ADD_EDIT_ANY_LANGUAGES, RIGHTS.ADD_EDIT_ANY_TIPS])
+@check_right_request([RIGHTS.EDIT_LANGUAGES_LIST, RIGHTS.EDIT_TIPS_LIST])
 def admin_add_tip(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -393,7 +393,7 @@ def admin_add_tip(request):
     return JsonResponse({"is_ok": True, "message": "User {id} added successfully.".format(id=admin_user_id)})
 
 
-@check_right_request([RIGHTS.ADD_EDIT_ANY_LANGUAGES, RIGHTS.ADD_EDIT_ANY_TIPS])
+@check_right_request([RIGHTS.EDIT_LANGUAGES_LIST, RIGHTS.EDIT_TIPS_LIST])
 def admin_edit_tip(request):
     body = json.loads(request.body)
     conn = connections["default"]
@@ -411,7 +411,7 @@ def admin_edit_tip(request):
     return JsonResponse({"is_ok": True, "message": "User {id} edited successfully.".format(id=body["data"]["id"])})
 
 
-@check_right_request([RIGHTS.ADD_EDIT_ANY_LANGUAGES, RIGHTS.ADD_EDIT_ANY_TIPS])
+@check_right_request([RIGHTS.EDIT_LANGUAGES_LIST, RIGHTS.EDIT_TIPS_LIST])
 def admin_delete_tip(request):
     body = json.loads(request.body)
     conn = connections["default"]

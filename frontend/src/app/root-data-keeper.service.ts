@@ -27,11 +27,11 @@ export class RootDataKeeperService {
       );
   }
 
-  canDbTasks(): boolean {
+  canManageDbTasks(): boolean {
     return !!this.adminLoginInfo
       && this.adminLoginInfo.rights_list.some(right =>
         right.r === RIGHTS.SUPER_ADMIN.r
-        || right.r === RIGHTS.CONTROL_DB_TASKS.r
+        || right.r === RIGHTS.EDIT_DB_TASKS.r
       );
   }
 
@@ -39,7 +39,7 @@ export class RootDataKeeperService {
     return !!this.adminLoginInfo
       && this.adminLoginInfo.rights_list.some(right =>
         right.r === RIGHTS.SUPER_ADMIN.r
-        || right.r === RIGHTS.ADD_EDIT_ANY_LANGUAGES.r
+        || right.r === RIGHTS.EDIT_LANGUAGES_LIST.r
       );
   }
 
@@ -47,8 +47,7 @@ export class RootDataKeeperService {
     return !!this.adminLoginInfo
       && this.adminLoginInfo.rights_list.some(right =>
         right.r === RIGHTS.SUPER_ADMIN.r
-        || right.r === RIGHTS.ADD_EDIT_ANY_LANGUAGES.r
-        || right.r === RIGHTS.ADD_EDIT_ANY_TIPS.r
+        || right.r === RIGHTS.EDIT_TIPS_LIST.r
       );
   }
 
@@ -56,14 +55,16 @@ export class RootDataKeeperService {
     return !!this.adminLoginInfo
       && this.adminLoginInfo.rights_list.some(right =>
         right.r === RIGHTS.SUPER_ADMIN.r
-        || right.r === RIGHTS.ADD_EDIT_ANY_LANGUAGES.r
-        || right.r === RIGHTS.ADD_EDIT_ANY_TIPS.r
+        || right.r === RIGHTS.EDIT_TIPS_LIST.r
         || right.r === langKey
       );
   }
 
   canSeeTipTranslation(): boolean {
-    return !!this.adminLoginInfo;
+    return !!this.adminLoginInfo
+      && this.adminLoginInfo.rights_list.some(right =>
+        right.r !== RIGHTS.EDIT_LANGUAGES_LIST.r
+      );
   }
 
   canManageAdminUsers(): boolean {
