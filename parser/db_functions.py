@@ -234,7 +234,11 @@ class DbListItemsIterator:
     def __init__(self, connection_tag, query):
         self.conn1 = DbConnectionsHandler.get_connection(connection_tag)
         self.cur1 = self.conn1.cursor()
-        self.cur1.execute(query)
+        try:
+            self.cur1.execute(query)
+            self.conn1.commit()
+        except BaseException:
+            self.conn1.rollback()
 
     def rowcount(self):
         return self.cur1.rowcount
@@ -251,8 +255,11 @@ class DbExecuteNonQuery:
     def execute(connection_tag, query):
         conn1 = DbConnectionsHandler.get_connection(connection_tag)
         cur1 = conn1.cursor()
-        cur1.execute(query)
-        conn1.commit()
+        try:
+            cur1.execute(query)
+            conn1.commit()
+        except BaseException:
+            conn1.rollback()
 
     @staticmethod
     def execute_file(connection_tag, path):
@@ -265,8 +272,11 @@ class DbExecuteNonQuery:
             query = f.read()
         conn1 = DbConnectionsHandler.get_connection(connection_tag)
         cur1 = conn1.cursor()
-        cur1.execute(query)
-        conn1.commit()
+        try:
+            cur1.execute(query)
+            conn1.commit()
+        except BaseException:
+            conn1.rollback()
 
 
 def quote_nullable(val):
