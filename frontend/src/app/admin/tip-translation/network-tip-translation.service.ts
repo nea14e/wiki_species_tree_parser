@@ -42,4 +42,10 @@ export class NetworkTipTranslationService extends BaseNetworkAdminService {
     );
   }
 
+  public saveTipTranslation(langKey: string, id: number, translationOnLang: string, adminKey: string): Observable<AdminResponse> {
+    return this.pipeAdminQueries(
+      this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_edit_tip_translation', {adminKey, id, langKey, translationOnLang})
+    );
+  }
+
 }

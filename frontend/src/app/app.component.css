@@ -1,4 +1,4 @@
-::ng-deep  :root {
+::ng-deep :root {
   --item-color-0: #cddbfb;
   --item-color-1: #849dd6;
   --item-expanded-0: #7a84c9;
@@ -24,7 +24,7 @@
 }
 
 .btn.disabled, .btn:disabled {
-    opacity: .40;
+  opacity: .40;
 }
 
 .btn-img {
@@ -37,6 +37,8 @@
   height: 3px;
   background-color: var(--item-selected-borders);
   margin: 1rem 0;
+  border: #9e7bb9 2px solid;
+  box-sizing: content-box;
 }
 
 .in-section-hr {
@@ -56,6 +58,16 @@
   --search-item-size: 5rem;
 }
 
+.resize-horizontal {
+  width: 100%;
+  height: fit-content;
+  resize: vertical;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
 .plain-list-item {
   width: 100%;
   height: var(--search-item-size);
@@ -64,7 +76,6 @@
   border: 1px solid var(--item-accent);
   box-sizing: content-box;
   background-color: var(--item-color-0);
-  cursor: pointer;
   border-radius: 0.5rem;
   overflow: hidden;
 }

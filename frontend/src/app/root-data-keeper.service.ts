@@ -51,7 +51,7 @@ export class RootDataKeeperService {
       );
   }
 
-  canTranslateLanguage(langKey: string): boolean {
+  canTranslateTipToLanguage(langKey: string): boolean {
     return !!this.adminLoginInfo
       && this.adminLoginInfo.rights_list.some(right =>
         right.r === RIGHTS.SUPER_ADMIN.r

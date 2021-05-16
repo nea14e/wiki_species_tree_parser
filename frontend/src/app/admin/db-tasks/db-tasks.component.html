@@ -105,7 +105,7 @@
           <div class="btn col-auto mr-2"
                [ngClass]="isEditTaskDisabled(task) ? 'disabled' : ''"
                (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onDuplicateClick(task)"
-               title="Duplicate and edit"
+               [title]="rootData.translationRoot?.translations.duplicate_and_edit"
           >
             <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
           </div>

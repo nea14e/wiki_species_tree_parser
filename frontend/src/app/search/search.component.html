@@ -14,7 +14,7 @@
 <div class="row ml-0 d-flex justify-content-center">
   <div class="col-8">
 
-    <div *ngFor="let item of resultItems" class="plain-list-item row" (click)="onItemClick(item)">
+    <div *ngFor="let item of resultItems" class="plain-list-item pointer row" (click)="onItemClick(item)">
 
       <div class="plain-list-item-img-container">
         <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language"

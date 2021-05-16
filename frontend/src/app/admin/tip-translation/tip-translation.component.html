@@ -46,7 +46,7 @@
     <tr>
       <th></th>
       <th>
-        {{getFromLangShortTitle()}}
+        {{getLangShortTitleFrom()}}
       </th>
       <th>Actions</th>
       <th *ngFor="let lang of knownLanguagesAll">
@@ -66,7 +66,7 @@
         <div class="col-auto mr-auto d-flex">
           <div class="align-self-center">
             <small *ngIf="!!tip.page_url">{{getTipShortRank(tip)}}</small>
-            <br *ngIf="!!tip.page_url"/><b *ngIf="!!tip.page_url">{{getTipShortTitle(tip)}}</b>
+            <br *ngIf="!!tip.page_url"/><b *ngIf="!!tip.page_url">{{getTipShortTitleFrom(tip)}}</b>
             <br *ngIf="!!tip.page_url"/><small [innerHTML]="getTipShortContent(tip)"></small>
           </div>
         </div>
@@ -96,7 +96,7 @@
 
         <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
              (click)="onDuplicateClick(tip)"
-             title="Duplicate and edit"
+             [title]="rootData.translationRoot?.translations.duplicate_and_edit"
         >
           <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
         </div>
@@ -108,7 +108,10 @@
           <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
         </div>
       </td>
-      <td *ngFor="let lang of knownLanguagesAll" [style.background]="getColorForTipCell(tip, lang)">
+      <td *ngFor="let lang of knownLanguagesAll"
+          [style.background]="getColorForTipCell(tip, lang)"
+          (click)="!rootData.canTranslateTipToLanguage(lang.lang_key) ? $event.stopPropagation() : onEditTranslationClick(tip, lang)"
+          [ngClass]="rootData.canTranslateTipToLanguage(lang.lang_key) ? 'pointer' : ''">
         {{getPreviewForTipCell(tip, lang)}}
       </td>
     </tr>
@@ -117,7 +120,7 @@
 </div>
 
 <!--Редактирование самого факта-->
-<div *ngIf="editingTip!==null && editingForLanguage===null" class="row">
+<div *ngIf="editingTip!==null && editingLanguage===null" class="row">
   <div class="row ml-2 mr-2 router-hr"></div>
 
   <h4 class="row ml-2 mr-2">
@@ -130,7 +133,7 @@
 
     <div class="row ml-2 mr-2 mt-2">
       <div class="col-3">
-        tip id: {{editingTip.id}}
+        id: {{editingTip.id}}
       </div>
     </div>
 
@@ -159,28 +162,30 @@
 
     <div class="row ml-2 mr-2 mt-5">
       <div class="col-12">
-        <b>{{getFromLangShortTitle()}}:</b>
+        {{getLangShortTitleFrom()}}:
       </div>
     </div>
 
     <div class="row ml-2 mr-2">
       <div class="col-12">
-        <h4>{{getTipShortTitle(editingTip)}}</h4>
+        <h4>{{getTipShortTitleFrom(editingTip)}}</h4>
       </div>
     </div>
 
     <div class="row ml-2 mr-2">
       <div class="col-12">
-        <div *ngIf="rootData.isTranslateFromYourLang===true">
-          <textarea [disabled]="!rootData.canManageTips()"
-                    [(ngModel)]="editingTip.tip_on_languages[rootData.translationRoot?.lang_key]">
+        <textarea *ngIf="rootData.isTranslateFromYourLang===true"
+                  [disabled]="!rootData.canManageTips()"
+                  [(ngModel)]="editingTip.tip_on_languages[rootData.translationRoot?.lang_key]"
+                  (keyup)="autoGrowTextArea($event)"
+                  class="resize-horizontal">
+        </textarea>
+        <textarea *ngIf="rootData.isTranslateFromYourLang===false"
+                  [disabled]="!rootData.canManageTips()"
+                  [(ngModel)]="editingTip.tip_on_languages[rootData.mainAdminLanguage?.lang_key]"
+                  (keyup)="autoGrowTextArea($event)"
+                  class="resize-horizontal">
           </textarea>
-        </div>
-        <div *ngIf="rootData.isTranslateFromYourLang===false">
-          <textarea [disabled]="!rootData.canManageTips()"
-                    [(ngModel)]="editingTip.tip_on_languages[rootData.mainAdminLanguage?.lang_key]">
-          </textarea>
-        </div>
       </div>
     </div>
 
@@ -203,8 +208,8 @@
   </div>
 </div>
 
-
-<div *ngIf="editingTip!==null && editingForLanguage!==null" class="row">
+<!--Редактирование перевода факта на какой-либо язык-->
+<div *ngIf="editingTip!==null && editingLanguage!==null" class="row">
   <div class="row ml-2 mr-2 router-hr"></div>
 
   <h4 class="row ml-2 mr-2">
@@ -213,7 +218,7 @@
 
   <div class="container-fluid">
 
-    <div *ngIf="hasSpeciesAttached(editingTip)" class="row mt-4">
+    <div *ngIf="hasSpeciesAttached(editingTip)" class="row ml-4 mr-2 mt-2">
       <div class="plain-list-item-img-container">
         <img *ngIf="!!editingTip.image_url" [src]="editingTip.image_url"
              class="plain-list-item-img-content">
@@ -221,14 +226,14 @@
 
       <div class="col-auto mr-auto d-flex">
         <div class="align-self-center">
-          {{rootData.translationRoot?.translations.rank_word}} {{getTipShortRank(editingTip)}}
+          {{rootData.translationRoot?.translations.rank_word}}: {{getTipShortRank(editingTip)}}
           <br/><i>Latin: {{editingTip.title_by_latin}}</i>
         </div>
       </div>
     </div>
 
-    <div *ngIf="hasSpeciesAttached(editingTip)" class="row ml-2 mr-2 mt-4">
-      <div class="btn col-auto ml-3 mr-2 mt-2"
+    <div *ngIf="hasSpeciesAttached(editingTip)" class="row ml-2 mr-2 mt-2">
+      <div class="btn col-auto ml-3"
            (click)="hasSpeciesAttached(editingTip) ? $event.stopPropagation() : onShowInTreeClick(editingTip)"
            [class]="hasSpeciesAttached(editingTip) ? 'disabled' : ''">
         <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
@@ -238,19 +243,19 @@
 
     <div class="row ml-2 mr-2 mt-5">
       <div class="col-6">
-        <b>{{getFromLangShortTitle()}}:</b>
+        {{getLangShortTitleFrom()}}:
       </div>
       <div class="col-6">
-        <h4>{{editingForLanguage?.lang_key}} - {{editingForLanguage?.comment}}:</h4>
+        {{getLangShortTitleTo()}}:
       </div>
     </div>
 
     <div class="row ml-2 mr-2">
       <div class="col-6">
-        <h4>{{getTipShortTitle(editingTip)}}</h4>
+        <h4>{{getTipShortTitleFrom(editingTip)}}</h4>
       </div>
       <div class="col-6">
-        <h4>{{editingForLanguage?.lang_key}} - {{editingForLanguage?.comment}}:</h4>
+        <h4>{{getTipShortTitleTo(editingTip)}}</h4>
       </div>
     </div>
 
@@ -259,7 +264,9 @@
         {{getTipTranslationSource(editingTip)}}
       </div>
       <div class="col-6">
-        <textarea [(ngModel)]="editingTip.tip_on_languages[editingForLanguage.lang_key]">
+        <textarea [(ngModel)]="editingTip.tip_on_languages[editingLanguage.lang_key]"
+                  (keyup)="autoGrowTextArea($event)"
+                  class="resize-horizontal">
         </textarea>
       </div>
     </div>
@@ -273,7 +280,7 @@
       </div>
 
       <div class="btn col-auto mr-2 mt-2"
-           (click)="onSaveClick()"
+           (click)="onSaveTranslationClick()"
       >
         <img src="assets/from-bootstrap/check-2.svg" class="btn-img"/>
         {{rootData.translationRoot?.translations.save}}

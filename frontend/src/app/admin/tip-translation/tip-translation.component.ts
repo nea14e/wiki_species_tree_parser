@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {RootDataKeeperService} from '../../root-data-keeper.service';
-import {AdminLanguage, AdminMainLanguage, RIGHTS, TipForTranslation} from '../../models-admin';
+import {AdminLanguage, TipForTranslation} from '../../models-admin';
 import {NetworkTipTranslationService} from './network-tip-translation.service';
 import {Router} from '@angular/router';
 
@@ -19,7 +19,7 @@ export class TipTranslationComponent implements OnInit {
 
   tips: TipForTranslation[] = [];
   editingTip: TipForTranslation | null = null;
-  editingForLanguage: AdminLanguage | null = null;
+  editingLanguage: AdminLanguage | null = null;
   isTestDb: boolean | null = null;
   knownLanguagesAll: AdminLanguage[] = [];
 
@@ -59,12 +59,16 @@ export class TipTranslationComponent implements OnInit {
     });
   }
 
-  getFromLangShortTitle(): string {
+  getLangShortTitleFrom(): string {
     if (this.rootData.isTranslateFromYourLang === true) {
       return this.rootData.translationRoot?.lang_key + ' - ' + this.rootData.translationRoot?.comment;
     } else {
       return this.rootData.mainAdminLanguage?.lang_key + ' - ' + this.rootData.mainAdminLanguage?.comment;
     }
+  }
+
+  getLangShortTitleTo(): string {
+    return this.editingLanguage?.lang_key + ' - ' + this.editingLanguage?.comment;
   }
 
   getTipShortRank(tip: TipForTranslation): string {
@@ -75,13 +79,23 @@ export class TipTranslationComponent implements OnInit {
     }
   }
 
-  getTipShortTitle(tip: TipForTranslation): string {
+  getTipShortTitleFrom(tip: TipForTranslation): string {
     if (this.rootData.isTranslateFromYourLang === true && !!tip.title_by_language) {
       return tip.title_by_language;
     } else if (!!tip.title_by_admin) {
       return tip.title_by_admin;
-    } else {
+    } else if (!!tip.title_by_latin) {
       return tip.title_by_latin;
+    } else {
+      return '---';
+    }
+  }
+
+  getTipShortTitleTo(tip: TipForTranslation): string {
+    if (!!tip.titles_by_languages && !!tip.titles_by_languages[this.editingLanguage.lang_key]) {
+      return tip.titles_by_languages[this.editingLanguage.lang_key];
+    } else {
+      return '---';
     }
   }
 
@@ -105,8 +119,10 @@ export class TipTranslationComponent implements OnInit {
       return tip.tip_on_languages[this.rootData.translationRoot?.lang_key];
     } else if (!!tip.tip_on_languages[this.rootData.mainAdminLanguage?.lang_key]) {
       return tip.tip_on_languages[this.rootData.mainAdminLanguage?.lang_key];
+    } else if (!!tip.tip_on_languages.ru) {
+      return tip.tip_on_languages.ru;
     } else {
-      return tip.tip_on_languages.ru || '[No tip source found]';
+      return '---';
     }
   }
 
@@ -157,11 +173,12 @@ export class TipTranslationComponent implements OnInit {
 
   onCancelClick(): void {
     this.editingTip = null;
+    this.editingLanguage = null;
   }
 
   onSaveClick(): void {
-    const langKey = this.editingForLanguage !== null
-      ? this.editingForLanguage.lang_key
+    const langKey = this.editingLanguage !== null
+      ? this.editingLanguage.lang_key
       : (this.rootData.isTranslateFromYourLang === false
         ? this.rootData.mainAdminLanguage?.lang_key
         : this.rootData.translationRoot?.lang_key);
@@ -192,14 +209,17 @@ export class TipTranslationComponent implements OnInit {
   }
 
   getPreviewForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {
+    let result = '';
     if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
-      return !!tip.tip_on_languages[lang.lang_key]
-        ? 'V!'
-        : 'X!';
+      result = !!tip.tip_on_languages[lang.lang_key] ? 'V!' : 'X!';
+    } else {
+      result = !!tip.tip_on_languages[lang.lang_key] ? 'V' : 'X';
     }
-    return !!tip.tip_on_languages[lang.lang_key]
-      ? 'V'
-      : 'X';
+
+    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
+      result = '[' + result + ']';
+    }
+    return result;
   }
 
   getColorForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {
@@ -211,6 +231,11 @@ export class TipTranslationComponent implements OnInit {
         ? '#66a366'
         : '#c45050';
     }
+    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
+      return !!tip.tip_on_languages[lang.lang_key]
+        ? '#9eb89e'
+        : '#d2afaf';
+    }
     return !!tip.tip_on_languages[lang.lang_key]
       ? '#a6dca6'
       : '#f57c7c';
@@ -218,5 +243,33 @@ export class TipTranslationComponent implements OnInit {
 
   isEditingTip(tip: TipForTranslation): boolean {
     return this.editingTip?.id === tip.id;
+  }
+
+  onEditTranslationClick(tip: TipForTranslation, lang: AdminLanguage): void {
+    this.editingTip = JSON.parse(JSON.stringify((tip)));  // deep copy of object. To can be enabled to cancel changes
+    this.editingLanguage = lang;
+    setTimeout(() => {
+      window.scrollTo(0, 9999999);
+    }, 250);
+  }
+
+  onSaveTranslationClick(): void {
+    this.networkAdminService.saveTipTranslation(
+      this.editingLanguage.lang_key,
+      this.editingTip.id,
+      this.editingTip.tip_on_languages[this.editingLanguage.lang_key],
+      this.rootData.adminPassword
+    ).subscribe(() => {
+      this.editingTip = null;
+      this.editingLanguage = null;
+      this.reloadData();
+    }, error => {
+      alert(error);
+    });
+  }
+
+  autoGrowTextArea(e): void {
+    e.target.style.height = '0px';
+    e.target.style.height = (e.target.scrollHeight + 25) + 'px';
   }
 }

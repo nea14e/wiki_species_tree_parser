@@ -66,6 +66,7 @@ export interface Translations {
   language: string;
   create: string;
   edit: string;
+  duplicate_and_edit: string;
   delete: string;
   save: string;
   cancel: string;
