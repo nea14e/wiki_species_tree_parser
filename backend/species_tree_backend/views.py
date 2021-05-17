@@ -116,9 +116,9 @@ def get_tip_of_the_day_by_id(request, _id: int = None):
 # чтобы пользователь был супер-админом, пароль которого находится не в БД, а в файле Config.py.
 # Супер-админ имеет безусловные права на всё.
 # Тело запроса у декорируемой функции должно содержать пароль пользователя.
-def check_right_request_decorator(rights: list):
-    def decorator(func):
-        def wrapped(*args, **kw):
+def check_right_request_decorator(rights: list):  # этот декоратор при каждом использовании требует список
+    def decorator(func):  # декоратор должен вернуть функцию, которая принимает на вход декорируемую функцию
+        def wrapped(*args, **kw):  # вызов декорируемой функции будет заменён на вызов этой функции с этими аргументами
             if ConfigExample.BACKEND_SECRET_KEY == Config.BACKEND_SECRET_KEY:
                 return JsonResponse({"is_ok": False,
                                      "message": "You forgot to change Config.BACKEND_SECRET_KEY when copied from Config_EXAMPLE!"})
@@ -130,7 +130,7 @@ def check_right_request_decorator(rights: list):
             if result is not None:
                 return result
             else:
-                return func(*args, **kw)
+                return func(*args, **kw)  # вот тут сам вызов декорируемой функции, а предыдущее - её "обёртка"
         return wrapped
     return decorator
 
