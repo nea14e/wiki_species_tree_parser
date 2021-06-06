@@ -68,6 +68,10 @@
   cursor: pointer;
 }
 
+.pointer-readonly {
+  cursor: context-menu;
+}
+
 .plain-list-item {
   width: 100%;
   height: var(--search-item-size);

@@ -241,6 +241,23 @@ export class TipTranslationComponent implements OnInit {
       : '#f57c7c';
   }
 
+  getTooltipForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {
+    let tooltip = '';
+    if (this.isEditingTip(tip)) {
+      tooltip += this.rootData.translationRoot?.translations.admin_editing_now + '\n';
+    }
+    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
+      tooltip += '! ' + this.rootData.translationRoot?.translations.admin_this_language_is_main_for_admins + '\n';
+    }
+    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
+      tooltip += '[] ' + this.rootData.translationRoot?.translations.admin_read_only + '\n';
+    }
+    tooltip += !!tip.tip_on_languages[lang.lang_key]
+      ? 'V ' + this.rootData.translationRoot?.translations.admin_translated
+      : 'X ' + this.rootData.translationRoot?.translations.admin_not_translated;
+    return tooltip;
+  }
+
   isEditingTip(tip: TipForTranslation): boolean {
     return this.editingTip?.id === tip.id;
   }

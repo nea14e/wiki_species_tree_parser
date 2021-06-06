@@ -59,7 +59,12 @@ WITH cte(lang_key, comment, translations) AS (
         "delete": "Удалить",
         "save": "Сохранить",
         "cancel": "Отмена",
-        "success": "Успешно выполнено."
+        "success": "Успешно выполнено.",
+        "admin_editing_now": "Редактируется сейчас",
+        "admin_this_language_is_main_for_admins": "Этот язык - главный для администратора",
+        "admin_read_only": "Только для чтения",
+        "admin_translated": "Переведено",
+        "admin_not_translated": "Не переведено"
       }'::jsonb
   ),
     ('en', 'English',
@@ -113,7 +118,7 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_edit_translation": "Edit translation",
         "admin_users": "Admin users",
         "admin_translate_from_your_current_language": "Translate from your interface''s language",
-        "admin_translate_from_main_admin_language": "Translate from ",
+        "admin_translate_from_main_admin_language": "Translate from admin''s language",
         "show_details": "Show details",
         "language": "Language",
         "create": "Create",
@@ -122,7 +127,12 @@ WITH cte(lang_key, comment, translations) AS (
         "delete": "Delete",
         "save": "Save",
         "cancel": "Cancel",
-        "success": "Done successfully."
+        "success": "Done successfully.",
+        "admin_editing_now": "Editing now",
+        "admin_this_language_is_main_for_admins": "This language is main for admin",
+        "admin_read_only": "Read-only",
+        "admin_translated": "Translated",
+        "admin_not_translated": "Not translated"
       }'::jsonb
     )
 ),

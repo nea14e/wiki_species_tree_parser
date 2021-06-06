@@ -71,6 +71,11 @@ export interface Translations {
   save: string;
   cancel: string;
   success: string;
+  admin_editing_now: string;
+  admin_this_language_is_main_for_admins: string;
+  admin_read_only: string;
+  admin_translated: string;
+  admin_not_translated: string;
 }
 
 export interface TipOfTheDay {
