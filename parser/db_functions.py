@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 
 import psycopg2
 import psycopg2.extras
@@ -238,6 +239,9 @@ class DbListItemsIterator:
             self.cur1.execute(query)
             self.conn1.commit()
         except BaseException:
+            error_message = traceback.format_exc()
+            for line in error_message.split("\n"):
+                Logger.print(Config.LOGS_ERROR_PREFIX + line)
             self.conn1.rollback()
 
     def rowcount(self):
@@ -259,6 +263,9 @@ class DbExecuteNonQuery:
             cur1.execute(query)
             conn1.commit()
         except BaseException:
+            error_message = traceback.format_exc()
+            for line in error_message.split("\n"):
+                Logger.print(Config.LOGS_ERROR_PREFIX + line)
             conn1.rollback()
 
     @staticmethod
@@ -276,6 +283,9 @@ class DbExecuteNonQuery:
             cur1.execute(query)
             conn1.commit()
         except BaseException:
+            error_message = traceback.format_exc()
+            for line in error_message.split("\n"):
+                Logger.print(Config.LOGS_ERROR_PREFIX + line)
             conn1.rollback()
 
 
