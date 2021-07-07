@@ -204,6 +204,30 @@ def admin_try_login(request):
 
 
 # для этого права не нужны
+def _get_admin_user_id_by_password_internal(request):
+    body = json.loads(request.body)
+    password = str(body["adminKey"])
+
+    if password == Config.BACKEND_ADMIN_PASSWORD:
+        return None  # указывает на суперпользователя
+
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id
+        FROM public.admin_users
+        WHERE password = %s
+        LIMIT 1
+    """, (
+        password,
+    ))
+    user_id = cur.fetchone()[0]
+    if user_id is None:
+        raise ValueError('User not found by password!')
+    return int(user_id)
+
+
+# для этого права не нужны
 def admin_get_known_languages_all(request):
     conn = connections["default"]
     cur = conn.cursor()
@@ -402,17 +426,35 @@ def admin_add_tip(request):
 @check_right_request_decorator([RIGHTS.EDIT_LANGUAGES_LIST, RIGHTS.EDIT_TIPS_LIST])
 def admin_edit_tip(request):
     body = json.loads(request.body)
+
+    user_id = _get_admin_user_id_by_password_internal(request)
+
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
+        WITH log_upd AS (
+            UPDATE public.changed_tips
+            SET admin_user_id = %(user_id)s,  -- only user last modified by, prev user is rewritten
+                read_by_user_ids = '[]'::jsonb  -- nobody read yet
+            WHERE tip_id = %(tip_id)s
+                AND lang_key IS NULL 
+            RETURNING 1
+        ), log_ins AS (
+            INSERT INTO public.changed_tips (tip_id, lang_key, admin_user_id, read_by_user_ids)
+            SELECT %(tip_id)s, NULL, %(user_id)s, '[]'::jsonb
+            WHERE NOT EXISTS(SELECT 1 FROM log_upd)
+        )
         UPDATE public.tips_of_the_day
-        SET tip_on_languages = %s,
-            page_url = %s 
-        WHERE id = %s 
-    """, (json.dumps(body["data"]["tip_on_languages"]),
-          body["data"]["page_url"],
-          body["data"]["id"]
-          )
+        SET tip_on_languages = %(tip_on_languages)s,
+            page_url = %(page_url)s 
+        WHERE id = %(tip_id)s
+    """, {
+        "tip_id": body["data"]["id"],
+        "adminKey": str(body["adminKey"]),
+        "user_id": user_id,
+        "page_url": body["data"]["page_url"],
+        "tip_on_languages": json.dumps(body["data"]["tip_on_languages"]),
+    }
     )
     return JsonResponse({"is_ok": True, "message": "Tip {id} edited successfully.".format(id=body["data"]["id"])})
 
@@ -441,17 +483,32 @@ def admin_edit_tip_translation(request):
     if rights_error is not None:
         return rights_error
 
+    user_id = _get_admin_user_id_by_password_internal(request)
+
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
+        WITH log_upd AS (
+            UPDATE public.changed_tips
+            SET admin_user_id = %(user_id)s,  -- only user last modified by, prev user is rewritten
+                read_by_user_ids = '[]'::jsonb  -- nobody read yet
+            WHERE tip_id = %(tip_id)s
+                AND lang_key = %(langKey)s
+            RETURNING 1
+        ), log_ins AS (
+            INSERT INTO public.changed_tips (tip_id, lang_key, admin_user_id, read_by_user_ids)
+            SELECT %(tip_id)s, %(langKey)s, %(user_id)s, '[]'::jsonb
+            WHERE NOT EXISTS(SELECT 1 FROM log_upd)
+        )
         UPDATE public.tips_of_the_day
-        SET tip_on_languages = tip_on_languages || jsonb_build_object(%s, %s)
-        WHERE id = %s
-    """, (body["langKey"],
-          body["translationOnLang"],
-          body["id"]
-          )
-    )
+        SET tip_on_languages = tip_on_languages || jsonb_build_object(%(langKey)s, %(translationOnLang)s)  -- update chosen language ONLY
+        WHERE id = %(tip_id)s
+    """, {
+        "tip_id": body["id"],
+        "langKey": body["langKey"],
+        "user_id": user_id,
+        "translationOnLang": body["translationOnLang"],
+    })
     return JsonResponse({"is_ok": True, "message": "Tip {id} translation {lang_key} edited successfully.".format(id=body["id"], lang_key=body["langKey"])})
 
 

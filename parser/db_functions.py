@@ -108,6 +108,15 @@ class DbFunctions:
         else:
             Logger.print("Таблица public.admin_users уже существует, пропускаем этап создания.")
 
+        # Таблица с админ-пользователями
+        Logger.print("\nТаблица с изменениями советов:")
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'changed_tips');"
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "changed_tips.sql"))
+        else:
+            Logger.print("Таблица public.changed_tips уже существует, пропускаем этап создания.")
+
         # Заполняем данными
         Logger.print("\n\n===================================================")
         Logger.print("Заполняем данными:")
