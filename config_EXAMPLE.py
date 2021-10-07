@@ -38,4 +38,5 @@ class Config:
     LOGS_UPDATE_TIMER = 3.0
     LOGS_KEEP_LINES_COUNT = 50
 
-    LOGS_ERROR_PREFIX = "$$$"
+    PARSER_ARGS_DELIMITER = "$$$"
+    LOGS_ERROR_PREFIX = "$$$ "
