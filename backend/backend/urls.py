@@ -23,7 +23,8 @@ from species_tree_backend.views import get_translations, get_childes_by_id, get_
         admin_try_login, admin_get_known_languages_all, admin_get_main_admin_language, \
         admin_get_tasks, admin_add_task, admin_edit_task, admin_delete_task, \
         admin_start_one_task, admin_stop_one_task, \
-        admin_get_all_tips_translations, admin_add_tip, admin_edit_tip, admin_delete_tip, admin_edit_tip_translation, \
+        admin_get_all_tips_translations, admin_add_tip, admin_edit_tip, admin_delete_tip, \
+        admin_edit_tip_translation, admin_get_changed_tips, \
         admin_get_admin_users, admin_add_admin_user, admin_edit_admin_user, admin_delete_admin_user, \
         admin_get_count_1, admin_get_count_2, admin_get_count_3, \
         startup_start_tasks
@@ -58,6 +59,7 @@ urlpatterns = [
     path('api/admin_edit_tip', admin_edit_tip),
     path('api/admin_delete_tip', admin_delete_tip),
     path('api/admin_edit_tip_translation', admin_edit_tip_translation),
+    path('api/admin_get_changed_tips', admin_get_changed_tips),
     # admin - управление админ-пользователями
     path('api/admin_get_admin_users', admin_get_admin_users),
     path('api/admin_add_admin_user', admin_add_admin_user),

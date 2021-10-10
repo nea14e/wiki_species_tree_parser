@@ -11,7 +11,7 @@ export interface TranslationRoot {
 }
 
 export interface Translations {
-  bookmarks: string;
+  favorites: string;
   next_fact: string;
   rank_word: string;
   site_title: string;
@@ -30,8 +30,8 @@ export interface Translations {
   go_back: string;
   go_forward: string;
   authors_content: string;
-  delete_bookmark: string;
-  add_to_bookmarks: string;
+  delete_favorite: string;
+  add_to_favorites: string;
   search_in_google: string;
   site_description: string;
   copy_link_to_share: string;
@@ -40,8 +40,8 @@ export interface Translations {
   expanded_tooltip: string;
   selected_tooltip: string;
   tip_of_the_day_word: string;
-  delete_bookmark_question: string;
-  bookmarks_use_cookies_question: string;
+  delete_favorite_question: string;
+  favorites_use_cookies_question: string;
   network_error: string;
   // Admin:
   admin_welcome_part_1: string;

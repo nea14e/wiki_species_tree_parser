@@ -105,7 +105,7 @@ export class TreeComponent implements OnInit {
       if (!!favorites) {
         favoritesList = favorites as number[];
       } else {
-        if (!confirm(this.rootData.translationRoot?.translations.bookmarks_use_cookies_question)) {
+        if (!confirm(this.rootData.translationRoot?.translations.favorites_use_cookies_question)) {
           return;
         }
         favoritesList = [];
