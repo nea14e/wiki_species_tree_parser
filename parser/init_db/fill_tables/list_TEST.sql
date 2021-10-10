@@ -1,4 +1,6 @@
 -- noinspection SqlWithoutWhere
+DELETE FROM public.changed_tips;  -- foreign key prevents deletion
+-- noinspection SqlWithoutWhere
 DELETE FROM public.tips_of_the_day;  -- foreign key prevents deletion
 -- noinspection SqlWithoutWhere
 DELETE FROM public.list;
