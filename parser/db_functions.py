@@ -163,7 +163,7 @@ class DbFunctions:
 
         # Просто так
         Logger.print("\n\n===================================================")
-        Logger.print("Миграция базы данных успешно завершена.")
+        Logger.print("Миграция базы данных завершена.\nНаличие ошибок смотрите по префиксу $$$ выше.")
         sql = "SELECT COUNT(1) FROM public.list;"
         list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
         Logger.print("В таблице public.list сейчас {} записей.".format(list_records_count))
