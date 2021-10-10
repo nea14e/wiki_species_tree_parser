@@ -73,23 +73,29 @@
       </div>
 
       <div *ngIf="item.is_selected===true">
-        <div class="item-btn btn ml-2 mr-2"
+        <div class="item-btn btn ml-2 mr-1"
              (click)="onReadWikiClick(item); $event.stopPropagation();"
              [title]="rootData.translationRoot?.translations.read_on_wiki"
         >
           <img src="assets/from-bootstrap/layout-text-sidebar-reverse.svg" class="item-btn-img"/>
         </div>
-        <div class="item-btn btn mr-2"
+        <div class="item-btn btn mr-1"
              (click)="onGoogleItemClick(item); $event.stopPropagation();"
              [title]="rootData.translationRoot?.translations.search_in_google"
         >
           <img src="assets/from-bootstrap/globe.svg" class="item-btn-img"/>
         </div>
-        <div class="item-btn btn mr-2"
+        <div class="item-btn btn mr-1"
              (click)="onShareItemClick(item); $event.stopPropagation();"
              [title]="rootData.translationRoot?.translations.copy_link_to_share"
         >
           <img src="assets/from-bootstrap/share.svg" class="item-btn-img"/>
+        </div>
+        <div class="item-btn btn mr-1"
+             (click)="onFavoritesItemClick(item); $event.stopPropagation();"
+             [title]="rootData.translationRoot?.translations.add_to_bookmarks"
+        >
+          <img src="assets/from-bootstrap/bookmarks.svg" class="item-btn-img"/>
         </div>
       </div>
 

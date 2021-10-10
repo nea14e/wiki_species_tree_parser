@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { CookieModule } from 'ngx-cookie';
 
 import { AppComponent } from './app.component';
 import {HttpClientModule} from '@angular/common/http';
@@ -42,7 +43,8 @@ const routes: Routes = [
     HttpClientModule,
     RouterModule.forRoot(routes),
     CommonModule,
-    FormsModule
+    FormsModule,
+    CookieModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

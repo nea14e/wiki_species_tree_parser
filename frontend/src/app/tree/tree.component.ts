@@ -4,6 +4,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkService} from '../network.service';
 import {RootDataKeeperService} from '../root-data-keeper.service';
 import {CopyToClipboardService} from '../copy-to-clipboard.service';
+import {CookieService} from 'ngx-cookie';
 
 @Component({
   selector: 'app-tree',
@@ -23,7 +24,8 @@ export class TreeComponent implements OnInit {
               private networkService: NetworkService,
               private activatedRoute: ActivatedRoute,
               private router: Router,
-              private copyToClipboardService: CopyToClipboardService) { }
+              private copyToClipboardService: CopyToClipboardService,
+              private cookieService: CookieService) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
@@ -95,5 +97,21 @@ export class TreeComponent implements OnInit {
 
   onToTreeRootClick(): void {
     this.router.navigate(['tree']);
+  }
+
+  onFavoritesItemClick(item: Item): void {
+      const favorites = this.cookieService.getObject('favorites');
+      let favoritesList;
+      if (!!favorites) {
+        favoritesList = favorites as number[];
+      } else {
+        if (!confirm(this.rootData.translationRoot?.translations.bookmarks_use_cookies_question)) {
+          return;
+        }
+        favoritesList = [];
+      }
+      favoritesList.push(item.id);
+      this.cookieService.putObject('favorites', favoritesList);
+      console.log(favoritesList);
   }
 }
