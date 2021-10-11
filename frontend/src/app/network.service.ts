@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {SearchItem, TipOfTheDay, TranslationRoot, Tree} from './models';
+import {FavoritesItem, SearchItem, TipOfTheDay, TranslationRoot, Tree} from './models';
 import {environment} from '../environments/environment';
 
 @Injectable({
@@ -29,6 +29,10 @@ export class NetworkService {
 
   public getTreeById(id: number): Observable<Tree> {
     return this.http.get<Tree>(environment.BACKEND_API_URL + 'get_tree_by_id/' + id);
+  }
+
+  public getFavorites(ids: number[]): Observable<FavoritesItem[]> {
+    return this.http.post<FavoritesItem[]>(environment.BACKEND_API_URL + 'get_favorites', ids);
   }
 
   public search(query: string, offset: number = 0): Observable<SearchItem[]> {

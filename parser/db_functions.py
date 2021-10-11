@@ -148,6 +148,8 @@ class DbFunctions:
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree_by_id.sql"))
         Logger.print("\nХранимка для подгрузки потомков дерева по id: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_childes_by_id.sql"))
+        Logger.print("\nХранимка по выдаче избранного: перенакатываем...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_favorites.sql"))
         Logger.print("\nХранимка по поиску: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
         Logger.print("\nХранимка по выдаче совета дня...")
