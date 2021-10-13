@@ -32,7 +32,7 @@ export class NetworkService {
   }
 
   public getFavorites(ids: number[]): Observable<FavoritesItem[]> {
-    return this.http.post<FavoritesItem[]>(environment.BACKEND_API_URL + 'get_favorites', ids);
+    return this.http.post<FavoritesItem[]>(environment.BACKEND_API_URL + 'get_favorites', {ids});
   }
 
   public search(query: string, offset: number = 0): Observable<SearchItem[]> {
