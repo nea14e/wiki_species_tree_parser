@@ -14,6 +14,7 @@ import { SearchComponent } from './search/search.component';
 import { DbTasksComponent } from './admin/db-tasks/db-tasks.component';
 import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { TipTranslationComponent } from './admin/tip-translation/tip-translation.component';
+import { FavoritesComponent } from './favorites/favorites.component';
 
 const routes: Routes = [
   { path: 'tip', component: TipOfTheDayComponent },
@@ -36,7 +37,8 @@ const routes: Routes = [
     AuthorsComponent,
     DbTasksComponent,
     AdminUsersComponent,
-    TipTranslationComponent
+    TipTranslationComponent,
+    FavoritesComponent
   ],
   imports: [
     BrowserModule,

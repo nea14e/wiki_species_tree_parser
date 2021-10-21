@@ -1,91 +1,103 @@
 <body class="container-fluid mb-2">
-<h1>{{translationRoot?.translations.site_title}}</h1>
-<h4 style="font-size: 1.3rem">{{translationRoot?.translations.site_description}}</h4>
+<div class="row">
+  <div class="col-9">
+    <div class="container-fluid mb-2">
+      <h1>{{translationRoot?.translations.site_title}}</h1>
+      <h4 style="font-size: 1.3rem">{{translationRoot?.translations.site_description}}</h4>
 
-<div class="row ml-0 mr-0 mb-2">
-  <div class="btn col-auto mr-2 mt-2" (click)="onTipClick()">
-    <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
-    {{translationRoot?.translations.tip_of_the_day_word}}
+      <div class="row ml-0 mr-0 mb-2">
+        <div class="btn col-auto mr-2 mt-2" (click)="onTipClick()">
+          <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
+          {{translationRoot?.translations.tip_of_the_day_word}}
+        </div>
+        <div class="btn col-auto mr-2 mt-2" (click)="onToTreeClick()">
+          <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
+          {{translationRoot?.translations.to_tree}}
+        </div>
+        <div class="btn col-auto mr-2 mt-2" (click)="onSearchClick()">
+          <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
+          {{translationRoot?.translations.search_word}}
+        </div>
+        <div class="btn col-auto mr-2 mt-2" (click)="onAuthorsClick()">
+          <img src="assets/from-bootstrap/vector-pen.svg" class="btn-img"/>
+          {{translationRoot?.translations.authors_word}}
+        </div>
+        <div class="btn col-auto ml-auto mr-2 mt-2"
+             (click)="onBackClick()"
+        >
+          <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
+          {{translationRoot?.translations.go_back}}
+        </div>
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onForwardClick()"
+        >
+          <img src="assets/from-bootstrap/arrow-right.svg" class="btn-img"/>
+          {{translationRoot?.translations.go_forward}}
+        </div>
+      </div>
+
+      <div *ngIf="isAdminMode===true">
+        <div class="row router-hr"></div>
+
+        <h3>{{translationRoot?.translations.admin_panel}}</h3>
+
+        <div class="row ml-0 mr-0 mb-2">
+          <input class="col-12" type="password"
+                 [(ngModel)]="rootData.adminPassword"
+                 [placeholder]="translationRoot?.translations.admin_password_placeholder"
+                 (ngModelChange)="onAdminPasswordChange()"
+          >
+        </div>
+
+        <div class="row ml-0 mr-0 mb-2">
+          <div class="col-12" [class]="isAdminMode ? 'text-success' : 'text-danger'">{{adminLoginResult}}</div>
+        </div>
+        <div class="row ml-0 mr-0 mb-2">
+          <div class="col-12" [class]="isAdminMode ? 'text-success' : 'text-danger'">
+            <small>{{this.translationRoot?.translations.admin_welcome_part_2}}
+              : {{JSON.stringify(rootData.adminLoginInfo?.rights_list)}}</small>
+          </div>
+        </div>
+
+        <div *ngIf="!!rootData.adminPassword" class="row ml-0 mr-0 mb-2">
+          <div *ngIf="rootData.canManageDbTasks()"
+               class="btn col-auto mr-2 mt-2"
+               (click)="onToDbTasksClick()"
+          >
+            <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
+            {{translationRoot?.translations.admin_db_tasks}}
+          </div>
+          <div *ngIf="rootData.canSeeTipTranslation()"
+               class="btn col-auto mr-2 mt-2"
+               (click)="onToTipTranslationClick()"
+          >
+            <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
+            {{translationRoot?.translations.admin_tips_list}}
+          </div>
+          <div *ngIf="rootData.canManageAdminUsers()"
+               class="btn col-auto mr-2 mt-2"
+               (click)="onToAdminUsersClick()"
+          >
+            <img src="assets/from-bootstrap/people.svg" class="btn-img"/>
+            {{translationRoot?.translations.admin_users}}
+          </div>
+          <div class="btn col-auto mt-2"
+               (click)="adminLogout()"
+               [title]="translationRoot?.translations.admin_logout"
+          >
+            <img src="assets/from-bootstrap/door-open-fill.svg" class="btn-img"/>
+          </div>
+        </div>
+      </div>
+
+      <router-outlet></router-outlet>
+
+    </div>
   </div>
-  <div class="btn col-auto mr-2 mt-2" (click)="onToTreeClick()">
-    <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
-    {{translationRoot?.translations.to_tree}}
-  </div>
-  <div class="btn col-auto mr-2 mt-2" (click)="onSearchClick()">
-    <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
-    {{translationRoot?.translations.search_word}}
-  </div>
-  <div class="btn col-auto mr-2 mt-2" (click)="onAuthorsClick()">
-    <img src="assets/from-bootstrap/vector-pen.svg" class="btn-img"/>
-    {{translationRoot?.translations.authors_word}}
-  </div>
-  <div class="btn col-auto ml-auto mr-2 mt-2"
-       (click)="onBackClick()"
-  >
-    <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
-    {{translationRoot?.translations.go_back}}
-  </div>
-  <div class="btn col-auto mr-2 mt-2"
-       (click)="onForwardClick()"
-  >
-    <img src="assets/from-bootstrap/arrow-right.svg" class="btn-img"/>
-    {{translationRoot?.translations.go_forward}}
+  <div class="col-3">
+    <app-favorites></app-favorites>
   </div>
 </div>
-
-<div *ngIf="isAdminMode===true">
-  <div class="row router-hr"></div>
-
-  <h3>{{translationRoot?.translations.admin_panel}}</h3>
-
-  <div class="row ml-0 mr-0 mb-2">
-    <input class="col-12" type="password"
-           [(ngModel)]="rootData.adminPassword"
-           [placeholder]="translationRoot?.translations.admin_password_placeholder"
-           (ngModelChange)="onAdminPasswordChange()"
-    >
-  </div>
-
-  <div class="row ml-0 mr-0 mb-2">
-    <div class="col-12" [class]="isAdminMode ? 'text-success' : 'text-danger'">{{adminLoginResult}}</div>
-  </div>
-  <div class="row ml-0 mr-0 mb-2">
-    <div class="col-12" [class]="isAdminMode ? 'text-success' : 'text-danger'">
-      <small>{{this.translationRoot?.translations.admin_welcome_part_2}}: {{JSON.stringify(rootData.adminLoginInfo?.rights_list)}}</small>
-    </div>
-  </div>
-
-  <div *ngIf="!!rootData.adminPassword" class="row ml-0 mr-0 mb-2">
-    <div *ngIf="rootData.canManageDbTasks()"
-         class="btn col-auto mr-2 mt-2"
-         (click)="onToDbTasksClick()"
-    >
-      <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
-      {{translationRoot?.translations.admin_db_tasks}}
-    </div>
-    <div *ngIf="rootData.canSeeTipTranslation()"
-         class="btn col-auto mr-2 mt-2"
-         (click)="onToTipTranslationClick()"
-    >
-      <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
-      {{translationRoot?.translations.admin_tips_list}}
-    </div>
-    <div *ngIf="rootData.canManageAdminUsers()"
-         class="btn col-auto mr-2 mt-2"
-         (click)="onToAdminUsersClick()"
-    >
-      <img src="assets/from-bootstrap/people.svg" class="btn-img"/>
-      {{translationRoot?.translations.admin_users}}
-    </div>
-    <div class="btn col-auto mt-2"
-         (click)="adminLogout()"
-         [title]="translationRoot?.translations.admin_logout"
-    >
-      <img src="assets/from-bootstrap/door-open-fill.svg" class="btn-img"/>
-    </div>
-  </div>
-</div>
-
-<router-outlet></router-outlet>
 
 </body>
+
