@@ -1,4 +1,6 @@
 -- noinspection SqlWithoutWhere
+DELETE FROM public.changed_tips;  -- foreign key prevents deletion
+-- noinspection SqlWithoutWhere
 DELETE FROM public.tips_of_the_day;  -- foreign key prevents deletion
 -- noinspection SqlWithoutWhere
 DELETE FROM public.list;
@@ -7,7 +9,7 @@ INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_lan
 VALUES (1, 'A', 'A_url', '1st', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Diversidad_procariota.PNG/265px-Diversidad_procariota.PNG', '{"en": "A_en_url", "ru": "A_ru_url"}', '{"en": "A_en", "ru": "A_ru"}', null, null, 5, null);
 
 INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url, parent_id, leaves_count, last_error_message)
-VALUES (2, 'B', 'B_url', '1st', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Endomembrane_system_diagram_ru.svg/350px-Endomembrane_system_diagram_ru.svg.png', '{"en": "B_en_url", "ru": "B_ru_url"}', '{"en": "B_en", "ru": "B_ru"}', null, null, 9, null);
+VALUES (2, 'B', 'B_url', '1st', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Endomembrane_system_diagram_ru.svg/350px-Endomembrane_system_diagram_ru.svg.png', '{"en": "B_en_url", "ru": "B_ru_url"}', '{"en": "B_en", "ru": "B_ru"}', null, null, 13, null);
 
 INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url, parent_id, leaves_count, last_error_message)
 VALUES (3, 'xc', 'xc_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Rotavirus_Reconstruction.jpg/275px-Rotavirus_Reconstruction.jpg', '{"en": "xc_en_url", "ru": "xc_ru_url"}', '{"en": "xc_en", "ru": "xc_ru"}', null, null, 1, null);
@@ -22,13 +24,13 @@ INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_lan
 VALUES (21, 'Ba', 'Ba_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Extant_reptilia.jpg/275px-Extant_reptilia.jpg', '{"en": "Ba_en_url", "ru": "Ba_ru_url"}', '{"en": "Ba_en", "ru": "Ba_ru"}', 'B_url', 2, 2, null);
 
 INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url, parent_id, leaves_count, last_error_message)
-VALUES (22, 'Bb_without_languages', 'Bb_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Mammal_Diversity_2011.png/275px-Mammal_Diversity_2011.png', '{}', '{}', 'B_url', 2, 7, null);
+VALUES (22, 'Bb_without_languages', 'Bb_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Mammal_Diversity_2011.png/275px-Mammal_Diversity_2011.png', '{}', '{}', 'B_url', 2, 9, null);
 
 INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url, parent_id, leaves_count, last_error_message)
-VALUES (23, 'Bc_not_translated', 'Bc_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bird_Diversity_2013.png/300px-Bird_Diversity_2013.png', '{}', '{}', 'B_url', 2, 7, null);
+VALUES (23, 'Bc_not_translated', 'Bc_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bird_Diversity_2013.png/300px-Bird_Diversity_2013.png', '{}', '{}', 'B_url', 2, 0, null);
 
 INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url, parent_id, leaves_count, last_error_message)
-VALUES (24, 'Bd', 'Bd_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Fish-coll002.jpg/275px-Fish-coll002.jpg', '{}', '{"en": "Bd_en", "ru": "Bd_ru"}', 'B_url', 2, 7, null);
+VALUES (24, 'Bd', 'Bd_url', '2nd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Fish-coll002.jpg/275px-Fish-coll002.jpg', '{}', '{"en": "Bd_en", "ru": "Bd_ru"}', 'B_url', 2, 0, null);
 
 INSERT INTO public.list (id, title, page_url, type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url, parent_id, leaves_count, last_error_message)
 VALUES (31, 'xc1', 'xc1_url', '3rd', 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Rana_esculenta_on_Nymphaea_edit.JPG/275px-Rana_esculenta_on_Nymphaea_edit.JPG', '{"en": "xc1_en_url", "ru": "xc1_ru_url"}', '{"en": "xc1_en", "ru": "xc1_ru"}', 'xc_url', 3, 0, null);

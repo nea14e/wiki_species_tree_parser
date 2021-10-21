@@ -67,6 +67,21 @@ def get_tree_default(request):  # выдаёт дерево с видом по �
     return JsonResponse(db_response, safe=False)
 
 
+def get_favorites(request):
+    body = json.loads(request.body)
+    ids = list(body["ids"])
+
+    accept_language = request.headers['Accept-Language']
+    language_key = get_language_key(accept_language)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_favorites(_ids := %s, _language_key := %s);
+    """, (ids, language_key,))
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
+
+
 def search_by_words(request, words: str, offset: int):
     if len(words) < 3:
         return JsonResponse({
@@ -471,6 +486,7 @@ def admin_delete_tip(request):
     return JsonResponse({"is_ok": True, "message": "Tip {id} deleted successfully.".format(id=body["id"])})
 
 
+# Проверка прав внутри
 def admin_edit_tip_translation(request):
     body = json.loads(request.body)
 
@@ -510,6 +526,44 @@ def admin_edit_tip_translation(request):
         "translationOnLang": body["translationOnLang"],
     })
     return JsonResponse({"is_ok": True, "message": "Tip {id} translation {lang_key} edited successfully.".format(id=body["id"], lang_key=body["langKey"])})
+
+
+# Проверка прав внутри
+def admin_get_changed_tips(request):
+    body = json.loads(request.body)
+
+    rights = [
+        RIGHTS.EDIT_LANGUAGES_LIST,
+        RIGHTS.EDIT_TIPS_LIST,
+        body["langKey"]
+    ]
+    rights_error = check_right_request(request, rights)
+    if rights_error is not None:
+        return rights_error
+
+    user_id = _get_admin_user_id_by_password_internal(request)
+
+    body = json.loads(request.body)
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        WITH read_before_edit AS (
+          SELECT coalesce(json_agg(t), '[]'::json)
+          FROM public.changed_tips t
+          WHERE %(user_id)s::text::jsonb NOT IN (SELECT el FROM jsonb_array_elements(t.read_by_user_ids) el)
+            AND t.admin_user_id IS DISTINCT FROM %(user_id)s
+        ), upd_log AS (
+          UPDATE public.changed_tips
+          SET read_by_user_ids = read_by_user_ids || jsonb_build_array(%(user_id)s)
+          WHERE %(user_id)s::text::jsonb NOT IN (SELECT el FROM jsonb_array_elements(read_by_user_ids) el)
+            AND admin_user_id IS DISTINCT FROM %(user_id)s
+        )
+        SELECT *
+        FROM read_before_edit;
+    """, {
+        "user_id": user_id,
+    })
+    return JsonResponse({"is_ok": True, "message": "Tip {id} deleted successfully.".format(id=body["id"])})
 
 
 # ====================================

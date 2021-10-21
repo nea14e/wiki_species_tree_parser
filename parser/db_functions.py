@@ -148,6 +148,8 @@ class DbFunctions:
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_tree_by_id.sql"))
         Logger.print("\nХранимка для подгрузки потомков дерева по id: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_childes_by_id.sql"))
+        Logger.print("\nХранимка по выдаче избранного: перенакатываем...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "get_favorites.sql"))
         Logger.print("\nХранимка по поиску: перенакатываем...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "functions", "search_by_words.sql"))
         Logger.print("\nХранимка по выдаче совета дня...")
@@ -163,7 +165,7 @@ class DbFunctions:
 
         # Просто так
         Logger.print("\n\n===================================================")
-        Logger.print("Просто так:")
+        Logger.print("Миграция базы данных завершена.\nНаличие ошибок смотрите по префиксу $$$ выше.")
         sql = "SELECT COUNT(1) FROM public.list;"
         list_records_count = DbListItemsIterator("init_db", sql).fetchone()[0]
         Logger.print("В таблице public.list сейчас {} записей.".format(list_records_count))

@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Item, LatinModeEnum, Level, Tree} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkService} from '../network.service';
 import {RootDataKeeperService} from '../root-data-keeper.service';
 import {CopyToClipboardService} from '../copy-to-clipboard.service';
 import {CookieService} from 'ngx-cookie';
+import {FavoritesService} from "../favorites.service";
 
 @Component({
   selector: 'app-tree',
@@ -25,7 +26,7 @@ export class TreeComponent implements OnInit {
               private activatedRoute: ActivatedRoute,
               private router: Router,
               private copyToClipboardService: CopyToClipboardService,
-              private cookieService: CookieService) { }
+              private favoritesService: FavoritesService) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
@@ -100,18 +101,11 @@ export class TreeComponent implements OnInit {
   }
 
   onFavoritesItemClick(item: Item): void {
-      const favorites = this.cookieService.getObject('favorites');
-      let favoritesList;
-      if (!!favorites) {
-        favoritesList = favorites as number[];
-      } else {
-        if (!confirm(this.rootData.translationRoot?.translations.bookmarks_use_cookies_question)) {
-          return;
-        }
-        favoritesList = [];
+    if (!this.favoritesService.hasCookie()) {
+      if (!confirm(this.rootData.translationRoot?.translations.favorites_use_cookies_question)) {
+        return;
       }
-      favoritesList.push(item.id);
-      this.cookieService.putObject('favorites', favoritesList);
-      console.log(favoritesList);
+    }
+    this.favoritesService.addItem(item);
   }
 }

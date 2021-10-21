@@ -13,7 +13,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-from config import Config
+try:
+    from config import Config
+except ModuleNotFoundError:
+    raise FileNotFoundError('Please make config.py as copy of config_EXAMPLE.py and setup passwords there.')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
