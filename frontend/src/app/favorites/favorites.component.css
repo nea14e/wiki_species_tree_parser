@@ -1,3 +1,5 @@
 .favorites-background {
   background-color: #7c68bd;
+  border: 2px solid black;
+  text-align:center;
 }

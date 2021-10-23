@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {RootDataKeeperService} from '../root-data-keeper.service';
+import {FavoritesItem} from '../models';
+import {NetworkService} from '../network.service';
+import {FavoritesService} from '../favorites.service';
 
 @Component({
   selector: 'app-favorites',
@@ -7,8 +10,12 @@ import {RootDataKeeperService} from '../root-data-keeper.service';
   styleUrls: ['./favorites.component.css', '../app.component.css']
 })
 export class FavoritesComponent implements OnInit {
+  items: FavoritesItem[] = [];
 
-  constructor(public rootData: RootDataKeeperService) { }
+  constructor(public rootData: RootDataKeeperService,
+              private networkService: NetworkService,
+              public favoritesService: FavoritesService
+              ) { }
 
   ngOnInit(): void {
   }

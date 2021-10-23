@@ -42,5 +42,6 @@ export class FavoritesService {
     this.cookieService.putObject('favorites', this.ids);
     console.log('Add:', this.ids);  // TODO for debug
     this.hasCookiePrivate = true;
+    this.loadData();
   }
 }

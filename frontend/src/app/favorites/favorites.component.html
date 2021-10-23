@@ -1,8 +1,36 @@
 <div class="favorites-background">
   <h3>{{rootData.translationRoot?.translations.favorites}}</h3>
-  <p>
-    weee dgrdgd gd dr drrrrdgdg drgdrgg drhrh drrrrdgdg drrrrdgdg sdghjjklhyf drrrrdgdgtu
-    ryhdyhdrthy drrrrdgdg
-  </p>
+
+  <div class="row ml-0 d-flex justify-content-center">
+    <div class="col-8">
+
+      <div *ngFor="let item of favoritesService.items" class="plain-list-item pointer row">
+
+        <div class="plain-list-item-img-container">
+          <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language" [alt]="item.title_for_language"
+               class="plain-list-item-img-content">
+        </div>
+
+        <div class="col-auto mr-auto d-flex">
+          <div class="align-self-center">
+            <small>{{item.rank_for_language}}</small>
+            <br/><b>{{item.title_for_language}}</b>
+          </div>
+        </div>
+
+        <div *ngIf="!!item.leaves_count"
+             class="col-auto d-flex"
+             [title]="rootData.translationRoot?.translations.leaves_count"
+        >
+          <div class="align-self-center">
+            <img src="assets/from-bootstrap/diagram-3.svg" alt=""/>
+            {{item.leaves_count}}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
 </div>
 
