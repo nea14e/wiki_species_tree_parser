@@ -1,14 +1,14 @@
-<div class="favorites-background">
-  <h3>{{rootData.translationRoot?.translations.favorites}}</h3>
+<div class="favorites-tab pb-2">
+  <h3 class="ml-3">{{rootData.translationRoot?.translations.favorites}}</h3>
 
-  <div class="row ml-0 d-flex justify-content-center">
-    <div class="col-8">
+  <div class="row d-flex justify-content-center">
+    <div class="col-auto">
 
       <div *ngFor="let item of favoritesService.items" class="plain-list-item pointer row">
 
         <div class="plain-list-item-img-container">
           <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language" [alt]="item.title_for_language"
-               class="plain-list-item-img-content">
+               class="favorites-item-img-content">
         </div>
 
         <div class="col-auto mr-auto d-flex">

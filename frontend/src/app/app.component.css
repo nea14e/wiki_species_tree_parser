@@ -99,3 +99,10 @@
   height: 100%;
   object-fit: contain;
 }
+
+.favorites-item-img-content  {
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

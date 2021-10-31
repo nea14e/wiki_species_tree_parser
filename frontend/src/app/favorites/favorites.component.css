@@ -1,5 +1,5 @@
-.favorites-background {
-  background-color: #7c68bd;
+.favorites-tab {
+  background-color: #7f88f391;
   border: 2px solid black;
-  text-align:center;
+  overflow: hidden;
 }
