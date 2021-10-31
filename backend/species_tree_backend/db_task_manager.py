@@ -1,4 +1,3 @@
-import json
 import os
 import threading
 import time
@@ -6,8 +5,8 @@ from multiprocessing import Process, Manager
 
 from django.db import connections
 
-from config import Config
 from parser.wiki_parser import main_from_web
+from config import Config
 
 PARSER_CWD = os.path.join("..", "parser")
 PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
