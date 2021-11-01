@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
   translationRoot: TranslationRoot;
   isAdminMode = false;  // активируется по URL "/admin" и его продолжениям
   adminLoginResult: string | null = null;
+  isFavoritesOpen = false;
   JSON = JSON;
 
   constructor(public rootData: RootDataKeeperService,
@@ -123,5 +124,9 @@ export class AppComponent implements OnInit {
         .then(() => this.router.navigate(['tip-translation']));  // Show db tasks admin panel
       return;
     }
+  }
+
+  onFavoritesToggleClick(): void {
+    this.isFavoritesOpen = !(this.isFavoritesOpen);
   }
 }

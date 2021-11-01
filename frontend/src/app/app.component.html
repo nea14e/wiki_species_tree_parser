@@ -1,6 +1,6 @@
 <body class="container-fluid mb-2">
 <div class="row">
-  <div class="col-9">
+  <div [ngClass]="isFavoritesOpen ? 'col-9' : 'col-12'">
     <div class="container-fluid mb-2">
       <h1>{{translationRoot?.translations.site_title}}</h1>
       <h4 style="font-size: 1.3rem">{{translationRoot?.translations.site_description}}</h4>
@@ -17,6 +17,10 @@
         <div class="btn col-auto mr-2 mt-2" (click)="onSearchClick()">
           <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
           {{translationRoot?.translations.search_word}}
+        </div>
+        <div class="btn col-auto mr-2 mt-2" (click)="onFavoritesToggleClick()">
+          <img src="assets/from-bootstrap/bookmarks.svg" class="btn-img"/>
+          {{translationRoot?.translations.favorites}}
         </div>
         <div class="btn col-auto mr-2 mt-2" (click)="onAuthorsClick()">
           <img src="assets/from-bootstrap/vector-pen.svg" class="btn-img"/>
@@ -94,7 +98,7 @@
 
     </div>
   </div>
-  <div class="col-3 pl-0 pt-3">
+  <div *ngIf="isFavoritesOpen" class="col-3 pl-0 pt-3">
     <app-favorites></app-favorites>
   </div>
 </div>
