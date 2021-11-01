@@ -26,7 +26,7 @@ export class TreeComponent implements OnInit {
               private activatedRoute: ActivatedRoute,
               private router: Router,
               private copyToClipboardService: CopyToClipboardService,
-              private favoritesService: FavoritesService) { }
+              public favoritesService: FavoritesService) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {

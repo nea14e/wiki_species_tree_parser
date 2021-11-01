@@ -44,6 +44,7 @@ export class FavoritesService {
     console.log('Add:', this.ids);  // TODO for debug
     this.hasCookiePrivate = true;
     this.loadData();
+    this.isFavoritesOpen = true;
   }
 
   toggleTab(): void {
