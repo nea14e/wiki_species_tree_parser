@@ -11,6 +11,7 @@ export class FavoritesService {
   private ids: number[];
   private hasCookiePrivate: boolean;
   public items: FavoritesItem[] | null;
+  isFavoritesOpen = false;
 
   constructor(private cookieService: CookieService,
               private networkService: NetworkService) {
@@ -43,5 +44,9 @@ export class FavoritesService {
     console.log('Add:', this.ids);  // TODO for debug
     this.hasCookiePrivate = true;
     this.loadData();
+  }
+
+  toggleTab(): void {
+    this.isFavoritesOpen = !(this.isFavoritesOpen);
   }
 }

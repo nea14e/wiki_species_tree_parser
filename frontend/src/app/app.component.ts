@@ -6,7 +6,7 @@ import {RootDataKeeperService} from './root-data-keeper.service';
 import {Location} from '@angular/common';
 import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
-import {RIGHTS} from './models-admin';
+import {FavoritesService} from './favorites.service';
 
 @Component({
   selector: 'app-root',
@@ -18,10 +18,10 @@ export class AppComponent implements OnInit {
   translationRoot: TranslationRoot;
   isAdminMode = false;  // активируется по URL "/admin" и его продолжениям
   adminLoginResult: string | null = null;
-  isFavoritesOpen = false;
   JSON = JSON;
 
   constructor(public rootData: RootDataKeeperService,
+              public favoritesService: FavoritesService,
               private networkService: NetworkService,
               private networkAdminService: BaseNetworkAdminService,
               private activatedRoute: ActivatedRoute,
@@ -127,6 +127,6 @@ export class AppComponent implements OnInit {
   }
 
   onFavoritesToggleClick(): void {
-    this.isFavoritesOpen = !(this.isFavoritesOpen);
+    this.favoritesService.toggleTab();
   }
 }
