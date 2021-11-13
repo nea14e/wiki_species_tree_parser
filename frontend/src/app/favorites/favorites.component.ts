@@ -20,4 +20,7 @@ export class FavoritesComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  onDeleteItemClick(item: FavoritesItem): void {
+    this.favoritesService.deleteItem(item);
+  }
 }

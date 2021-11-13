@@ -27,6 +27,12 @@
             {{item.leaves_count}}
           </div>
         </div>
+        <div class="item-btn btn mr-1"
+             (click)="onDeleteItemClick(item); $event.stopPropagation();"
+             [title]="rootData.translationRoot?.translations.copy_link_to_share"
+        >
+          <img src="assets/from-bootstrap/x.svg" class="item-btn-img"/>
+        </div>
 
       </div>
 

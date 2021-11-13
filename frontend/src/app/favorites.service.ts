@@ -47,6 +47,13 @@ export class FavoritesService {
     this.isFavoritesOpen = true;
   }
 
+  deleteItem(item: FavoritesItem): void {
+    this.ids = this.ids.filter(id => item.id !== id);
+    this.cookieService.putObject('favorites', this.ids);
+    console.log('Delete', item.id);  // TODO for debug
+    this.loadData();
+  }
+
   toggleTab(): void {
     this.isFavoritesOpen = !(this.isFavoritesOpen);
   }
