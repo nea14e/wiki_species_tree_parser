@@ -11,7 +11,7 @@
 }
 
 .btn {
-  background-color: #cddbfb;
+  background-color: var(--item-color-0);
   border: 2px solid black;
   font-size: 1.3rem;
   border-radius: 0.5rem;
@@ -19,7 +19,7 @@
 
 .btn.active,
 .btn:hover:not(:disabled):not(.disabled) {
-  background-color: #849dd6;
+  background-color: var(--item-color-1);
   border: 2px solid black;
 }
 
@@ -122,4 +122,21 @@
   -ms-transform: translate(-50%, -50%);
   -o-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
+}
+
+.list-item-btn {
+  background-color: var(--item-color-0);
+  border: 1px solid black;
+  font-size: 1rem;
+  padding: 0.5rem 0.5rem;
+}
+
+.list-item-btn:hover:not(:disabled):not(.disabled) {
+  background-color: var(--item-color-1);
+  border: 1px solid black;
+}
+
+.list-item-btn-img {
+  width: 1.3rem;
+  height: 1.3rem;
 }
