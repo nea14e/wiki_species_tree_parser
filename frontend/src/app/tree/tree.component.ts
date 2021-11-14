@@ -108,4 +108,8 @@ export class TreeComponent implements OnInit {
     }
     this.favoritesService.addItem(item);
   }
+
+  onUnFavoritesItemClick(item: Item): void {
+    this.favoritesService.deleteItem(item.id);
+  }
 }

@@ -92,10 +92,18 @@
           <img src="assets/from-bootstrap/share.svg" class="item-btn-img"/>
         </div>
         <div class="item-btn btn mr-1"
+             *ngIf="!(favoritesService.isItemInFavorites(item))"
              (click)="onFavoritesItemClick(item); $event.stopPropagation();"
-             [title]="rootData.translationRoot?.translations.add_to_bookmarks"
+             [title]="rootData.translationRoot?.translations.add_to_favorites"
         >
           <img src="assets/from-bootstrap/bookmarks.svg" class="item-btn-img"/>
+        </div>
+        <div class="item-btn btn mr-1"
+             *ngIf="favoritesService.isItemInFavorites(item)"
+             (click)="onUnFavoritesItemClick(item); $event.stopPropagation();"
+             [title]="rootData.translationRoot?.translations.delete_favorite"
+        >
+          <img src="assets/from-bootstrap/bookmark-check-fill.svg" class="item-btn-img"/>
         </div>
       </div>
 

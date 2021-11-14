@@ -21,6 +21,6 @@ export class FavoritesComponent implements OnInit {
   }
 
   onDeleteItemClick(item: FavoritesItem): void {
-    this.favoritesService.deleteItem(item);
+    this.favoritesService.deleteItem(item.id);
   }
 }
