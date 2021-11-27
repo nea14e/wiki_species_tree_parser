@@ -11,6 +11,7 @@ import {FavoritesService} from '../favorites.service';
 })
 export class FavoritesComponent implements OnInit {
   items: FavoritesItem[] = [];
+  isCollapsed = true;
 
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
@@ -22,5 +23,9 @@ export class FavoritesComponent implements OnInit {
 
   onDeleteItemClick(item: FavoritesItem): void {
     this.favoritesService.deleteItem(item.id);
+  }
+
+  collapse(): void {
+    this.isCollapsed = !(this.isCollapsed);
   }
 }
