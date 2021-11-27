@@ -1,12 +1,7 @@
 <div class="favorites-tab pb-2">
-  <div class="row">
-    <div class="col-auto">
-      <h3 class="ml-3">{{rootData.translationRoot?.translations.favorites}}</h3>
-    </div>
-    <img src="assets/from-bootstrap/arrows-collapse.svg" (click)="collapse()" class="list-item-btn-img mt-2">
-  </div>
+  <h3 class="ml-3">{{rootData.translationRoot?.translations.favorites}}</h3>
 
-  <div *ngIf="isCollapsed" class="row d-flex justify-content-center">
+  <div class="row d-flex justify-content-center">
     <div class="col-auto">
 
       <div *ngFor="let item of favoritesService.items" class="plain-list-item pointer row">
