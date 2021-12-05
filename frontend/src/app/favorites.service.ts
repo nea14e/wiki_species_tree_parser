@@ -10,7 +10,7 @@ export class FavoritesService {
 
   private ids: number[];
   private hasCookiePrivate: boolean;
-  public items: FavoritesItem[] | null;
+  public items: FavoritesItem[] = [];
   isFavoritesOpen = false;
 
   constructor(private cookieService: CookieService,

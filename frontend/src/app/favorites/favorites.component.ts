@@ -29,4 +29,8 @@ export class FavoritesComponent implements OnInit {
   toTree(id: number): void {
       this.router.navigate(['tree'], {queryParams: { id } });
   }
+
+  isFavoritesEmpty(): boolean {
+    return !(this.favoritesService.items !== null && this.favoritesService.items.length !== 0);
+  }
 }

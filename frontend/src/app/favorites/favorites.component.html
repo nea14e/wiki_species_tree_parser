@@ -7,6 +7,9 @@
   </div>
   <div class="row d-flex justify-content-center">
     <div class="col-auto">
+      <div *ngIf="isFavoritesEmpty()" class="mr-1">
+        ничего нету
+      </div>
       <div *ngFor="let item of favoritesService.items" class="plain-list-item pointer row"
            (click)="toTree(item.id)">
         <div class="plain-list-item-img-container">
