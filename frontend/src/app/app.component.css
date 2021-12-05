@@ -18,6 +18,10 @@
   border-radius: 0.5rem;
 }
 
+.btn.btn-selected {
+  background-color: var(--item-color-1);
+}
+
 .btn.active,
 .btn:hover:not(:disabled):not(.disabled) {
   background-color: var(--item-color-1);

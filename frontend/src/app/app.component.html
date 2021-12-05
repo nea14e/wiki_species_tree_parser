@@ -18,7 +18,7 @@
           <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
           {{translationRoot?.translations.search_word}}
         </div>
-        <div class="btn col-auto mr-2 mt-2" (click)="onFavoritesToggleClick()">
+        <div class="btn col-auto mr-2 mt-2" [ngClass]="favoritesService.isFavoritesOpen ? 'btn-selected' : '' " (click)="onFavoritesToggleClick()">
           <img src="assets/from-bootstrap/bookmarks.svg" class="btn-img"/>
           {{translationRoot?.translations.favorites}}
         </div>
