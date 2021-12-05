@@ -7,10 +7,11 @@
   </div>
   <div class="row d-flex justify-content-center">
     <div class="col-auto">
-
-      <div *ngFor="let item of favoritesService.items" class="plain-list-item pointer row">
+      <div *ngFor="let item of favoritesService.items" class="plain-list-item pointer row"
+           (click)="toTree(item.id)">
         <div class="plain-list-item-img-container">
-          <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language" [alt]="item.title_for_language"
+          <img *ngIf="!!item.image_url" [src]="item.image_url" [title]="item.title_for_language"
+               [alt]="item.title_for_language"
                class="favorites-item-img-content">
         </div>
 
