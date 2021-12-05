@@ -98,7 +98,7 @@
         >
           <img src="assets/from-bootstrap/bookmarks.svg" class="item-btn-img"/>
         </div>
-        <div class="item-btn btn mr-1"
+        <div class="item-btn btn mr-1 item-btn-highlight"
              *ngIf="favoritesService.isItemInFavorites(item)"
              (click)="onUnFavoritesItemClick(item); $event.stopPropagation();"
              [title]="rootData.translationRoot?.translations.delete_favorite"
