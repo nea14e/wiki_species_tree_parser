@@ -39,6 +39,11 @@
       </div>
 
     </div>
+    <div class="not-found-stub"
+         *ngIf="!(resultItems.length)"
+    >
+          {{rootData.translationRoot?.translations.search_result_empty}}
+    </div>
 
   </div>
 </div>

@@ -150,3 +150,11 @@
   height: 1.3rem;
   cursor: pointer;
 }
+
+.not-found-stub {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 0.7rem;
+  font-style: italic;
+
+}
