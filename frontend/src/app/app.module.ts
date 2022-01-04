@@ -15,6 +15,7 @@ import { DbTasksComponent } from './admin/db-tasks/db-tasks.component';
 import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { TipTranslationComponent } from './admin/tip-translation/tip-translation.component';
 import { FavoritesComponent } from './favorites/favorites.component';
+import { SpinnerCircularModule } from 'spinners-angular/spinner-circular';
 
 const routes: Routes = [
   { path: 'tip', component: TipOfTheDayComponent },
@@ -46,7 +47,8 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     CommonModule,
     FormsModule,
-    CookieModule.forRoot()
+    CookieModule.forRoot(),
+    SpinnerCircularModule
   ],
   providers: [],
   bootstrap: [AppComponent]

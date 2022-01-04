@@ -20,6 +20,7 @@ export class SearchComponent implements OnInit {
   query = '';
   queryChanged: Subject<string> = new Subject<string>();
   resultItems: SearchItem[] = [];
+  isLoading = false;
 
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
@@ -52,12 +53,15 @@ export class SearchComponent implements OnInit {
       return;
     }
 
+    this.isLoading = true;
     this.networkService.search(this.query, offset)
       .subscribe(result => {
         console.log('result:', result);
         this.resultItems = result;
+        this.isLoading = false;
       }, () => {
         alert(this.rootData.translationRoot.translations.network_error);
+        this.isLoading = false;
       });
   }
 
