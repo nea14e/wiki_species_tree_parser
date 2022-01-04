@@ -27,7 +27,8 @@ export class AppComponent implements OnInit {
               private activatedRoute: ActivatedRoute,
               private router: Router,
               private location: Location,
-              private titleService: Title) {}
+              private titleService: Title) {
+  }
 
   ngOnInit(): void {
     this.networkService.getTranslations().subscribe(data => {
@@ -84,6 +85,10 @@ export class AppComponent implements OnInit {
 
   onToDbTasksClick(): void {
     this.router.navigate(['admin/db-tasks']);
+  }
+
+  onToFillingStatsClick(): void {
+    this.router.navigate(['admin/filling-stats']);
   }
 
   onToTipTranslationClick(): void {

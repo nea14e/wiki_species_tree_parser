@@ -71,6 +71,13 @@
             <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
             {{translationRoot?.translations.admin_db_tasks}}
           </div>
+          <div *ngIf="rootData.canManageDbTasks()"
+               class="btn col-auto mr-2 mt-2"
+               (click)="onToFillingStatsClick()"
+          >
+            <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
+            Filling stats
+          </div>
           <div *ngIf="rootData.canSeeTipTranslation()"
                class="btn col-auto mr-2 mt-2"
                (click)="onToTipTranslationClick()"

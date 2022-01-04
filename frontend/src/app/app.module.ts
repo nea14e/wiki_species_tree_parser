@@ -16,6 +16,7 @@ import { AdminUsersComponent } from './admin/admin-users/admin-users.component';
 import { TipTranslationComponent } from './admin/tip-translation/tip-translation.component';
 import { FavoritesComponent } from './favorites/favorites.component';
 import { SpinnerCircularModule } from 'spinners-angular/spinner-circular';
+import { FillingStatsComponent } from './admin/filling-stats/filling-stats.component';
 
 const routes: Routes = [
   { path: 'tip', component: TipOfTheDayComponent },
@@ -25,6 +26,7 @@ const routes: Routes = [
   { path: 'admin', redirectTo: 'tip' },
   { path: 'admin/db-tasks', component: DbTasksComponent },
   { path: 'admin/tip-translation', component: TipTranslationComponent },
+  { path: 'admin/filling-stats', component: FillingStatsComponent },
   { path: 'admin/admin-users', component: AdminUsersComponent },
   { path: '**', redirectTo: 'tip' },
 ];
@@ -39,7 +41,8 @@ const routes: Routes = [
     DbTasksComponent,
     AdminUsersComponent,
     TipTranslationComponent,
-    FavoritesComponent
+    FavoritesComponent,
+    FillingStatsComponent
   ],
   imports: [
     BrowserModule,
