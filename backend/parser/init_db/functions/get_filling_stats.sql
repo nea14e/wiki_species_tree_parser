@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.get_filling_stats()
+CREATE OR REPLACE FUNCTION public.get_filling_stats(_groups_count int)
   RETURNS json
 AS
 $$
@@ -50,7 +50,7 @@ FROM (
                                    CASE WHEN ser.i % 10 < 10 - ser.i / 10 THEN 'type_123' END             AS "type",
                                    CASE WHEN ser.i % 10 < 10 - 2 * ser.i / 10 THEN 'parent_id_123' END    AS parent_id,
                                    CASE WHEN ser.i % 10 < 10 - 3 * ser.i / 10 THEN 'leaves_count_123' END AS leaves_count,
-                                   ntile(10) OVER ()                                                      AS group_number
+                                   ntile(_groups_count) OVER ()                                                      AS group_number
                             FROM generate_series(0, 9999) ser(i)
                           ) t
                      GROUP BY t.group_number
@@ -59,4 +59,8 @@ FROM (
      ) tttt;
 $$ LANGUAGE SQL;
 
--- SELECT public.get_filling_stats();
+/*
+ SELECT public.get_filling_stats(
+       _groups_count := 10
+ );
+  */
