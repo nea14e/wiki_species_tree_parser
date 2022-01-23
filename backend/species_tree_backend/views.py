@@ -412,14 +412,11 @@ def admin_stop_one_task(request):
 
 # Любой пользователь имеет право на просмотр статистики заполнения
 def admin_get_filling_stats(request):
-    groups_count = request.GET['groups_count']
-    groups_count = int(groups_count)
-    nested_level = request.GET['nested_level']
-    nested_level = int(nested_level)
-    outer_group_number = request.GET['outer_group_number']
-    outer_group_number = int(outer_group_number) if outer_group_number != 'null' else None
-    is_test_data = request.GET['is_test_data']
-    is_test_data = bool(is_test_data == 'true')
+    body = json.loads(request.body)
+    groups_count = int(body['groupsCount'])
+    nested_level = int(body['nestedLevel'])
+    outer_group_number = int(body['outerGroupNumber']) if body['outerGroupNumber'] != 'null' else None
+    is_test_data = bool(body['isTestData'] == 'true')
 
     conn = connections["default"]
     cur = conn.cursor()
