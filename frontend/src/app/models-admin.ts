@@ -49,6 +49,11 @@ export class TipsTranslationList {
   is_test_db: boolean;
 }
 
+export class FillingStatsList {
+  stats: FillingStatsItem[] = [];
+  is_test_db: boolean;
+}
+
 export class TipForTranslation {
   id: number;
   tip_on_languages: TranslationsByLanguages;
@@ -62,6 +67,22 @@ export class TipForTranslation {
   title_by_language: string;
   rank_by_admin: string;
   rank_by_language: string;
+}
+
+export class FillingStatsItem {
+  group_number: number;
+  title_from: string;
+  title_to: string;
+  total: number;
+  stage_2: number;
+  stage_2_percent: number;
+  stage_2_color: string;
+  stage_3: number;
+  stage_3_percent: number;
+  stage_3_color: string;
+  stage_4: number;
+  stage_4_percent: number;
+  stage_4_color: string;
 }
 
 export class TranslationsByLanguages {
