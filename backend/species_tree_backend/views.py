@@ -407,6 +407,42 @@ def admin_stop_one_task(request):
 
 
 # ====================================
+# Администрирование - СТАТИСТИКА ЗАПОЛНЕНИЯ ТАБЛИЦЫ ПАРСЕРОМ
+# ====================================
+
+# Любой пользователь имеет право на просмотр статистики заполнения
+def admin_get_filling_stats(request):
+    groups_count = request.GET['groups_count']
+    groups_count = int(groups_count)
+    nested_level = request.GET['nested_level']
+    nested_level = int(nested_level)
+    outer_group_number = request.GET['outer_group_number']
+    outer_group_number = int(outer_group_number) if outer_group_number != 'null' else None
+    is_test_data = request.GET['is_test_data']
+    is_test_data = bool(is_test_data == 'true')
+
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_filling_stats(
+            _groups_count := %s,
+            _nested_level := %s,
+            _outer_group_number := %s,
+            _is_test_data := %s
+        );
+    """, (
+        groups_count,
+        nested_level,
+        outer_group_number,
+        is_test_data,
+    ))
+    stats = list(cur.fetchone()[0])
+    return JsonResponse(
+        {"stats": stats, "is_test_db": Config.BACKEND_IS_USE_TEST_DB},
+        safe=False
+    )  # unsafe указывается только для запросов БД на языке SQL
+
+# ====================================
 # Администрирование - ПЕРЕВОДЫ СОВЕТОВ
 # ====================================
 
