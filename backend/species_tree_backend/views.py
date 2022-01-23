@@ -141,7 +141,7 @@ def check_right_request_decorator(rights: list):  # этот декоратор 
                 return JsonResponse({"is_ok": False,
                                      "message": "You forgot to change Config.BACKEND_ADMIN_PASSWORD when copied from Config_EXAMPLE!"})
             request = args[0]
-            result = check_right_request(request, rights)
+            result = _check_right_request(request, rights)
             if result is not None:
                 return result
             else:
@@ -150,13 +150,15 @@ def check_right_request_decorator(rights: list):  # этот декоратор 
     return decorator
 
 
-def check_right_request(request, rights: list):
+def _check_right_request(request, rights: list):
     # noinspection PyBroadException
     try:
         body = json.loads(request.body)
         password = str(body["adminKey"])
-        if password != Config.BACKEND_ADMIN_PASSWORD:  # Если проверка на супепадмина не пройдена
-            if not rights:  # Если только суперадмин
+        if password == Config.BACKEND_ADMIN_PASSWORD:  # Если это суперадмин, то всё ок, не проверять дальше
+            pass
+        else:
+            if not rights:  # Если требуется только суперадмин
                 return JsonResponse({"is_ok": False,
                                      "message_translation_key": "admin_error_super_admin_only",
                                      "message": "Only super-admin have this permission."})
@@ -486,7 +488,7 @@ def admin_delete_tip(request):
     return JsonResponse({"is_ok": True, "message": "Tip {id} deleted successfully.".format(id=body["id"])})
 
 
-# Проверка прав внутри
+# Проверка прав внутри, т.к. заранее неизвестно, какие права проверять (язык может быть разным)
 def admin_edit_tip_translation(request):
     body = json.loads(request.body)
 
@@ -495,7 +497,7 @@ def admin_edit_tip_translation(request):
         RIGHTS.EDIT_TIPS_LIST,
         body["langKey"]
     ]
-    rights_error = check_right_request(request, rights)
+    rights_error = _check_right_request(request, rights)
     if rights_error is not None:
         return rights_error
 
@@ -528,7 +530,7 @@ def admin_edit_tip_translation(request):
     return JsonResponse({"is_ok": True, "message": "Tip {id} translation {lang_key} edited successfully.".format(id=body["id"], lang_key=body["langKey"])})
 
 
-# Проверка прав внутри
+# Проверка прав внутри, т.к. заранее неизвестно, какие права проверять (язык может быть разным)
 def admin_get_changed_tips(request):
     body = json.loads(request.body)
 
@@ -537,7 +539,7 @@ def admin_get_changed_tips(request):
         RIGHTS.EDIT_TIPS_LIST,
         body["langKey"]
     ]
-    rights_error = check_right_request(request, rights)
+    rights_error = _check_right_request(request, rights)
     if rights_error is not None:
         return rights_error
 
