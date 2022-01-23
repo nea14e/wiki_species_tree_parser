@@ -39,7 +39,7 @@ export class FillingStatsComponent implements OnInit {
     this.networkAdminService.getFillingStats(this.groupsCount, this.nestedLevel, this.outerGroupNumber, this.isTestData).subscribe(data => {
       this.items = data.stats;
       this.isTestDb = data.is_test_db;
-      console.log('Данные' + data);
+      console.log('Данные', data);
     }, error => {
       alert(error);
     });

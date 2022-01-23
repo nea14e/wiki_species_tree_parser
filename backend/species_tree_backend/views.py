@@ -415,8 +415,8 @@ def admin_get_filling_stats(request):
     body = json.loads(request.body)
     groups_count = int(body['groupsCount'])
     nested_level = int(body['nestedLevel'])
-    outer_group_number = int(body['outerGroupNumber']) if body['outerGroupNumber'] != 'null' else None
-    is_test_data = bool(body['isTestData'] == 'true')
+    outer_group_number = int(body['outerGroupNumber']) if body['outerGroupNumber'] is not None else None
+    is_test_data = bool(body['isTestData'])
 
     conn = connections["default"]
     cur = conn.cursor()
