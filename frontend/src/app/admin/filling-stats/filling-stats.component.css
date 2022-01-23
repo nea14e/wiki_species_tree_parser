@@ -1,0 +1,31 @@
+.range {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 97%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #cddbfb; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+  border-radius: 1.2rem;
+  margin: 1rem;
+  text-align: center;
+}
+
+/* Mouse-over effects */
+.range:hover {
+    opacity: 1; /* Fully shown on mouse-over */
+}
+
+.range::-moz-range-thumb {
+    width: 25px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: #4CAF50; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+.rangeValue {
+  font-size: 2rem;
+  margin-left: 1rem;
+}
