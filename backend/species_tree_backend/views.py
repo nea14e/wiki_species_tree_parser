@@ -141,7 +141,7 @@ def check_right_request_decorator(rights: list):  # этот декоратор 
                 return JsonResponse({"is_ok": False,
                                      "message": "You forgot to change Config.BACKEND_ADMIN_PASSWORD when copied from Config_EXAMPLE!"})
             request = args[0]
-            result = check_right_request(request, rights)
+            result = _check_right_request(request, rights)
             if result is not None:
                 return result
             else:
@@ -150,13 +150,15 @@ def check_right_request_decorator(rights: list):  # этот декоратор 
     return decorator
 
 
-def check_right_request(request, rights: list):
+def _check_right_request(request, rights: list):
     # noinspection PyBroadException
     try:
         body = json.loads(request.body)
         password = str(body["adminKey"])
-        if password != Config.BACKEND_ADMIN_PASSWORD:  # Если проверка на супепадмина не пройдена
-            if not rights:  # Если только суперадмин
+        if password == Config.BACKEND_ADMIN_PASSWORD:  # Если это суперадмин, то всё ок, не проверять дальше
+            pass
+        else:
+            if not rights:  # Если требуется только суперадмин
                 return JsonResponse({"is_ok": False,
                                      "message_translation_key": "admin_error_super_admin_only",
                                      "message": "Only super-admin have this permission."})
@@ -405,6 +407,42 @@ def admin_stop_one_task(request):
 
 
 # ====================================
+# Администрирование - СТАТИСТИКА ЗАПОЛНЕНИЯ ТАБЛИЦЫ ПАРСЕРОМ
+# ====================================
+
+# Любой пользователь имеет право на просмотр статистики заполнения
+def admin_get_filling_stats(request):
+    groups_count = request.GET['groups_count']
+    groups_count = int(groups_count)
+    nested_level = request.GET['nested_level']
+    nested_level = int(nested_level)
+    outer_group_number = request.GET['outer_group_number']
+    outer_group_number = int(outer_group_number) if outer_group_number != 'null' else None
+    is_test_data = request.GET['is_test_data']
+    is_test_data = bool(is_test_data == 'true')
+
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_filling_stats(
+            _groups_count := %s,
+            _nested_level := %s,
+            _outer_group_number := %s,
+            _is_test_data := %s
+        );
+    """, (
+        groups_count,
+        nested_level,
+        outer_group_number,
+        is_test_data,
+    ))
+    stats = list(cur.fetchone()[0])
+    return JsonResponse(
+        {"stats": stats, "is_test_db": Config.BACKEND_IS_USE_TEST_DB},
+        safe=False
+    )  # unsafe указывается только для запросов БД на языке SQL
+
+# ====================================
 # Администрирование - ПЕРЕВОДЫ СОВЕТОВ
 # ====================================
 
@@ -486,7 +524,7 @@ def admin_delete_tip(request):
     return JsonResponse({"is_ok": True, "message": "Tip {id} deleted successfully.".format(id=body["id"])})
 
 
-# Проверка прав внутри
+# Проверка прав внутри, т.к. заранее неизвестно, какие права проверять (язык может быть разным)
 def admin_edit_tip_translation(request):
     body = json.loads(request.body)
 
@@ -495,7 +533,7 @@ def admin_edit_tip_translation(request):
         RIGHTS.EDIT_TIPS_LIST,
         body["langKey"]
     ]
-    rights_error = check_right_request(request, rights)
+    rights_error = _check_right_request(request, rights)
     if rights_error is not None:
         return rights_error
 
@@ -528,7 +566,7 @@ def admin_edit_tip_translation(request):
     return JsonResponse({"is_ok": True, "message": "Tip {id} translation {lang_key} edited successfully.".format(id=body["id"], lang_key=body["langKey"])})
 
 
-# Проверка прав внутри
+# Проверка прав внутри, т.к. заранее неизвестно, какие права проверять (язык может быть разным)
 def admin_get_changed_tips(request):
     body = json.loads(request.body)
 
@@ -537,7 +575,7 @@ def admin_get_changed_tips(request):
         RIGHTS.EDIT_TIPS_LIST,
         body["langKey"]
     ]
-    rights_error = check_right_request(request, rights)
+    rights_error = _check_right_request(request, rights)
     if rights_error is not None:
         return rights_error
 
