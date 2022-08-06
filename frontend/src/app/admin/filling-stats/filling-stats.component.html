@@ -28,13 +28,13 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>1</td>
-        <td>2</td>
-        <td class="text-right">3</td>
-        <td class="text-right" title="50%" style="background-color: #990000; color: white">4</td>
-        <td class="text-right" title="50%" style="background-color: #990000; color: white">5</td>
-        <td class="text-right" title="50%" style="background-color: #990000; color: white">6</td>
+      <tr *ngFor="let item of items">
+        <td>{{item.title_from}}</td>
+        <td>{{item.title_to}}</td>
+        <td class="text-right">{{item.total}}</td>
+        <td class="text-right" title="50%" style="background-color: #990000; color: white">{{item.stage_2}}</td>
+        <td class="text-right" title="50%" style="background-color: #990000; color: white">{{item.stage_3}}</td>
+        <td class="text-right" title="50%" style="background-color: #990000; color: white">{{item.stage_4}}</td>
       </tr>
     </tbody>
   </table>

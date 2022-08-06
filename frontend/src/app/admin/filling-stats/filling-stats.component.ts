@@ -47,5 +47,6 @@ export class FillingStatsComponent implements OnInit {
 
   onGroupsCountChanged(e): void {
     this.groupsCount = e.target.value;
+    this.reload();
   }
 }
