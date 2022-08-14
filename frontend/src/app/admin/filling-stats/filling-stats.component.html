@@ -11,6 +11,12 @@
     </div>
   </div>
   <div class="btn col-auto mr-2 mt-2 mb-2"
+       (click)="home()"
+       title="Home"
+  >
+    <img src="assets/from-bootstrap/house-door.svg" class="btn-img"/>
+  </div>
+  <div class="btn col-auto mr-2 mt-2 mb-2"
        (click)="reload()"
        title="Reload"
   >
@@ -28,13 +34,13 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of items">
+      <tr *ngFor="let item of items" (click)="onRowClick(item)">
         <td>{{item.title_from}}</td>
         <td>{{item.title_to}}</td>
         <td class="text-right">{{item.total}}</td>
-        <td class="text-right" title="50%" style="background-color: #990000; color: white">{{item.stage_2}}</td>
-        <td class="text-right" title="50%" style="background-color: #990000; color: white">{{item.stage_3}}</td>
-        <td class="text-right" title="50%" style="background-color: #990000; color: white">{{item.stage_4}}</td>
+        <td class="text-right" title="50%" style="background-color: {{item.stage_2_color}}; color: white">{{item.stage_2}}</td>
+        <td class="text-right" title="50%" style="background-color: {{item.stage_3_color}}; color: white">{{item.stage_3}}</td>
+        <td class="text-right" title="50%" style="background-color: {{item.stage_4_color}}; color: white">{{item.stage_4}}</td>
       </tr>
     </tbody>
   </table>

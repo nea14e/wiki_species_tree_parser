@@ -1,8 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {NetworkDbTasksService} from "../db-tasks/network-db-tasks.service";
-import {NetworkFillingStatsService} from "./network-filling-stats.service";
-import {FillingStatsItem} from "../../models-admin";
+import {ActivatedRoute, Router} from '@angular/router';
+import {NetworkFillingStatsService} from './network-filling-stats.service';
+import {FillingStatsItem} from '../../models-admin';
 
 @Component({
   selector: 'app-filling-stats',
@@ -22,15 +21,17 @@ export class FillingStatsComponent implements OnInit {
   isTestDb: boolean;
 
   constructor(public activatedRoute: ActivatedRoute,
-              private networkAdminService: NetworkFillingStatsService) { }
+              private networkAdminService: NetworkFillingStatsService,
+              private router: Router) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
       // Эта лямбда будет вызвана автоматически при любых изменениях параметров адреса в браузереNumber
-    // this.groupNumber = +this.params.groupNumber || null;
+      this.outerGroupNumber = +params.outerGroupNumber || null;
     // Приводим к числу с помощью + или, если в адресе не указан параметр groupNumber, то null.
-    // this.nestedLevel = +this.params.nestedLevel || 0;
+      this.nestedLevel = +params.nestedLevel || 0;
     // Приводим к числу с помощью + или, если в адресе не указан параметр nestedLevel, то 0.
+      this.reload();
     });
     this.reload();
   }
@@ -48,5 +49,15 @@ export class FillingStatsComponent implements OnInit {
   onGroupsCountChanged(e): void {
     this.groupsCount = e.target.value;
     this.reload();
+  }
+
+  onRowClick(item: FillingStatsItem): void {
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['admin/filling-stats'], {queryParams: {outerGroupNumber: item.group_number, nestedLevel: this.nestedLevel + 1}});
+  }
+
+  home(): void {
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['admin/filling-stats']);
   }
 }
