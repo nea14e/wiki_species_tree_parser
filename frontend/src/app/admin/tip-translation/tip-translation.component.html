@@ -154,9 +154,14 @@
 
     <div class="row ml-2 mr-2 mt-2">
       <div class="btn col-auto ml-3"
+           (click)="onAttachToTreeClick(editingTip)">
+        <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.attach_to_tree}}
+      </div>
+      <div class="btn col-auto ml-3"
            (click)="!hasSpeciesAttached(editingTip) ? $event.stopPropagation() : onShowInTreeClick(editingTip)"
            [class]="!hasSpeciesAttached(editingTip) ? 'disabled' : ''">
-        <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
+        <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
         {{rootData.translationRoot?.translations.show_in_tree}}
       </div>
     </div>

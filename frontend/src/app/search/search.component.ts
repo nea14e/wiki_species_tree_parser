@@ -18,6 +18,7 @@ import {debounceTime, distinctUntilChanged, filter} from 'rxjs/internal/operator
 export class SearchComponent implements OnInit {
 
   query = '';
+  attachToTipId: number | null = null;
   queryChanged: Subject<string> = new Subject<string>();
   resultItems: SearchItem[] = [];
   isLoading = false;
@@ -37,12 +38,23 @@ export class SearchComponent implements OnInit {
       .subscribe(data => {
         console.log('search:', data);
         // Call your function which calls API or do anything you would like do after a lag of 1 sec
-        this.router.navigate(['search'], {queryParams: {q: data}, replaceUrl: true});
+        // noinspection JSIgnoredPromiseFromCall
+        this.router.navigate(
+          ['search'],
+          {
+            queryParams: {q: data},
+            replaceUrl: true,
+            queryParamsHandling: 'merge'
+          }
+        );
       });
 
     this.activatedRoute.queryParams.subscribe(params => {
       this.rootData.lastSearchParams = params;
       this.query = params.q || '';
+      this.attachToTipId = !!params.attachToTipId
+        ? +params.attachToTipId
+        : null;
       this.runSearch(0);
     });
   }
@@ -77,5 +89,9 @@ export class SearchComponent implements OnInit {
 
   onQueryInputChanged(inputText: string): void {
     this.queryChanged.next(inputText);
+  }
+
+  attachToTree(item: SearchItem): void {
+    this.router.navigate(['admin/tip-translation'], {queryParams: {id: item.id}});
   }
 }

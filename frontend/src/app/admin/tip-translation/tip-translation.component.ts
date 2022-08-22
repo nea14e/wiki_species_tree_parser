@@ -289,4 +289,9 @@ export class TipTranslationComponent implements OnInit {
     e.target.style.height = '0px';
     e.target.style.height = (e.target.scrollHeight + 25) + 'px';
   }
+
+  onAttachToTreeClick(editingTip: TipForTranslation): void {
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['search'], {queryParams: {attachToTipId: editingTip.id}});
+  }
 }
