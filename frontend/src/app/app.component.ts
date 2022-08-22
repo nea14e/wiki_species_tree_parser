@@ -49,7 +49,6 @@ export class AppComponent implements OnInit {
       }
       const urlWithoutParams = url.split('?')[0];
       this.currentPage = urlWithoutParams as PagesEnum;
-      console.log('page:', this.currentPage, typeof this.currentPage, this.currentPage === PagesEnum.TipOfTheDay);
     });
   }
 
