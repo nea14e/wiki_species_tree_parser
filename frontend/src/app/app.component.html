@@ -6,23 +6,33 @@
       <h4 style="font-size: 1.3rem">{{translationRoot?.translations.site_description}}</h4>
 
       <div class="row ml-0 mr-0 mb-2">
-        <div class="btn col-auto mr-2 mt-2" (click)="onTipClick()">
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onTipClick()"
+             [ngClass]="currentPage === PagesEnum.TipOfTheDay ? 'btn-selected' : '' ">
           <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
           {{translationRoot?.translations.tip_of_the_day_word}}
         </div>
-        <div class="btn col-auto mr-2 mt-2" (click)="onToTreeClick()">
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onToTreeClick()"
+             [ngClass]="currentPage === PagesEnum.Tree ? 'btn-selected' : '' ">
           <img src="assets/from-bootstrap/diagram-3.svg" class="btn-img"/>
           {{translationRoot?.translations.to_tree}}
         </div>
-        <div class="btn col-auto mr-2 mt-2" (click)="onSearchClick()">
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onSearchClick()"
+             [ngClass]="currentPage === PagesEnum.Search ? 'btn-selected' : '' ">
           <img src="assets/from-bootstrap/search.svg" class="btn-img"/>
           {{translationRoot?.translations.search_word}}
         </div>
-        <div class="btn col-auto mr-2 mt-2" [ngClass]="favoritesService.isFavoritesOpen ? 'btn-selected' : '' " (click)="onFavoritesToggleClick()">
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onFavoritesToggleClick()"
+             [ngClass]="favoritesService.isFavoritesOpen ? 'btn-selected' : '' ">
           <img src="assets/from-bootstrap/bookmarks.svg" class="btn-img"/>
           {{translationRoot?.translations.favorites}}
         </div>
-        <div class="btn col-auto mr-2 mt-2" (click)="onAuthorsClick()">
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onAuthorsClick()"
+             [ngClass]="currentPage === PagesEnum.Authors ? 'btn-selected' : '' ">
           <img src="assets/from-bootstrap/vector-pen.svg" class="btn-img"/>
           {{translationRoot?.translations.authors_word}}
         </div>
@@ -67,6 +77,7 @@
           <div *ngIf="rootData.canManageDbTasks()"
                class="btn col-auto mr-2 mt-2"
                (click)="onToDbTasksClick()"
+               [ngClass]="currentPage === PagesEnum.DbTasks ? 'btn-selected' : '' "
           >
             <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
             {{translationRoot?.translations.admin_db_tasks}}
@@ -74,6 +85,7 @@
           <div *ngIf="rootData.canManageDbTasks()"
                class="btn col-auto mr-2 mt-2"
                (click)="onToFillingStatsClick()"
+               [ngClass]="currentPage === PagesEnum.FillingStats ? 'btn-selected' : '' "
           >
             <img src="assets/from-bootstrap/alarm.svg" class="btn-img"/>
             Filling stats
@@ -81,6 +93,7 @@
           <div *ngIf="rootData.canSeeTipTranslation()"
                class="btn col-auto mr-2 mt-2"
                (click)="onToTipTranslationClick()"
+               [ngClass]="currentPage === PagesEnum.TipTranslation ? 'btn-selected' : '' "
           >
             <img src="assets/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
             {{translationRoot?.translations.admin_tips_list}}
@@ -88,6 +101,7 @@
           <div *ngIf="rootData.canManageAdminUsers()"
                class="btn col-auto mr-2 mt-2"
                (click)="onToAdminUsersClick()"
+               [ngClass]="currentPage === PagesEnum.AdminUsers ? 'btn-selected' : '' "
           >
             <img src="assets/from-bootstrap/people.svg" class="btn-img"/>
             {{translationRoot?.translations.admin_users}}
