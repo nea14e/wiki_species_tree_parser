@@ -224,17 +224,17 @@ export class TipTranslationComponent implements OnInit {
     if (this.isEditingTip(tip)) {
       return 'lightblue';
     }
-    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
-      return !!tip.tip_on_languages[lang.lang_key]
+    if (this.isMainAdminLanguage(lang)) {
+      return this.isFilled(tip, lang)
         ? '#66a366'
         : '#c45050';
     }
-    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
-      return !!tip.tip_on_languages[lang.lang_key]
+    if (this.isNotCanTranslateTipToLanguage(lang)) {
+      return this.isFilled(tip, lang)
         ? '#9eb89e'
         : '#d2afaf';
     }
-    return !!tip.tip_on_languages[lang.lang_key]
+    return this.isFilled(tip, lang)
       ? '#a6dca6'
       : '#f57c7c';
   }
@@ -244,13 +244,13 @@ export class TipTranslationComponent implements OnInit {
     if (this.isEditingTip(tip)) {
       tooltip += this.rootData.translationRoot?.translations.admin_editing_now + '\n';
     }
-    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
+    if (this.isMainAdminLanguage(lang)) {
       tooltip += '! ' + this.rootData.translationRoot?.translations.admin_this_language_is_main_for_admins + '\n';
     }
-    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
+    if (this.isNotCanTranslateTipToLanguage(lang)) {
       tooltip += '[] ' + this.rootData.translationRoot?.translations.admin_read_only + '\n';
     }
-    tooltip += !!tip.tip_on_languages[lang.lang_key]
+    tooltip += this.isFilled(tip, lang)
       ? 'V ' + this.rootData.translationRoot?.translations.admin_translated
       : 'X ' + this.rootData.translationRoot?.translations.admin_not_translated;
     return tooltip;
