@@ -208,18 +208,16 @@ export class TipTranslationComponent implements OnInit {
     }
   }
 
-  getPreviewForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {
-    let result = '';
-    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
-      result = !!tip.tip_on_languages[lang.lang_key] ? 'V!' : 'X!';
-    } else {
-      result = !!tip.tip_on_languages[lang.lang_key] ? 'V' : 'X';
-    }
+  isFilled(tip: TipForTranslation, lang: AdminLanguage): boolean {
+    return !!tip.tip_on_languages[lang.lang_key];
+  }
 
-    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
-      result = '[' + result + ']';
-    }
-    return result;
+  isMainAdminLanguage(lang: AdminLanguage): boolean {
+    return lang.lang_key === this.rootData.mainAdminLanguage?.lang_key;
+  }
+
+  isNotCanTranslateTipToLanguage(lang: AdminLanguage): boolean {
+    return !this.rootData.canTranslateTipToLanguage(lang.lang_key);
   }
 
   getColorForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {

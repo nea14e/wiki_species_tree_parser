@@ -109,11 +109,21 @@
         </div>
       </td>
       <td *ngFor="let lang of knownLanguagesAll"
-          [style.background]="getColorForTipCell(tip, lang)"
-          [title]="getTooltipForTipCell(tip, lang)"
           (click)="onEditTranslationClick(tip, lang)"
-          [ngClass]="rootData.canTranslateTipToLanguage(lang.lang_key) ? 'pointer' : 'pointer-readonly'">
-        {{getPreviewForTipCell(tip, lang)}}
+          [title]="getTooltipForTipCell(tip, lang)"
+          [ngClass]="rootData.canTranslateTipToLanguage(lang.lang_key) ? 'pointer' : 'pointer-readonly'"
+          [style.background]="getColorForTipCell(tip, lang)">
+        <span class="cell-text">
+        <span *ngIf="isNotCanTranslateTipToLanguage(lang)">[</span>
+        <img *ngIf="isFilled(tip, lang)"
+             src="assets/from-bootstrap/check-2.svg"
+             class="btn-img"/>
+        <img *ngIf="!isFilled(tip, lang)"
+             src="assets/from-bootstrap/x.svg"
+             class="btn-img"/>
+        <span *ngIf="isNotCanTranslateTipToLanguage(lang)">]</span>
+        <span *ngIf="isMainAdminLanguage(lang)">!</span>
+        </span>
       </td>
     </tr>
     </tbody>
