@@ -88,7 +88,7 @@
                [ngClass]="currentPage === PagesEnum.FillingStats ? 'btn-selected' : '' "
           >
             <img src="assets/from-bootstrap/percent.svg" class="btn-img"/>
-            Filling stats
+            {{translationRoot?.translations.admin_filling_stats}}
           </div>
           <div *ngIf="rootData.canSeeTipTranslation()"
                class="btn col-auto mr-2 mt-2"

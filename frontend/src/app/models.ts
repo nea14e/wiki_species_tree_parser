@@ -55,6 +55,7 @@ export interface Translations {
   admin_password_error: string;
   admin_logout: string;
   admin_db_tasks: string;
+  admin_filling_stats: string;
   admin_tips_list: string;
   admin_create_tip: string;
   admin_edit_tip: string;
