@@ -78,6 +78,12 @@ export interface Translations {
   admin_read_only: string;
   admin_translated: string;
   admin_not_translated: string;
+  admin_title_from: string;
+  admin_title_to: string;
+  admin_total: string;
+  admin_stage_2: string;
+  admin_stage_3: string;
+  admin_stage_4: string;
 }
 
 export interface TipOfTheDay {

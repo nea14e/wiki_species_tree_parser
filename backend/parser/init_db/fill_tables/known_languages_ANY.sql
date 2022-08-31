@@ -66,7 +66,12 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_this_language_is_main_for_admins": "Этот язык - главный для администратора",
         "admin_read_only": "Только для чтения",
         "admin_translated": "Переведено",
-        "admin_not_translated": "Не переведено"
+        "admin_title_from": "Название с",
+        "admin_title_to": "Название по",
+        "admin_total": " Всего",
+        "admin_stage_2": "Этап 2",
+        "admin_stage_3": "Этап 3",
+        "admin_stage_4": "Этап 4"
       }'::jsonb
   ),
     ('en', 'English',
@@ -136,7 +141,13 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_this_language_is_main_for_admins": "This language is main for admin",
         "admin_read_only": "Read-only",
         "admin_translated": "Translated",
-        "admin_not_translated": "Not translated"
+        "admin_not_translated": "Not translated",
+        "admin_title_from": "title from",
+        "admin_title_to": "title to",
+        "admin_total": "total",
+        "admin_stage_2": "stage 2",
+        "admin_stage_3": "stage 3",
+        "admin_stage_4": "stage 4"
       }'::jsonb
     )
 ),

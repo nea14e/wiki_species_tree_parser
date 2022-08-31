@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkFillingStatsService} from './network-filling-stats.service';
 import {FillingStatsItem} from '../../models-admin';
+import {RootDataKeeperService} from "../../root-data-keeper.service";
 
 @Component({
   selector: 'app-filling-stats',
@@ -20,7 +21,8 @@ export class FillingStatsComponent implements OnInit {
   items: FillingStatsItem[] = [];
   isTestDb: boolean;
 
-  constructor(public activatedRoute: ActivatedRoute,
+  constructor(public rootData: RootDataKeeperService,
+              public activatedRoute: ActivatedRoute,
               private networkAdminService: NetworkFillingStatsService,
               private router: Router) { }
 
