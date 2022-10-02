@@ -7,6 +7,7 @@ import {Location} from '@angular/common';
 import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
 import {FavoritesService} from './favorites.service';
+import {PagesEnum} from "./pages-enum";
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,8 @@ export class AppComponent implements OnInit {
   isAdminMode = false;  // активируется по URL "/admin" и его продолжениям
   adminLoginResult: string | null = null;
   JSON = JSON;
+  currentPage = PagesEnum.TipOfTheDay;
+  PagesEnum = PagesEnum;
 
   constructor(public rootData: RootDataKeeperService,
               public favoritesService: FavoritesService,
@@ -37,13 +40,15 @@ export class AppComponent implements OnInit {
       this.titleService.setTitle(data.translations.site_title);
     }, () => {
       alert('Please check network or try again later.');  // Здесь переводы ещё не загружены, поэтому английский.
-      // В остальных местах испрользуйте alert(this.rootData.translationRoot.translations.network_error);
+      // В остальных местах используйте alert(this.rootData.translationRoot.translations.network_error);
     });
 
     this.location.onUrlChange(url => {
       if (url.includes('admin')) {
         this.isAdminMode = true;
       }
+      const urlWithoutParams = url.split('?')[0];
+      this.currentPage = urlWithoutParams as PagesEnum;
     });
   }
 

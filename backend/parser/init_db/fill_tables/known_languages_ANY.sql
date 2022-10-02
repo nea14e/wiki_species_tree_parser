@@ -44,9 +44,11 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_password_error": "Неверный пароль администратора",
         "admin_logout": "Выйти из администрирования",
         "admin_db_tasks": "Задачи БД",
+        "admin_filling_stats": "Заполнение БД",
         "admin_tips_list": "Список фактов",
         "admin_create_tip": "Создать совет",
         "admin_edit_tip": "Редактировать совет",
+        "attach_to_tree": "Привязать к дереву",
         "admin_edit_translation": "Редактировать перевод",
         "admin_users": "Пользователи-администраторы",
         "admin_translate_from_your_current_language": "Переводить с языка своего интерфейса",
@@ -64,7 +66,12 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_this_language_is_main_for_admins": "Этот язык - главный для администратора",
         "admin_read_only": "Только для чтения",
         "admin_translated": "Переведено",
-        "admin_not_translated": "Не переведено"
+        "admin_title_from": "Название с",
+        "admin_title_to": "Название по",
+        "admin_total": " Всего",
+        "admin_stage_2": "Этап 2",
+        "admin_stage_3": "Этап 3",
+        "admin_stage_4": "Этап 4"
       }'::jsonb
   ),
     ('en', 'English',
@@ -112,9 +119,11 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_password_error": "Wrond admin password",
         "admin_logout": "Logout from admin",
         "admin_db_tasks": "DB tasks",
+        "admin_filling_stats": "Filling stats",
         "admin_tips_list": "Tips list",
         "admin_create_tip": "Create tip",
         "admin_edit_tip": "Edit tip",
+        "attach_to_tree": "Attach to tree",
         "admin_edit_translation": "Edit translation",
         "admin_users": "Admin users",
         "admin_translate_from_your_current_language": "Translate from your interface''s language",
@@ -132,7 +141,13 @@ WITH cte(lang_key, comment, translations) AS (
         "admin_this_language_is_main_for_admins": "This language is main for admin",
         "admin_read_only": "Read-only",
         "admin_translated": "Translated",
-        "admin_not_translated": "Not translated"
+        "admin_not_translated": "Not translated",
+        "admin_title_from": "title from",
+        "admin_title_to": "title to",
+        "admin_total": "total",
+        "admin_stage_2": "stage 2",
+        "admin_stage_3": "stage 3",
+        "admin_stage_4": "stage 4"
       }'::jsonb
     )
 ),

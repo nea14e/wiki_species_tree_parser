@@ -47,6 +47,14 @@
         </div>
       </div>
 
+      <div *ngIf="attachToTipId !== null"
+          class="btn col-auto mr-3 mt-3 mb-3"
+           (click)="attachToTree(item)"
+           [title]="rootData.translationRoot?.translations.attach_to_tree"
+      >
+        <img src="assets/from-bootstrap/check.svg" class="btn-img"/>
+      </div>
+
     </div>
     <div class="not-found-stub"
          *ngIf="!(resultItems.length)"

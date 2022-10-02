@@ -5,3 +5,7 @@
   /*border-collapse: separate !important;*/
   border: 1px black !important;
 }
+
+.cell-text {
+   font-size: 32px;
+ }

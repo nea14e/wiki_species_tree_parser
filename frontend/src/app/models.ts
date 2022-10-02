@@ -55,9 +55,11 @@ export interface Translations {
   admin_password_error: string;
   admin_logout: string;
   admin_db_tasks: string;
+  admin_filling_stats: string;
   admin_tips_list: string;
   admin_create_tip: string;
   admin_edit_tip: string;
+  attach_to_tree: string;
   admin_edit_translation: string;
   admin_users: string;
   admin_translate_from_your_current_language: string;
@@ -76,6 +78,12 @@ export interface Translations {
   admin_read_only: string;
   admin_translated: string;
   admin_not_translated: string;
+  admin_title_from: string;
+  admin_title_to: string;
+  admin_total: string;
+  admin_stage_2: string;
+  admin_stage_3: string;
+  admin_stage_4: string;
 }
 
 export interface TipOfTheDay {

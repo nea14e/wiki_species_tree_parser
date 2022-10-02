@@ -208,35 +208,33 @@ export class TipTranslationComponent implements OnInit {
     }
   }
 
-  getPreviewForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {
-    let result = '';
-    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
-      result = !!tip.tip_on_languages[lang.lang_key] ? 'V!' : 'X!';
-    } else {
-      result = !!tip.tip_on_languages[lang.lang_key] ? 'V' : 'X';
-    }
+  isFilled(tip: TipForTranslation, lang: AdminLanguage): boolean {
+    return !!tip.tip_on_languages[lang.lang_key];
+  }
 
-    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
-      result = '[' + result + ']';
-    }
-    return result;
+  isMainAdminLanguage(lang: AdminLanguage): boolean {
+    return lang.lang_key === this.rootData.mainAdminLanguage?.lang_key;
+  }
+
+  isNotCanTranslateTipToLanguage(lang: AdminLanguage): boolean {
+    return !this.rootData.canTranslateTipToLanguage(lang.lang_key);
   }
 
   getColorForTipCell(tip: TipForTranslation, lang: AdminLanguage): string {
     if (this.isEditingTip(tip)) {
       return 'lightblue';
     }
-    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
-      return !!tip.tip_on_languages[lang.lang_key]
+    if (this.isMainAdminLanguage(lang)) {
+      return this.isFilled(tip, lang)
         ? '#66a366'
         : '#c45050';
     }
-    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
-      return !!tip.tip_on_languages[lang.lang_key]
+    if (this.isNotCanTranslateTipToLanguage(lang)) {
+      return this.isFilled(tip, lang)
         ? '#9eb89e'
         : '#d2afaf';
     }
-    return !!tip.tip_on_languages[lang.lang_key]
+    return this.isFilled(tip, lang)
       ? '#a6dca6'
       : '#f57c7c';
   }
@@ -246,13 +244,13 @@ export class TipTranslationComponent implements OnInit {
     if (this.isEditingTip(tip)) {
       tooltip += this.rootData.translationRoot?.translations.admin_editing_now + '\n';
     }
-    if (lang.lang_key === this.rootData.mainAdminLanguage?.lang_key) {
+    if (this.isMainAdminLanguage(lang)) {
       tooltip += '! ' + this.rootData.translationRoot?.translations.admin_this_language_is_main_for_admins + '\n';
     }
-    if (!this.rootData.canTranslateTipToLanguage(lang.lang_key)) {
+    if (this.isNotCanTranslateTipToLanguage(lang)) {
       tooltip += '[] ' + this.rootData.translationRoot?.translations.admin_read_only + '\n';
     }
-    tooltip += !!tip.tip_on_languages[lang.lang_key]
+    tooltip += this.isFilled(tip, lang)
       ? 'V ' + this.rootData.translationRoot?.translations.admin_translated
       : 'X ' + this.rootData.translationRoot?.translations.admin_not_translated;
     return tooltip;
@@ -288,5 +286,10 @@ export class TipTranslationComponent implements OnInit {
   autoGrowTextArea(e): void {
     e.target.style.height = '0px';
     e.target.style.height = (e.target.scrollHeight + 25) + 'px';
+  }
+
+  onAttachToTreeClick(editingTip: TipForTranslation): void {
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['search'], {queryParams: {attachToTipId: editingTip.id}});
   }
 }
