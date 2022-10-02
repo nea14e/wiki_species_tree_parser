@@ -39,7 +39,7 @@ urlpatterns = [
     path('api/get_tree_by_id/<int:_id>', get_tree_by_id),
     path('api/get_tree_default', get_tree_default),
     path('api/get_favorites', get_favorites),
-    path('api/search_by_words/<str:words>/<int:offset>', search_by_words),
+    path('api/search_by_words', search_by_words),
     path('api/get_tip_of_the_day', get_tip_of_the_day),
     path('api/get_tip_of_the_day_by_id/<int:_id>', get_tip_of_the_day_by_id),
     path('check', check),

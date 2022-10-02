@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {FavoritesItem, SearchItem, TipOfTheDay, TranslationRoot, Tree} from './models';
 import {environment} from '../environments/environment';
@@ -9,7 +9,8 @@ import {environment} from '../environments/environment';
 })
 export class NetworkService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   public getTranslations(): Observable<TranslationRoot> {
     return this.http.get<TranslationRoot>(environment.BACKEND_API_URL + 'get_translations');
@@ -35,8 +36,14 @@ export class NetworkService {
     return this.http.post<FavoritesItem[]>(environment.BACKEND_API_URL + 'get_favorites', {ids});
   }
 
-  public search(query: string, offset: number = 0): Observable<SearchItem[]> {
-    return this.http.get<SearchItem[]>(environment.BACKEND_API_URL + 'search_by_words/' + encodeURIComponent(query) + '/' + offset);
+  public search(query: string, limit: number, offset: number = 0): Observable<SearchItem[]> {
+    return this.http.get<SearchItem[]>(environment.BACKEND_API_URL + 'search_by_words', {
+      params: {
+        query,
+        limit: limit.toString(),
+        offset: offset.toString()
+      }
+    });
   }
 
 }

@@ -54,7 +54,7 @@ export class SearchComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.networkService.search(this.query, offset)
+    this.networkService.search(this.query, 10, offset)
       .subscribe(result => {
         console.log('result:', result);
         this.resultItems = result;

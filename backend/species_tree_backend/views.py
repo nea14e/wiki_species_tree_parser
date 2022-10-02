@@ -82,8 +82,11 @@ def get_favorites(request):
     return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
 
 
-def search_by_words(request, words: str, offset: int):
-    if len(words) < 3:
+def search_by_words(request):
+    query = request.GET['query']
+    limit = int(request.GET['limit'])
+    offset = int(request.GET['offset'])
+    if len(query) < 3:
         return JsonResponse({
             "Error": "Query for text-search must have at least 3 characters."
         })
@@ -92,8 +95,8 @@ def search_by_words(request, words: str, offset: int):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.search_by_words(_query := %s, _offset := %s, _language_key := %s);
-    """, (words, offset, language_key,))
+        SELECT public.search_by_words(_query := %s, _limit := %s, _offset := %s, _language_key := %s);
+    """, (query, limit, offset, language_key,))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
 
