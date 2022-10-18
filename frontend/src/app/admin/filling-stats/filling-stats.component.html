@@ -34,7 +34,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of items" (click)="onRowClick(item)">
+      <tr *ngFor="let item of items" (click)="onRowClick(item)" class="filling-stats-row">
         <td>{{item.title_from}}</td>
         <td>{{item.title_to}}</td>
         <td class="text-right">{{item.total}}</td>

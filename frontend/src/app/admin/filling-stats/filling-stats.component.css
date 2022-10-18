@@ -29,3 +29,7 @@
   font-size: 2rem;
   margin-left: 1rem;
 }
+
+.filling-stats-row:hover {
+  background: #b9b4b4;
+}
