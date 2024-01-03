@@ -1,10 +1,13 @@
 CREATE TABLE public.changed_tips (
   tip_id int NOT NULL
-    REFERENCES public.tips_of_the_day(id),
+    REFERENCES public.tips_of_the_day(id)
+    ON DELETE CASCADE,
   lang_key text  -- NULL for general tip edit
-    REFERENCES public.known_languages(lang_key),
+    REFERENCES public.known_languages(lang_key)
+    ON DELETE CASCADE,
   admin_user_id int  -- NULL for super-admin
-    REFERENCES public.admin_users(id),
+    REFERENCES public.admin_users(id)
+    ON DELETE CASCADE,
   read_by_user_ids jsonb DEFAULT '[]'::jsonb
 );
 
