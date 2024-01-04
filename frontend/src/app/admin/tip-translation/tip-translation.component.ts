@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {RootDataKeeperService} from '../../root-data-keeper.service';
 import {AdminLanguage, TipForTranslation} from '../../models-admin';
 import {NetworkTipTranslationService} from './network-tip-translation.service';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
   selector: 'app-tip-translation',
@@ -25,16 +25,32 @@ export class TipTranslationComponent implements OnInit {
 
   constructor(public rootData: RootDataKeeperService,
               private networkAdminService: NetworkTipTranslationService,
-              private router: Router) {
+              private router: Router,
+              private activatedRoute: ActivatedRoute) {
   }
 
   ngOnInit(): void {
     this.reloadData();
+
     this.networkAdminService.getMainAdminLanguage(this.rootData.adminPassword).subscribe(data => {
       this.rootData.mainAdminLanguage = data;
       // список обновляется по таймеру
     }, error => {
       alert(error);
+    });
+
+    this.activatedRoute.queryParams.subscribe(params => {
+      if (!params.tipId || !params.speciesPageUrl) {
+        return;
+      }
+      this.networkAdminService.attachTipToTree(params.tipId, params.speciesPageUrl, this.rootData.adminPassword)
+        .subscribe(_ => {
+          this.reloadData();
+          alert(this.rootData.translationRoot?.translations.attach_to_tree + ': ' +
+            this.rootData.translationRoot?.translations.success);
+        }, error => {
+          alert(error);
+        });
     });
   }
 
