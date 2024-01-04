@@ -600,6 +600,39 @@ def admin_attach_tip_to_tree(request):
                         .format(tipId=body["tipId"], speciesPageUrl=body["speciesPageUrl"])})
 
 
+@check_right_request_decorator([RIGHTS.EDIT_LANGUAGES_LIST, RIGHTS.EDIT_TIPS_LIST])
+def admin_detach_tip_from_tree(request):
+    body = json.loads(request.body)
+
+    user_id = _get_admin_user_id_by_password_internal(request)
+
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        WITH log_upd AS (
+            UPDATE public.changed_tips
+            SET admin_user_id = %(user_id)s,  -- only user last modified by, prev user is rewritten
+                read_by_user_ids = '[]'::jsonb  -- nobody read yet
+            WHERE tip_id = %(tip_id)s
+                AND lang_key IS NULL 
+            RETURNING 1
+        ), log_ins AS (
+            INSERT INTO public.changed_tips (tip_id, lang_key, admin_user_id, read_by_user_ids)
+            SELECT %(tip_id)s, NULL, %(user_id)s, '[]'::jsonb
+            WHERE NOT EXISTS(SELECT 1 FROM log_upd)
+        )
+        UPDATE public.tips_of_the_day
+        SET page_url = NULL
+        WHERE id = %(tip_id)s
+    """, {
+        "tip_id": body["tipId"],
+        "user_id": user_id,
+    }
+    )
+    return JsonResponse({"is_ok": True, "message": "Tip tipId={tipId} has now detached from any species."
+                        .format(tipId=body["tipId"])})
+
+
 # Проверка прав внутри, т.к. заранее неизвестно, какие права проверять (язык может быть разным)
 def admin_get_changed_tips(request):
     body = json.loads(request.body)

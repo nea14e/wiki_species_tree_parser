@@ -174,6 +174,12 @@
         <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
         {{rootData.translationRoot?.translations.show_in_tree}}
       </div>
+      <div class="btn col-auto ml-3"
+           (click)="!hasSpeciesAttached(editingTip) ? $event.stopPropagation() : onDetachFromTreeClick(editingTip)"
+           [class]="!hasSpeciesAttached(editingTip) ? 'disabled' : ''">
+        <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
+        {{rootData.translationRoot?.translations.detach_from_tree}}
+      </div>
     </div>
 
     <div class="row ml-2 mr-2 mt-5">
@@ -297,8 +303,8 @@
       </div>
 
       <div class="btn col-auto mr-2 mt-2"
-           (click)="onSaveTranslationClick()"
            *ngIf="rootData.canTranslateTipToLanguage(editingLanguage.lang_key)"
+           (click)="onSaveTranslationClick()"
       >
         <img src="assets/from-bootstrap/check-2.svg" class="btn-img"/>
         {{rootData.translationRoot?.translations.save}}

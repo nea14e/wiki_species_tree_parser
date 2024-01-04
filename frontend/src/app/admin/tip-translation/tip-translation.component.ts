@@ -308,4 +308,19 @@ export class TipTranslationComponent implements OnInit {
     // noinspection JSIgnoredPromiseFromCall
     this.router.navigate(['search'], {queryParams: {attachToTipId: editingTip.id}});
   }
+
+  onDetachFromTreeClick(editingTip: TipForTranslation): void {
+    if (!confirm(this.rootData.translationRoot?.translations.detach_from_tree + '?')) {
+      return;
+    }
+    this.networkAdminService.detachTipFromTree(editingTip.id, this.rootData.adminPassword)
+      .subscribe(_ => {
+        this.reloadData();
+        this.editingTip = null;
+        alert(this.rootData.translationRoot?.translations.detach_from_tree + ': ' +
+          this.rootData.translationRoot?.translations.success);
+      }, error => {
+        alert(error);
+      });
+  }
 }

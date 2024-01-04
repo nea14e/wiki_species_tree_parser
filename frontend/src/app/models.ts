@@ -60,6 +60,7 @@ export interface Translations {
   admin_create_tip: string;
   admin_edit_tip: string;
   attach_to_tree: string;
+  detach_from_tree: string;
   admin_edit_translation: string;
   admin_users: string;
   admin_translate_from_your_current_language: string;
