@@ -6,6 +6,7 @@ import {RootDataKeeperService} from '../root-data-keeper.service';
 import {SearchItem} from '../models';
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, filter} from 'rxjs/internal/operators';
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'app-search',
@@ -27,6 +28,7 @@ export class SearchComponent implements OnInit {
               private networkService: NetworkService,
               private activatedRoute: ActivatedRoute,
               private router: Router,
+              private location: Location,
               private copyToClipboardService: CopyToClipboardService) { }
 
   ngOnInit(): void {
@@ -93,5 +95,9 @@ export class SearchComponent implements OnInit {
 
   attachToTree(item: SearchItem): void {
     this.router.navigate(['admin/tip-translation'], {queryParams: {id: item.id}});
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }
