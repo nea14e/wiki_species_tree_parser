@@ -288,7 +288,7 @@ export class TipTranslationComponent implements OnInit {
     this.networkAdminService.saveTipTranslation(
       this.editingLanguage.lang_key,
       this.editingTip.id,
-      this.editingTip.tip_on_languages[this.editingLanguage.lang_key],
+      this.editingTip.tip_on_languages[this.editingLanguage.lang_key] || '',
       this.rootData.adminPassword
     ).subscribe(() => {
       this.editingTip = null;
