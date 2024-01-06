@@ -346,16 +346,14 @@ class MyException(BaseException):
 
 
 def parse_image_wikispecies(main_content, details: ListItemDetails):
-    div = main_content.select_one("div.thumb.tright")
-    if div is not None:
-        images = div.select("img")  # Перебираем все картинки справа в основном содержимом
-        for img in images:
-            if img is not None:
-                if img.get("alt", None) != "edit":  # не картинка карандаша
-                    src = img['src']
-                    Logger.print("Картинка в Викивидах: " + str(src))
-                    details.image_url = src
-                    return details
+    images = main_content.select("figure img.mw-file-element")  # Перебираем все картинки справа в основном содержимом
+    for img in images:
+        if img is not None:
+            if img.get("alt", None) != "edit":  # не картинка карандаша
+                src = img['src']
+                Logger.print("Картинка в Викивидах: " + str(src))
+                details.image_url = src
+                return details
     # Картинки может не быть - всё равно обрабатывать эту страницу дальше
     Logger.print("Картинка в Викивидах НЕ НАЙДЕНА")
     details.image_url = None
