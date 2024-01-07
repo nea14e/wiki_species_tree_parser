@@ -430,14 +430,10 @@ def parse_levels(tree_box, details: ListItemDetails):
     # Предыдущий уровень
 
     ind = current_level_ind - 1
-    while not levels[ind]:  # Пропускаем уровни-пустые строки (почему-то такие бывают, они видны и в браузере)
+    while ind >= 0 and not levels[ind]:  # Пропускаем уровни-пустые строки (почему-то такие бывают, они видны и в браузере)
         ind = ind - 1
-        if ind < 0:
-            return details, "Stage 2 error: parent level not found: all prev levels are empty strings. levels='{}'"  \
-                    .format(levels)
-
-    if ind >= 0:
-        parent_level = levels[ind]
+        
+    def handle_parent_level(algorithm_type: str, parent_level: str):
         matches = re.match(r"""(.+?):.+?<a.+?href="(.+?)".*?>(.+?)</a>.*""", parent_level, re.DOTALL)
         if matches is not None:
             details.parent_type = matches.group(1)
@@ -445,32 +441,51 @@ def parse_levels(tree_box, details: ListItemDetails):
             href = matches.group(2)
             if href[:len("/wiki/")] == "/wiki/":
                 details.parent_page_url = href[len("/wiki/"):]
+                Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type, 
+                                                                                     details.parent_type,
+                                                                                     details.parent_title,
+                                                                                     details.parent_page_url))
+                return details, None  # Успех
             else:
-                return details, "Stage 2 error: <a href> starts with unknown prefix instead of '/wiki/': href='{}'!" \
-                    .format(href)
-            Logger.print("Предыдущий уровень: основной: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
-            return details, None
+                raise RuntimeError("Stage 2 error ({}): <a href> starts with unknown prefix instead of '/wiki/': href='{}'!" \
+                    .format(algorithm_type, href))
         else:
-            Logger.print("Предыдущий уровень: основной: не найден!")
-            return details, "Stage 2 error: previous level (main) not found on this page."
+            Logger.print("Предыдущий уровень ({}): не найден!".format(algorithm_type))
+            return details, "Stage 2 error ({}): previous level not found on this page. parent_level='{}'"  \
+                .format(algorithm_type, parent_level)
+
+    if ind >= 0:
+        # Предыдущий уровень в основной части:
+        parent_level = levels[ind]
+        details, error = handle_parent_level("general", parent_level)
+        return details, error
     else:
-        levels_collapsible_p = tree_box.select_one("table:nth-child(2).wikitable.mw-collapsible > tbody > tr:nth-child(2) > td > p")
-        levels_collapsible = str(levels_collapsible_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
-        if len(levels_collapsible) >= 2:
-            parent_level = levels_collapsible[-2]
-            matches = re.match(r"""(.+?):.+?<a.+?href="(.+?)".*?>(.+?)</a>.*""", parent_level, re.DOTALL)
-            if matches is not None:
-                details.parent_type = matches.group(1)
-                details.parent_title = matches.group(3)
-                details.parent_page_url = matches.group(2)[len("/wiki/"):]
-                Logger.print("Предыдущий уровень: в таблице: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
-                return details, None
-            else:
-                Logger.print("Предыдущий уровень: в таблице: не найден!")
-                return details, "Stage 2 error: previous level (in table) not found on this page."
-        else:
-            Logger.print("Предыдущий уровень: в таблице: не найден - уровней мало!")
-            return details, "Stage 2 error: previous level (in table) not found on this page - levels too few."
+        # Предыдущий уровень запрятан в таблицу:
+        tables = tree_box.select("table.wikitable.mw-collapsible")
+        for table in tables:
+            th = table.select_one("tbody > tr:nth-child(1) > th")
+            if th is None or 'Taxonavigation:' not in str(th):
+                continue  # это не та таблица, ищем другую
+
+            table_levels_p = table.select_one("tbody > tr:nth-child(2) > td > p")
+            if table_levels_p is None:
+                raise RuntimeError("Алгоритм для доставания родителя из таблицы требует обновления "
+                                   "(вероятно, на сайте изменилась разметка).")
+            table_levels = str(table_levels_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
+            table_levels = [level.replace('<i>', '').replace('</i>', '') for level in table_levels]
+            if len(table_levels) == 0:
+                raise RuntimeError("Алгоритм для доставания родителя из таблицы требует обновления "
+                                   "(вероятно, на сайте изменилась разметка).")
+
+            ind = len(table_levels) - 1
+            while ind >= 0 and not table_levels[ind]:  # Пропускаем уровни-пустые строки (почему-то такие бывают, они видны и в браузере)
+                ind = ind - 1
+
+            parent_level = table_levels[ind]
+            details, error = handle_parent_level("in table", parent_level)
+            return details, error
+        Logger.print("Предыдущий уровень (in table): подходящей таблицы не найдено!")
+        return details, "Stage 2 error (in table): table for previous level not found."
 
 
 def parse_wikipedias_hrefs(wiki_html, details: ListItemDetails):
