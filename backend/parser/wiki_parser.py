@@ -388,6 +388,7 @@ def parse_levels(tree_box, details: ListItemDetails):
 
     levels_p = tree_box.find("p", recursive=False)
     levels = str(levels_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
+    levels = [level.replace('<i>', '').replace('</i>', '') for level in levels]
 
     # Текущий уровень
 
