@@ -420,6 +420,12 @@ def parse_levels(tree_box, details: ListItemDetails):
     # Предыдущий уровень
 
     ind = current_level_ind - 1
+    while not levels[ind]:  # Пропускаем уровни-пустые строки (почему-то такие бывают, они видны и в браузере)
+        ind = ind - 1
+        if ind < 0:
+            return details, "Stage 2 error: parent level not found: all prev levels are empty strings. levels='{}'"  \
+                    .format(levels)
+
     if ind >= 0:
         parent_level = levels[ind]
         matches = re.match(r"""(.+?):.+?<a.+?href="(.+?)".*?>(.+?)</a>.*""", parent_level, re.DOTALL)
