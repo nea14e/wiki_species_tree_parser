@@ -402,14 +402,24 @@ def parse_levels(tree_box, details: ListItemDetails):
     is_current_found = False
     current_level_ind = None
     for ind, level in enumerate(levels):
-        matches = re.match(r"(.+?):.+?<a.+?mw-selflink.+?>(.+?)</a>.*", level, re.DOTALL)
-        if matches is not None:
-            # эта ссылка ЕСТЬ в просматриваемом нами уровне
+        matches_a_selflink = re.match(r"(.+?):.+?<a.+?mw-selflink.+?>(.+?)</a>.*", level, re.DOTALL)
+        if matches_a_selflink is not None:
+            # Случай: ссылка с mw-selflink
             is_current_found = True
             current_level_ind = ind
-            details.type = matches.group(1)  # текст до двоеточия
-            details.title = matches.group(2)  # текст внутри <a>...</a>
-            Logger.print("Текущий уровень: тип: {} название: {}".format(details.type, details.title))
+            details.type = matches_a_selflink.group(1)  # текст до двоеточия
+            details.title = matches_a_selflink.group(2)  # текст внутри <a>...</a>
+            Logger.print("Текущий уровень (a_selflink): тип: {} название: {}".format(details.type, details.title))
+            break
+        matches_non_a = re.match(r"(.+?): +(.+)", level, re.DOTALL)
+        if matches_non_a and  \
+                '<a' not in level and '</a>' not in level:
+            # Случай: без ссылки вообще
+            is_current_found = True
+            current_level_ind = ind
+            details.type = matches_non_a.group(1)  # текст до двоеточия
+            details.title = matches_non_a.group(2)  # текст после двоеточия
+            Logger.print("Текущий уровень (non-a): тип: {} название: {}".format(details.type, details.title))
             break
 
     # Если текущий уровень почему-то не найден
