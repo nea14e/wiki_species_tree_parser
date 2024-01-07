@@ -390,6 +390,13 @@ def parse_levels(tree_box, details: ListItemDetails):
     levels = str(levels_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
     levels = [level.replace('<i>', '').replace('</i>', '') for level in levels]
 
+    # Если это страница-выбор для названия, имеющего несколько значений
+    if len(levels) == 1:
+        only_level = levels[0]
+        if only_level[:len('The taxon name <b>')] == 'The taxon name <b>' \
+                and only_level[-len('</b> may refer to:'):] == '</b> may refer to:':
+            return details, "Page-chooser for multiple pages with the same title."
+
     # Текущий уровень
 
     is_current_found = False
