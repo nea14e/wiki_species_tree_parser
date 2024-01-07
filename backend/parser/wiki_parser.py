@@ -418,7 +418,12 @@ def parse_levels(tree_box, details: ListItemDetails):
         if matches is not None:
             details.parent_type = matches.group(1)
             details.parent_title = matches.group(3)
-            details.parent_page_url = matches.group(2)[len("/wiki/"):]
+            href = matches.group(2)
+            if href[:len("/wiki/")] == "/wiki/":
+                details.parent_page_url = href[len("/wiki/"):]
+            else:
+                return details, "Stage 2 error: <a href> starts with unknown prefix instead of '/wiki/': href='{}'!" \
+                    .format(href)
             Logger.print("Предыдущий уровень: основной: '{}': '{}', href='{}'".format(details.parent_type, details.parent_title, details.parent_page_url))
             return details, None
         else:
