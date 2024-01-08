@@ -28,10 +28,18 @@
   </div>
   <div class="row">
     <div class="btn col-auto mr-2 mt-2 mb-2"
-         (click)="home()"
          title="Home"
+         (click)="home()"
+         [ngClass]="nestedLevel==0 ? 'active' : ''"
     >
       <img src="assets/from-bootstrap/house-door.svg" class="btn-img"/>
+    </div>
+    <div class="btn col-auto mr-2 mt-2 mb-2"
+         title="Back"
+         (click)="nestedLevel > 0 ? back() : $event.stopPropagation()"
+         [ngClass]="nestedLevel > 0 ? '' : 'disabled'"
+    >
+      <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
     </div>
     <div class="btn col-auto mr-2 mt-2 mb-2"
          (click)="isLoading ? $event.stopPropagation() : reload()"
@@ -65,19 +73,19 @@
         <td class="text-right">{{item.total}}</td>
         <td class="text-right"
             [ngClass]="isLoading ? 'wait' : 'tooltipable'"
-            title="50%"
+            [title]="item.stage_2_percent + '%'"
             style="background-color: {{item.stage_2_color}}; color: white">
           {{item.stage_2}}
         </td>
         <td class="text-right"
             [ngClass]="isLoading ? 'wait' : 'tooltipable'"
-            title="50%"
+            [title]="item.stage_3_percent + '%'"
             style="background-color: {{item.stage_3_color}}; color: white">
           {{item.stage_3}}
         </td>
         <td class="text-right"
             [ngClass]="isLoading ? 'wait' : 'tooltipable'"
-            title="50%"
+            [title]="item.stage_4_percent + '%'"
             style="background-color: {{item.stage_4_color}}; color: white">
           {{item.stage_4}}
         </td>

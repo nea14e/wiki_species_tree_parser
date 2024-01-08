@@ -3,6 +3,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkFillingStatsService} from './network-filling-stats.service';
 import {FillingStatsItem} from '../../models-admin';
 import {RootDataKeeperService} from "../../root-data-keeper.service";
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'app-filling-stats',
@@ -25,7 +26,8 @@ export class FillingStatsComponent implements OnInit {
   constructor(public rootData: RootDataKeeperService,
               public activatedRoute: ActivatedRoute,
               private networkAdminService: NetworkFillingStatsService,
-              private router: Router) { }
+              private router: Router,
+              private location: Location) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
@@ -63,11 +65,28 @@ export class FillingStatsComponent implements OnInit {
 
   onRowClick(item: FillingStatsItem): void {
     // noinspection JSIgnoredPromiseFromCall
-    this.router.navigate(['admin/filling-stats'], {queryParams: {outerGroupNumber: item.group_number, nestedLevel: this.nestedLevel + 1}});
+    this.router.navigate(['admin/filling-stats'],
+      {
+        queryParams: {
+          outerGroupNumber: item.group_number,
+          nestedLevel: this.nestedLevel + 1
+        }
+      });
   }
 
   home(): void {
     // noinspection JSIgnoredPromiseFromCall
     this.router.navigate(['admin/filling-stats']);
+  }
+
+  back(): void {
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['admin/filling-stats'],
+      {
+        queryParams: {
+          outerGroupNumber: Math.ceil(this.outerGroupNumber / this.groupsCount),
+          nestedLevel: this.nestedLevel - 1
+        }
+      });
   }
 }
