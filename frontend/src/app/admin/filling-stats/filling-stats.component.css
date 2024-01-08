@@ -40,3 +40,15 @@
   font-weight: bold;
   padding: 1rem 0;
 }
+
+.list-item {
+  cursor: zoom-in;
+}
+
+.tooltipable {
+  cursor: help;
+}
+
+.wait {
+  cursor: wait !important;
+}
