@@ -53,6 +53,10 @@ export class FillingStatsComponent implements OnInit {
     this.reload();
   }
 
+  onIsTestDataChanged(): void {
+    this.reload();
+  }
+
   onRowClick(item: FillingStatsItem): void {
     // noinspection JSIgnoredPromiseFromCall
     this.router.navigate(['admin/filling-stats'], {queryParams: {outerGroupNumber: item.group_number, nestedLevel: this.nestedLevel + 1}});

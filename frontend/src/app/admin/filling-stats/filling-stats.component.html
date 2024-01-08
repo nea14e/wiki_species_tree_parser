@@ -4,9 +4,20 @@
 <div>
   <div class="row">
     <div class="col-3">
+      <p class="rangeValue">Is test data:</p>
+    </div>
+    <div class="col-9 clear-padding-margin">
+      <label>
+        <input type="checkbox" [(ngModel)]="isTestData" (change)="onIsTestDataChanged()">
+        <small>&nbsp;Use fake data generated independently from database's data.</small>
+      </label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-3">
       <p class="rangeValue">Groups count: {{groupsCount}}</p>
     </div>
-    <div class="col-9">
+    <div class="col-9 clear-padding-margin">
       <input type="range" min="10" max="100" class="range" id="myRange" [value]="groupsCount" (change)="onGroupsCountChanged($event)">
     </div>
   </div>
