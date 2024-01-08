@@ -17,9 +17,10 @@ export class FillingStatsComponent implements OnInit {
   groupsCount = 20;
   outerGroupNumber = null;
   nestedLevel = 0;
-  isTestData = true;
+  isTestData = false;
   items: FillingStatsItem[] = [];
   isTestDb: boolean;
+  isLoading = false;
 
   constructor(public rootData: RootDataKeeperService,
               public activatedRoute: ActivatedRoute,
@@ -39,11 +40,14 @@ export class FillingStatsComponent implements OnInit {
   }
 
   public reload(): void {
+    this.isLoading = true;
     this.networkAdminService.getFillingStats(this.groupsCount, this.nestedLevel, this.outerGroupNumber, this.isTestData).subscribe(data => {
+      this.isLoading = false;
       this.items = data.stats;
       this.isTestDb = data.is_test_db;
       console.log('Данные', data);
     }, error => {
+      this.isLoading = false;
       alert(error);
     });
   }

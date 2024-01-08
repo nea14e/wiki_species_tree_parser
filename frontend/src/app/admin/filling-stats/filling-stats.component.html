@@ -21,17 +21,23 @@
       <input type="range" min="10" max="100" class="range" id="myRange" [value]="groupsCount" (change)="onGroupsCountChanged($event)">
     </div>
   </div>
-  <div class="btn col-auto mr-2 mt-2 mb-2"
-       (click)="home()"
-       title="Home"
-  >
-    <img src="assets/from-bootstrap/house-door.svg" class="btn-img"/>
-  </div>
-  <div class="btn col-auto mr-2 mt-2 mb-2"
-       (click)="reload()"
-       title="Reload"
-  >
-    <img src="assets/from-bootstrap/arrow-clockwise.svg" class="btn-img"/>
+  <div class="row">
+    <div class="btn col-auto mr-2 mt-2 mb-2"
+         (click)="home()"
+         title="Home"
+    >
+      <img src="assets/from-bootstrap/house-door.svg" class="btn-img"/>
+    </div>
+    <div class="btn col-auto mr-2 mt-2 mb-2"
+         (click)="isLoading ? $event.stopPropagation() : reload()"
+         [ngClass]="isLoading ? 'active' : ''"
+         title="Reload"
+    >
+      <img src="assets/from-bootstrap/arrow-clockwise.svg" class="btn-img"/>
+    </div>
+    <div *ngIf="isLoading" class="col-auto loading-text">
+      Loading...
+    </div>
   </div>
   <table class="table table-bordered table-striped table-hover">
     <thead>
