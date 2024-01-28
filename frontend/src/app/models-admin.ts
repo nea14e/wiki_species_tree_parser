@@ -71,8 +71,8 @@ export class TipForTranslation {
 
 export class FillingStatsItem {
   group_number: number;
-  title_from: string;
-  title_to: string;
+  page_url_from: string;
+  page_url_to: string;
   total: number;
   stage_2: number;
   stage_2_percent: number;

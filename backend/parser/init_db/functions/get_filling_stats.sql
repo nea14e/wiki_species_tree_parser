@@ -28,8 +28,8 @@ $$
 SELECT json_agg(t_result ORDER BY group_number)
 FROM (
        SELECT group_number,
-              title_from,
-              title_to,
+              page_url_from,
+              page_url_to,
               total,
               stage_2,
               public.percent_of(stage_2, total) AS stage_2_percent,
@@ -42,18 +42,18 @@ FROM (
               public.percent_of_to_color(stage_4, total) AS stage_4_color
        FROM (
               SELECT group_number,
-                     min(title)                                        AS title_from,
-                     max(title)                                        AS title_to,
+                     min(page_url)                                     AS page_url_from,
+                     max(page_url)                                     AS page_url_to,
                      count(1)                                          AS total,
                      count(1) FILTER ( WHERE "type" IS NOT NULL)       AS stage_2,
                      count(1) FILTER ( WHERE parent_id IS NOT NULL)    AS stage_3,
                      count(1) FILTER ( WHERE leaves_count IS NOT NULL) AS stage_4
               FROM (
-                     SELECT title,
+                     SELECT page_url,
                             "type",
                             parent_id,
                             leaves_count,
-                            ntile(_groups_count) OVER () +
+                            ntile(_groups_count) OVER (ORDER BY page_url) +
                             coalesce(_outer_group_number - 1, 0) * _groups_count AS group_number -- сквозная нумерация групп на текущем уровне
                      FROM (
                             /*
@@ -64,7 +64,7 @@ FROM (
                                    так, что каждый последующий этап заполнен меньше, чем предыдущий,
                                    к 2100 и позже уже совсем ничего не заполнено.
                              */
-                            SELECT 'test_' || lpad(ser.i::text, 4, '0') AS title,
+                            SELECT 'test_' || lpad(ser.i::text, 4, '0') AS page_url,
                                    CASE WHEN ser.i % 10 < 10 - (ser.i - 2000) / 10 THEN 'type123' END        AS "type",
                                    CASE WHEN ser.i % 10 < 10 - 2 * (ser.i - 2000) / 10 THEN 123::bigint END  AS parent_id,
                                    CASE WHEN ser.i % 10 < 10 - 3 * (ser.i - 2000) / 10 THEN 123::bigint END  AS leaves_count,
@@ -73,11 +73,11 @@ FROM (
                             WHERE _is_test_data = TRUE
                             UNION ALL
                             -- Реальная таблица из БД:
-                            SELECT title,
+                            SELECT page_url,
                                    "type",
                                    parent_id,
                                    leaves_count,
-                                   ntile(power(_groups_count, _nested_level)::int) OVER (ORDER BY title)    AS outer_group_number
+                                   ntile(power(_groups_count, _nested_level)::int) OVER (ORDER BY page_url)    AS outer_group_number
                             FROM public.list
                             WHERE _is_test_data = FALSE
                           ) t_source

@@ -23,7 +23,7 @@
   </div>
   <div class="row">
     <h4>
-      {{items.length >= 1 ? items[0].title_from : '...'}}&nbsp;- {{items.length >= 1 ? items[items.length - 1].title_to : '...'}}
+      {{items.length >= 1 ? items[0].page_url_from : '...'}}&nbsp;- {{items.length >= 1 ? items[items.length - 1].page_url_to : '...'}}
     </h4>
   </div>
   <div class="row">
@@ -68,8 +68,8 @@
           (click)="onRowClick(item)"
           class="list-item"
           [ngClass]="isLoading ? 'wait' : ''">
-        <td>{{item.title_from}}</td>
-        <td>{{item.title_to}}</td>
+        <td>{{item.page_url_from}}</td>
+        <td>{{item.page_url_to}}</td>
         <td class="text-right">{{item.total}}</td>
         <td class="text-right"
             [ngClass]="isLoading ? 'wait' : 'tooltipable'"
