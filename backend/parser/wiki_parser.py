@@ -152,13 +152,15 @@ def print_usage():
 def populate_list(from_title: str = "", to_title: str = ""):
     Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
 
-    url = "https://species.wikimedia.org/wiki/Special:AllPages"
+    url = "https://species.wikimedia.org/wiki/Special:AllPages?"
+    params = []
     if from_title:
-        url += "?from={}".format(requote_uri(from_title))
+        params.append("from={}".format(requote_uri(from_title)))
     if to_title:
-        url += "&to={}".format(requote_uri(to_title))
+        params.append("to={}".format(requote_uri(to_title)))
     if from_title or to_title:
-        url += "&namespace=0"
+        params.append("namespace=0")
+    url += "&".join(params)
 
     html = MyRequests.get_session().get(url).content  # Парсим саму страницу
     wiki_html = BeautifulSoup(html, "html.parser")
