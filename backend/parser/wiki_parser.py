@@ -429,6 +429,11 @@ def parse_levels(tree_box, details: ListItemDetails):
         Logger.print("Ошибка: текущий уровень не найден!")
         return details, "Stage 2 error: current level not found on this page."
 
+    if details.title is not None and len(details.title) > len("<b>") and details.title[:len("<b>")] == "<b>":
+        details.title = details.title[len("<b>"):]
+    if details.title is not None and len(details.title) > len("</b>") and details.title[-len("</b>"):] == "</b>":
+        details.title = details.title[:-len("</b>")]
+
     # Предыдущий уровень
 
     ind = current_level_ind - 1
