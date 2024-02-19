@@ -256,7 +256,7 @@ def parse_details(skip_parsed_interval, where=""):
             details = ListItemDetails(id=list_item[0], title=list_item[1], page_url=list_item[2])
             url = Config.URL_START + details.page_url
             Logger.print('===========================================')
-            Logger.print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.title + " ссылка: " + url)
+            Logger.print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.page_url + " название: " + details.title + " ссылка: " + url)
             html = MyRequests.get_session().get(url).content
             wiki_html = BeautifulSoup(html, "html.parser")
 
