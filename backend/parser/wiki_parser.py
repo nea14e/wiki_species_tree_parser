@@ -453,8 +453,15 @@ def parse_levels(tree_box, details: ListItemDetails):
                                                                                      details.parent_title,
                                                                                      details.parent_page_url))
                 return details, None  # Успех
+            elif href[:len("/w/index.php?title=")] == "/w/index.php?title=":
+                details.parent_page_url = href[len("/w/index.php?title="):].split("&amp;")[0]
+                Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type,
+                                                                                     details.parent_type,
+                                                                                     details.parent_title,
+                                                                                     details.parent_page_url))
+                return details, None  # Успех
             else:
-                raise RuntimeError("Stage 2 error ({}): <a href> starts with unknown prefix instead of '/wiki/': href='{}'!" \
+                raise RuntimeError("Stage 2 error ({}): <a href> starts with unknown prefix instead of '/wiki/' or '/w/': href='{}'!" \
                     .format(algorithm_type, href))
         else:
             Logger.print("Предыдущий уровень ({}): не найден!".format(algorithm_type))
