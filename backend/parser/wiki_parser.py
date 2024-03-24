@@ -640,8 +640,9 @@ def correct_parents(where: str = None):
     list_iterator = DbListItemsIterator('correct_parents:list', query)
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list()
-    item_counter = 0
+    success_counter = 0
     without_parents = 0
+    total_counter = 0
     while True:
         list_item = list_iterator.fetchone()
         if not list_item:
@@ -665,13 +666,17 @@ def correct_parents(where: str = None):
               WHERE id = '{}';
             """.format(parent_in_db, cur_id)
             DbExecuteNonQuery.execute('parse_details:set_parent_id', query)
-            item_counter += 1
+            success_counter += 1
         else:
             # Не нашли
             without_parents += 1
+        total_counter += 1
+        if total_counter % 100 == 0:
+            Logger.print("Построение дерева... найдено {}, не найдено {}, всего просмотрено {}"
+                         .format(success_counter, without_parents, total_counter))
     Logger.print("\n")
     Logger.print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ОКОНЧЕНО!")
-    Logger.print("Добавлены родители к " + str(item_counter) + " элементам.")
+    Logger.print("Добавлены родители к " + str(success_counter) + " элементам.")
     Logger.print("Не найдены родители для " + str(without_parents) + " элементов.")
 
 
