@@ -23,7 +23,7 @@ BEGIN
   -- Cycle by parents
   _cur_parent_id = _id;
   _prev_parent_id = NULL;
-  _level_min_order = -999;
+  _level_min_order = -31999;
   WHILE TRUE
     LOOP
 
