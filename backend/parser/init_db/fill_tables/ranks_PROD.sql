@@ -25,12 +25,6 @@ INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('parvordo', -9130, '{"ru": "парвотряд"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
-VALUES ('sectio', -9200, '{"ru": "секция"}');
-
-INSERT INTO public.ranks (type, "order", titles_by_languages)
-VALUES ('subsectio', -9210, '{"ru": "подсекция"}');
-
-INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('suprafamilia', -9280, '{"ru": "надсемейство"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
