@@ -1,6 +1,51 @@
 TRUNCATE public.ranks;
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Megaclassis', -8780, '{"ru": "мегакласс"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Supraclassis', -8790, '{"ru": "надкласс"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Classis', -8800, '{"ru": "класс"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Subclassis', -8810, '{"ru": "подкласс"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Infraclassis', -8820, '{"ru": "инфракласс"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Parvclassis', -8830, '{"ru": "парвкласс"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Supralegio', -8890, '{"ru": "надлегион"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Legio', -8900, '{"ru": "легион"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Sublegio', -8910, '{"ru": "подлегион"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Infralegio', -8920, '{"ru": "инфралегион"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Megacohors', -8980, '{"ru": "мегакогорта"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Supracohors', -8990, '{"ru": "надкогорта"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Cohors', -9000, '{"ru": "когорта"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Subcohors', -9010, '{"ru": "подкогорта"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Infracohors', -9020, '{"ru": "инфракогорта"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Magnordo', -9060, '{"ru": "магнотряд"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
