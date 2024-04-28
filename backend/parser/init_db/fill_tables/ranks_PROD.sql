@@ -4,7 +4,7 @@ INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Magnordo', -9060, '{"ru": "магнотряд"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
-VALUES ('Superordo', -9070, '{"ru": "надотряд"}');
+VALUES ('Supraordo', -9070, '{"ru": "надотряд"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Grandordo', -9080, '{"ru": "грандотряд"}');
@@ -58,7 +58,7 @@ INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Subgenus', -9510, '{"ru": "подрод"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
-VALUES ('Supersectio', -9590, '{"ru": "надсекция"}');
+VALUES ('Suprasectio', -9590, '{"ru": "надсекция"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Sectio', -9600, '{"ru": "секция"}');
