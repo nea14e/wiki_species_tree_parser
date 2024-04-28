@@ -39,6 +39,16 @@ UPDATE public.list
 SET type = 'Infraclassis'
 WHERE type = 'Infraclasse';
 
+-- Divisio:
+
+UPDATE public.list
+SET type = replace(type, 'division', 'divisio')
+WHERE type LIKE '%division%';
+
+UPDATE public.list
+SET type = replace(type, 'Division', 'Divisio')
+WHERE type LIKE '%Division%';
+
 
 -- CHECK RESULT:
 
@@ -46,6 +56,6 @@ SELECT type, count(1)
 FROM public.list
 WHERE type NOT IN (SELECT ranks.type
                    FROM public.ranks)
-  -- AND type ILIKE '%class%'
+  -- AND type ILIKE '%Phylum%'
 GROUP BY type
 ORDER BY count(1) DESC;

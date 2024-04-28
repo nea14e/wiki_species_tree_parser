@@ -1,6 +1,27 @@
 TRUNCATE public.ranks;
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Supraphylum', -8590, '{"ru": "надтип"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Phylum', -8600, '{"ru": "тип"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Subphylum', -8610, '{"ru": "подтип"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Infraphylum', -8620, '{"ru": "инфратип"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Supradivisio', -8690, '{"ru": "надотдел"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Divisio', -8700, '{"ru": "отдел"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Subdivisio', -8710, '{"ru": "подотдел"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Megaclassis', -8780, '{"ru": "мегакласс"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
