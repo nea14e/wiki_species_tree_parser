@@ -1,5 +1,35 @@
 TRUNCATE public.ranks;
 
+-- это вся Биота
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Imperium', -8290, '{"ru": "наддомен"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Domain', -8300, '{"ru": "домен"}');
+
+-- домен = надцарство
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Supraregnum', -8301, '{"ru": "надцарство"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Realm', -8400, '{"ru": "реалм"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Subrealm', -8410, '{"ru": "субреалм"}');
+
+-- надцарство выше
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Regnum', -8500, '{"ru": "царство"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Subregnum', -8510, '{"ru": "подцарство"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Infraregnum', -8520, '{"ru": "инфрацарство"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Parvregnum', -8530, '{"ru": "парвцарство"}');
+
 INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Supraphylum', -8590, '{"ru": "надтип"}');
 
