@@ -151,6 +151,9 @@ INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Genus', -9500, '{"ru": "род"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Nothogenus', -9501, '{"ru": "notho-род"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Subgenus', -9510, '{"ru": "подрод"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
@@ -172,13 +175,25 @@ INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Supraspecies', -9790, '{"ru": "надвид"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('†Species', -9799, '{"ru": "вымерший вид"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Species', -9800, '{"ru": "вид"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Nothospecies', -9801, '{"ru": "notho-вид"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Subspecies', -9810, '{"ru": "подвид"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Nothosubspecies', -9811, '{"ru": "notho-подвид"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Varietas', -9900, '{"ru": "разновидность"}');
+
+INSERT INTO public.ranks (type, "order", titles_by_languages)
+VALUES ('Nothovarietas', -9901, '{"ru": "notho-разновидность"}');
 
 INSERT INTO public.ranks (type, "order", titles_by_languages)
 VALUES ('Subvarietas', -9910, '{"ru": "подразновидность"}');
