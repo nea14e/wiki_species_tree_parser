@@ -78,6 +78,9 @@
 
 .item-title {
   word-break: break-word;
+  line-height: 1.25rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 }
 
 .item-title.expanded {
@@ -91,6 +94,9 @@
 .item-title-second {
   word-break: break-word;
   font-style: italic;
+  line-height: 1.25rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 }
 
 .item-title-second.expanded {
