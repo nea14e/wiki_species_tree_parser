@@ -38,6 +38,7 @@ BEGIN
                     FALSE                                                  AS is_selected
              FROM public.list
              WHERE "type" = _cur_rank."type"
+               AND is_deleted = FALSE
            ) t;
 
       -- RAISE NOTICE '_level_json: array: ''%''.', _level_json;

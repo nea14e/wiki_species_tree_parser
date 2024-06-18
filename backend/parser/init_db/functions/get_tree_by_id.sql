@@ -71,6 +71,7 @@ BEGIN
                  FROM public.list
                  WHERE parent_id IS NOT DISTINCT FROM _cur_parent_id -- which parents are current parent (note: "=" does not work for level 1 since one has _parent_id = NULL)
                    AND "type" = _cur_rank."type" -- only childes on current level. One parent may have childes on multiple levels and we want to put them separately
+                   AND is_deleted = FALSE
                ) t;
 
           -- RAISE NOTICE '_level_json: array: ''%''.', _level_json;
