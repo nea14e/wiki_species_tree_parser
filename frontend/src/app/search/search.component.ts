@@ -19,6 +19,7 @@ import {Location} from '@angular/common';
 export class SearchComponent implements OnInit {
 
   query = '';
+  minQueryLength = 3;
   attachToTipId: number | null = null;
   queryChanged: Subject<string> = new Subject<string>();
   resultItems: SearchItem[] = [];
@@ -62,7 +63,7 @@ export class SearchComponent implements OnInit {
   }
 
   runSearch(offset: number): void {
-    if (this.query.length < 3) {
+    if (this.query.length < this.minQueryLength) {
       this.resultItems = [];
       return;
     }
