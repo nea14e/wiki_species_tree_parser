@@ -30,14 +30,14 @@
     <div class="btn col-auto mr-2 mt-2 mb-2"
          title="Home"
          (click)="home()"
-         [ngClass]="nestedLevel==0 ? 'active' : ''"
+         [ngClass]="bordersStack.length===0 ? 'active' : ''"
     >
       <img src="assets/from-bootstrap/house-door.svg" class="btn-img"/>
     </div>
     <div class="btn col-auto mr-2 mt-2 mb-2"
          title="Back"
-         (click)="nestedLevel > 0 ? back() : $event.stopPropagation()"
-         [ngClass]="nestedLevel > 0 ? '' : 'disabled'"
+         (click)="bordersStack.length > 0 ? back() : $event.stopPropagation()"
+         [ngClass]="bordersStack.length > 0 ? '' : 'disabled'"
     >
       <img src="assets/from-bootstrap/arrow-left.svg" class="btn-img"/>
     </div>

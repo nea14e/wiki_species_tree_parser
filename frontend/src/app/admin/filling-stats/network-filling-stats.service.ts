@@ -16,16 +16,19 @@ export class NetworkFillingStatsService extends BaseNetworkAdminService {
     super(http, rootData);
   }
 
-  public getFillingStats(groupsCount: number, nestedLevel: number, outerGroupNumber: number, isTestData: boolean): Observable<FillingStatsList> {
+  getFillingStats(pageUrlFrom: string | null,
+                  pageUrlTo: string | null,
+                  groupsCount: number,
+                  isTestData: boolean): Observable<FillingStatsList> {
     // Запрос возвращает либо TipForTranslation[], либо AdminResponse.
     // Но во втором случае мы превращаем данные в ошибку, поэтому AdminResponse в ответ никогда не выдаётся.
     return this.pipeAdminQueries(
       this.http.post<FillingStatsList | AdminResponse>(environment.BACKEND_API_URL + 'admin_get_filling_stats', {
+        pageUrlFrom,
+        pageUrlTo,
         groupsCount,
-        nestedLevel,
-        outerGroupNumber,
         isTestData
-        })
+      })
     );
   }
 }

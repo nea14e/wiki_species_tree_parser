@@ -1,31 +1,12 @@
-CREATE OR REPLACE FUNCTION public.get_filling_stats(_groups_count int, _nested_level int, _outer_group_number int, _is_test_data boolean = FALSE)
+CREATE OR REPLACE FUNCTION public.get_filling_stats(_page_url_from text, _page_url_to text, _groups_count int, _is_test_data boolean = FALSE)
   RETURNS json
   STABLE
 AS
 $$
   /*
          Хранимка по выдаче статистики заполнения таблицы животных парсером
-
-         _groups_count - количество групп на каждом уровне
-         _nested_level - уровень вложенности (начиная с 0, не включая сам открываемый уровень)
-         _outer_group_number - номер группы, внутренности которой хотим открыть (сквозная нумерация с 1 на уровне, предыдущем открываемому), или NULL для корня
-         _is_test_data - использовать ли генерацию тестовых данных или же таблицу с животными из БД
-
-         Например, если иерархия групп такая:
-         ---
-           --
-           --
-           --
-         ---   - если мы раскрываем эту группу, то _groups_count = 3, _nested_level = 1, _outer_group_number = 2
-           --  - если мы раскрываем эту группу, то _groups_count = 3, _nested_level = 2, _outer_group_number = 4
-           --
-           --
-         ---
-           --
-           --
-           --
    */
-SELECT json_agg(t_result ORDER BY group_number)
+SELECT coalesce(json_agg(t_result ORDER BY group_number), '[]'::json)
 FROM (
        SELECT group_number,
               page_url_from,
@@ -53,8 +34,7 @@ FROM (
                             "type",
                             parent_id,
                             leaves_count,
-                            ntile(_groups_count) OVER (ORDER BY page_url) +
-                            coalesce(_outer_group_number - 1, 0) * _groups_count AS group_number -- сквозная нумерация групп на текущем уровне
+                            ntile(_groups_count) OVER (ORDER BY page_url) AS group_number -- сквозная нумерация групп на текущем уровне
                      FROM (
                             /*
                                    Тестовые данные:
@@ -67,8 +47,7 @@ FROM (
                             SELECT 'test_' || lpad(ser.i::text, 4, '0') AS page_url,
                                    CASE WHEN ser.i % 10 < 10 - (ser.i - 2000) / 10 THEN 'type123' END        AS "type",
                                    CASE WHEN ser.i % 10 < 10 - 2 * (ser.i - 2000) / 10 THEN 123::bigint END  AS parent_id,
-                                   CASE WHEN ser.i % 10 < 10 - 3 * (ser.i - 2000) / 10 THEN 123::bigint END  AS leaves_count,
-                                   ntile(power(_groups_count, _nested_level)::int) OVER (ORDER BY ser.i)     AS outer_group_number
+                                   CASE WHEN ser.i % 10 < 10 - 3 * (ser.i - 2000) / 10 THEN 123::bigint END  AS leaves_count
                             FROM generate_series(0, 9999) ser(i)
                             WHERE _is_test_data = TRUE
                             UNION ALL
@@ -76,12 +55,12 @@ FROM (
                             SELECT page_url,
                                    "type",
                                    parent_id,
-                                   leaves_count,
-                                   ntile(power(_groups_count, _nested_level)::int) OVER (ORDER BY page_url)    AS outer_group_number
+                                   leaves_count
                             FROM public.list
                             WHERE _is_test_data = FALSE
                           ) t_source
-                     WHERE (outer_group_number = _outer_group_number OR _outer_group_number IS NULL)
+                     WHERE (page_url >= _page_url_from OR _page_url_from IS NULL)
+                       AND (page_url <= _page_url_to OR _page_url_to IS NULL)
                    ) t_filtered
               GROUP BY group_number
             ) t_counts
@@ -93,49 +72,57 @@ $$ LANGUAGE SQL;
 
  -- Корневая страница, 10 групп, таблица в БД
  SELECT public.get_filling_stats(
+       _page_url_from := null,
+       _page_url_to := null,
        _groups_count := 10,
-       _nested_level := 0,
-       _outer_group_number := NULL,
        _is_test_data := FALSE
  );
 
  -- Корневая страница, 10 групп, сгенерированные данные
  SELECT public.get_filling_stats(
+       _page_url_from := null,
+       _page_url_to := null,
        _groups_count := 10,
-       _nested_level := 0,
-       _outer_group_number := NULL,
        _is_test_data := TRUE
  );
 
- -- Корневая страница, 20 групп (группа меньше - процент заполнения больше при том же количестве)
+ -- Корневая страница, 20 групп
  SELECT public.get_filling_stats(
+       _page_url_from := null,
+       _page_url_to := null,
        _groups_count := 20,
-       _nested_level := 0,
-       _outer_group_number := NULL,
        _is_test_data := TRUE
  );
 
- -- Вложенная страница, 2000 - 3000 (разбили на 10 групп по 1000 - это 1-ый уровень; взяли в нём 3-ю группу и разбили её на 10 групп по 100 - получили текущий уровень; всего на нём 10*10 групп, поэтому номера двузначные)
+ -- Вложенная страница, 2000 - 3000
  SELECT public.get_filling_stats(
+       _page_url_from := 'test_2000',
+       _page_url_to := 'test_3000',
        _groups_count := 10,
-       _nested_level := 1,
-       _outer_group_number := 3,
        _is_test_data := TRUE
  );
 
- -- Вложенная-вложенная страница, 2000 - 2100 (с предыдущей страницы взяли 21-ую группу и разбили её ещё на 10 групп по 10)
+ -- Вложенная-вложенная страница, 2000 - 2100
  SELECT public.get_filling_stats(
+       _page_url_from := 'test_2000',
+       _page_url_to := 'test_2100',
        _groups_count := 10,
-       _nested_level := 2,
-       _outer_group_number := 21,
        _is_test_data := TRUE
  );
 
- -- Пустая вложенная-вложенная страница, 2300 - 2400 (оттуда же 25-ая группа)
+ -- Пустая вложенная-вложенная страница
  SELECT public.get_filling_stats(
+       _page_url_from := 'test_2300',
+       _page_url_to := 'test_2400',
        _groups_count := 10,
-       _nested_level := 2,
-       _outer_group_number := 25,
+       _is_test_data := TRUE
+ );
+
+ -- Вложенная-вложенная страница, 2000 - 2100
+ SELECT public.get_filling_stats(
+       _page_url_from := 'test_2000',
+       _page_url_to := 'test_2007',
+       _groups_count := 10,
        _is_test_data := TRUE
  );
 

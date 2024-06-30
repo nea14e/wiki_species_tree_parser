@@ -2,8 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkFillingStatsService} from './network-filling-stats.service';
 import {FillingStatsItem} from '../../models-admin';
-import {RootDataKeeperService} from "../../root-data-keeper.service";
-import {Location} from '@angular/common';
+import {RootDataKeeperService} from '../../root-data-keeper.service';
 
 @Component({
   selector: 'app-filling-stats',
@@ -16,8 +15,9 @@ import {Location} from '@angular/common';
 export class FillingStatsComponent implements OnInit {
 
   groupsCount = 20;
-  outerGroupNumber = null;
-  nestedLevel = 0;
+  pageUrlFrom?: string = null;
+  pageUrlTo?: string = null;
+  bordersStack: {from: string, to: string}[] = [];
   isTestData = false;
   items: FillingStatsItem[] = [];
   isTestDb: boolean;
@@ -26,16 +26,12 @@ export class FillingStatsComponent implements OnInit {
   constructor(public rootData: RootDataKeeperService,
               public activatedRoute: ActivatedRoute,
               private networkAdminService: NetworkFillingStatsService,
-              private router: Router,
-              private location: Location) { }
+              private router: Router) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
-      // Эта лямбда будет вызвана автоматически при любых изменениях параметров адреса в браузереNumber
-      this.outerGroupNumber = +params.outerGroupNumber || null;
-    // Приводим к числу с помощью + или, если в адресе не указан параметр groupNumber, то null.
-      this.nestedLevel = +params.nestedLevel || 0;
-    // Приводим к числу с помощью + или, если в адресе не указан параметр nestedLevel, то 0.
+      this.pageUrlFrom = params.pageUrlFrom || null;
+      this.pageUrlTo = params.pageUrlTo || null;
       this.reload();
     });
     this.reload();
@@ -43,7 +39,7 @@ export class FillingStatsComponent implements OnInit {
 
   public reload(): void {
     this.isLoading = true;
-    this.networkAdminService.getFillingStats(this.groupsCount, this.nestedLevel, this.outerGroupNumber, this.isTestData).subscribe(data => {
+    this.networkAdminService.getFillingStats(this.pageUrlFrom, this.pageUrlTo, this.groupsCount, this.isTestData).subscribe(data => {
       this.isLoading = false;
       this.items = data.stats;
       this.isTestDb = data.is_test_db;
@@ -60,32 +56,65 @@ export class FillingStatsComponent implements OnInit {
   }
 
   onIsTestDataChanged(): void {
-    this.reload();
-  }
-
-  onRowClick(item: FillingStatsItem): void {
+    this.bordersStack = [];
     // noinspection JSIgnoredPromiseFromCall
     this.router.navigate(['admin/filling-stats'],
       {
         queryParams: {
-          outerGroupNumber: item.group_number,
-          nestedLevel: this.nestedLevel + 1
+          pageUrlFrom: null,
+          pageUrlTo: null
+        }
+      });
+    this.reload();
+  }
+
+  onRowClick(item: FillingStatsItem): void {
+    if (item.page_url_from === item.page_url_to) {
+      return;
+    }
+    this.bordersStack.push({from: item.page_url_from, to: item.page_url_to});
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['admin/filling-stats'],
+      {
+        queryParams: {
+          pageUrlFrom: item.page_url_from,
+          pageUrlTo: item.page_url_to
         }
       });
   }
 
   home(): void {
-    // noinspection JSIgnoredPromiseFromCall
-    this.router.navigate(['admin/filling-stats']);
-  }
-
-  back(): void {
+    this.bordersStack = [];
     // noinspection JSIgnoredPromiseFromCall
     this.router.navigate(['admin/filling-stats'],
       {
         queryParams: {
-          outerGroupNumber: Math.ceil(this.outerGroupNumber / this.groupsCount),
-          nestedLevel: this.nestedLevel - 1
+          pageUrlFrom: null,
+          pageUrlTo: null
+        }
+      });
+  }
+
+  back(): void {
+    this.bordersStack.splice(this.bordersStack.length - 1, 1);
+    if (this.bordersStack.length === 0) {
+      // noinspection JSIgnoredPromiseFromCall
+      this.router.navigate(['admin/filling-stats'],
+        {
+          queryParams: {
+            pageUrlFrom: null,
+            pageUrlTo: null
+          }
+        });
+      return;
+    }
+    const prevBorders = this.bordersStack[this.bordersStack.length - 1];
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['admin/filling-stats'],
+      {
+        queryParams: {
+          pageUrlFrom: prevBorders.from,
+          pageUrlTo: prevBorders.to
         }
       });
   }

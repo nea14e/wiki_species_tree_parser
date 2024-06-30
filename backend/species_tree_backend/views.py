@@ -416,24 +416,24 @@ def admin_stop_one_task(request):
 # Любой пользователь имеет право на просмотр статистики заполнения
 def admin_get_filling_stats(request):
     body = json.loads(request.body)
+    page_url_from = str(body['pageUrlFrom']) if body['pageUrlFrom'] is not None else None
+    page_url_to = str(body['pageUrlTo']) if body['pageUrlTo'] is not None else None
     groups_count = int(body['groupsCount'])
-    nested_level = int(body['nestedLevel'])
-    outer_group_number = int(body['outerGroupNumber']) if body['outerGroupNumber'] is not None else None
     is_test_data = bool(body['isTestData'])
 
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
         SELECT public.get_filling_stats(
+            _page_url_from := %s,
+            _page_url_to := %s,
             _groups_count := %s,
-            _nested_level := %s,
-            _outer_group_number := %s,
             _is_test_data := %s
         );
     """, (
+        page_url_from,
+        page_url_to,
         groups_count,
-        nested_level,
-        outer_group_number,
         is_test_data,
     ))
     stats = list(cur.fetchone()[0])
