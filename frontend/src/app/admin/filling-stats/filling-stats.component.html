@@ -61,7 +61,19 @@
         <th class="text-right">{{rootData.translationRoot?.translations.admin_stage_2}}</th>
         <th class="text-right">{{rootData.translationRoot?.translations.admin_stage_3}}</th>
         <th class="text-right">{{rootData.translationRoot?.translations.admin_stage_4}}</th>
-        <th class="text-right"><b>{{languageKey}}</b></th>
+        <th class="text-right">
+          <b>
+            <select [(ngModel)]="languageKey"
+                    (change)="reload()"
+            >
+              <option *ngFor="let lang of knownLanguagesAll"
+                      [value]="lang.lang_key"
+                      [selected]="languageKey === lang.lang_key">
+                {{lang.lang_key}} - {{lang.comment}}
+              </option>
+            </select>
+          </b>
+        </th>
       </tr>
     </thead>
     <tbody>

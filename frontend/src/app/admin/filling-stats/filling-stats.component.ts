@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NetworkFillingStatsService} from './network-filling-stats.service';
-import {FillingStatsItem} from '../../models-admin';
+import {AdminLanguage, FillingStatsItem} from '../../models-admin';
 import {RootDataKeeperService} from '../../root-data-keeper.service';
 
 @Component({
@@ -23,6 +23,7 @@ export class FillingStatsComponent implements OnInit {
   languageKey?: string = null;
   isTestDb: boolean;
   isLoading = false;
+  knownLanguagesAll: AdminLanguage[] = [];
 
   constructor(public rootData: RootDataKeeperService,
               public activatedRoute: ActivatedRoute,
@@ -35,7 +36,12 @@ export class FillingStatsComponent implements OnInit {
       this.pageUrlTo = params.pageUrlTo || null;
       this.reload();
     });
-    this.reload();
+    this.networkAdminService.getKnownLanguagesAll(this.rootData.adminPassword).subscribe(data => {
+      this.knownLanguagesAll = data;
+      this.reload();  // первоначальная загрузка только после загрузки списка всех языков
+    }, error => {
+      alert(error);
+    });
   }
 
   public reload(): void {
