@@ -19,6 +19,7 @@ export class NetworkFillingStatsService extends BaseNetworkAdminService {
   getFillingStats(pageUrlFrom: string | null,
                   pageUrlTo: string | null,
                   groupsCount: number,
+                  languageKey: string | null,
                   isTestData: boolean): Observable<FillingStatsList> {
     // Запрос возвращает либо TipForTranslation[], либо AdminResponse.
     // Но во втором случае мы превращаем данные в ошибку, поэтому AdminResponse в ответ никогда не выдаётся.
@@ -27,6 +28,7 @@ export class NetworkFillingStatsService extends BaseNetworkAdminService {
         pageUrlFrom,
         pageUrlTo,
         groupsCount,
+        languageKey,
         isTestData
       })
     );

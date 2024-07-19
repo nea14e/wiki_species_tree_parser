@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.get_filling_stats(_page_url_from text, _page_url_to text, _groups_count int, _is_test_data boolean = FALSE)
+CREATE OR REPLACE FUNCTION public.get_filling_stats(_page_url_from text, _page_url_to text, _groups_count int, _language_key text = NULL, _is_test_data boolean = FALSE)
   RETURNS json
   STABLE
 AS
@@ -6,7 +6,13 @@ $$
   /*
          Хранимка по выдаче статистики заполнения таблицы животных парсером
    */
-SELECT coalesce(json_agg(t_result ORDER BY group_number), '[]'::json)
+SELECT json_build_object(
+           '_language_key', COALESCE(_language_key, (SELECT lang_key
+                                                     FROM public.known_languages
+                                                     WHERE is_main_for_admins
+                                                     LIMIT 1)),
+           'items', coalesce(json_agg(t_result ORDER BY group_number), '[]'::json)
+         )
 FROM (
        SELECT group_number,
               page_url_from,
@@ -20,7 +26,10 @@ FROM (
               public.percent_of_to_color(stage_3, total) AS stage_3_color,
               stage_4,
               public.percent_of(stage_4, total) AS stage_4_percent,
-              public.percent_of_to_color(stage_4, total) AS stage_4_color
+              public.percent_of_to_color(stage_4, total) AS stage_4_color,
+              stage_language,
+              public.percent_of(stage_language, total) AS stage_language_percent,
+              public.percent_of_to_color(stage_language, total) AS stage_language_color
        FROM (
               SELECT group_number,
                      min(page_url)                                     AS page_url_from,
@@ -28,12 +37,14 @@ FROM (
                      count(1)                                          AS total,
                      count(1) FILTER ( WHERE "type" IS NOT NULL)       AS stage_2,
                      count(1) FILTER ( WHERE parent_id IS NOT NULL)    AS stage_3,
-                     count(1) FILTER ( WHERE leaves_count IS NOT NULL) AS stage_4
+                     count(1) FILTER ( WHERE leaves_count IS NOT NULL) AS stage_4,
+                     count(1) FILTER ( WHERE title_on_language IS NOT NULL) AS stage_language
               FROM (
                      SELECT page_url,
                             "type",
                             parent_id,
                             leaves_count,
+                            title_on_language,
                             ntile(_groups_count) OVER (ORDER BY page_url) AS group_number -- сквозная нумерация групп на текущем уровне
                      FROM (
                             /*
@@ -47,7 +58,8 @@ FROM (
                             SELECT 'test_' || lpad(ser.i::text, 4, '0') AS page_url,
                                    CASE WHEN ser.i % 10 < 10 - (ser.i - 2000) / 10 THEN 'type123' END        AS "type",
                                    CASE WHEN ser.i % 10 < 10 - 2 * (ser.i - 2000) / 10 THEN 123::bigint END  AS parent_id,
-                                   CASE WHEN ser.i % 10 < 10 - 3 * (ser.i - 2000) / 10 THEN 123::bigint END  AS leaves_count
+                                   CASE WHEN ser.i % 10 < 10 - 3 * (ser.i - 2000) / 10 THEN 123::bigint END  AS leaves_count,
+                                   CASE WHEN ser.i % 10 < 10 - 4 * (ser.i - 2000) / 10 THEN ''::text END     AS title_on_language
                             FROM generate_series(0, 9999) ser(i)
                             WHERE _is_test_data = TRUE
                             UNION ALL
@@ -55,7 +67,11 @@ FROM (
                             SELECT page_url,
                                    "type",
                                    parent_id,
-                                   leaves_count
+                                   leaves_count,
+                                   titles_by_languages ->> COALESCE(_language_key, (SELECT lang_key
+                                                                                    FROM public.known_languages
+                                                                                    WHERE is_main_for_admins
+                                                                                    LIMIT 1)) AS title_on_language
                             FROM public.list
                             WHERE _is_test_data = FALSE
                           ) t_source

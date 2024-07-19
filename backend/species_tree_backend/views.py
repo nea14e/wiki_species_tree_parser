@@ -419,6 +419,7 @@ def admin_get_filling_stats(request):
     page_url_from = str(body['pageUrlFrom']) if body['pageUrlFrom'] is not None else None
     page_url_to = str(body['pageUrlTo']) if body['pageUrlTo'] is not None else None
     groups_count = int(body['groupsCount'])
+    language_key = str(body['languageKey']) if body['languageKey'] is not None else None
     is_test_data = bool(body['isTestData'])
 
     conn = connections["default"]
@@ -428,17 +429,25 @@ def admin_get_filling_stats(request):
             _page_url_from := %s,
             _page_url_to := %s,
             _groups_count := %s,
+            _language_key := %s,
             _is_test_data := %s
         );
     """, (
         page_url_from,
         page_url_to,
         groups_count,
+        language_key,
         is_test_data,
     ))
-    stats = list(cur.fetchone()[0])
+    result = dict(cur.fetchone()[0])
+    items = list(result['items'])
+    result_language_key = str(result['_language_key'])
     return JsonResponse(
-        {"stats": stats, "is_test_db": Config.BACKEND_IS_USE_TEST_DB},
+        {
+            "stats": items,
+            "language_key": result_language_key,
+            "is_test_db": Config.BACKEND_IS_USE_TEST_DB
+        },
         safe=False
     )  # unsafe указывается только для запросов БД на языке SQL
 

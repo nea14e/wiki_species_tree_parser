@@ -61,6 +61,7 @@
         <th class="text-right">{{rootData.translationRoot?.translations.admin_stage_2}}</th>
         <th class="text-right">{{rootData.translationRoot?.translations.admin_stage_3}}</th>
         <th class="text-right">{{rootData.translationRoot?.translations.admin_stage_4}}</th>
+        <th class="text-right"><b>{{languageKey}}</b></th>
       </tr>
     </thead>
     <tbody>
@@ -88,6 +89,12 @@
             [title]="item.stage_4_percent + '%'"
             style="background-color: {{item.stage_4_color}}; color: white">
           {{item.stage_4}}
+        </td>
+        <td class="text-right"
+            [ngClass]="isLoading ? 'wait' : 'tooltipable'"
+            [title]="item.stage_language_percent + '%'"
+            style="background-color: {{item.stage_language_color}}; color: white">
+          {{item.stage_language}}
         </td>
       </tr>
     </tbody>

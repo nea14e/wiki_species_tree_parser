@@ -51,6 +51,7 @@ export class TipsTranslationList {
 
 export class FillingStatsList {
   stats: FillingStatsItem[] = [];
+  language_key: string;
   is_test_db: boolean;
 }
 
@@ -83,6 +84,9 @@ export class FillingStatsItem {
   stage_4: number;
   stage_4_percent: number;
   stage_4_color: string;
+  stage_language: number;
+  stage_language_percent: number;
+  stage_language_color: string;
 }
 
 export class TranslationsByLanguages {

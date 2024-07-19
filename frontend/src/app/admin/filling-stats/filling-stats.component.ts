@@ -20,6 +20,7 @@ export class FillingStatsComponent implements OnInit {
   bordersStack: {from: string, to: string}[] = [];
   isTestData = false;
   items: FillingStatsItem[] = [];
+  languageKey?: string = null;
   isTestDb: boolean;
   isLoading = false;
 
@@ -39,15 +40,17 @@ export class FillingStatsComponent implements OnInit {
 
   public reload(): void {
     this.isLoading = true;
-    this.networkAdminService.getFillingStats(this.pageUrlFrom, this.pageUrlTo, this.groupsCount, this.isTestData).subscribe(data => {
-      this.isLoading = false;
-      this.items = data.stats;
-      this.isTestDb = data.is_test_db;
-      console.log('Данные', data);
-    }, error => {
-      this.isLoading = false;
-      alert(error);
-    });
+    this.networkAdminService.getFillingStats(this.pageUrlFrom, this.pageUrlTo, this.groupsCount, this.languageKey, this.isTestData)
+      .subscribe(data => {
+        this.isLoading = false;
+        this.items = data.stats;
+        this.languageKey = data.language_key;
+        this.isTestDb = data.is_test_db;
+        console.log('Данные', data);
+      }, error => {
+        this.isLoading = false;
+        alert(error);
+      });
   }
 
   onGroupsCountChanged(e): void {
