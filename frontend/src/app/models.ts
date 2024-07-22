@@ -36,6 +36,7 @@ export interface Translations {
   site_description: string;
   copy_link_to_share: string;
   search_result_empty: string;
+  load_more: string;
   leaves_count: string;
   expanded_tooltip: string;
   selected_tooltip: string;

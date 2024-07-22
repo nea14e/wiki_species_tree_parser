@@ -24,6 +24,8 @@ export class SearchComponent implements OnInit {
   queryChanged: Subject<string> = new Subject<string>();
   resultItems: SearchItem[] = [];
   isLoading = false;
+  isMore = false;
+  ITEMS_COUNT_BY_QUERY = 10;
 
   constructor(public rootData: RootDataKeeperService,
               private networkService: NetworkService,
@@ -69,10 +71,19 @@ export class SearchComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.networkService.search(this.query, 10, offset)
+    this.networkService.search(this.query, this.ITEMS_COUNT_BY_QUERY, offset)
       .subscribe(result => {
         console.log('result:', result);
-        this.resultItems = result;
+        this.isMore = result.length > this.ITEMS_COUNT_BY_QUERY;
+        if (this.isMore) {
+          result.splice(this.ITEMS_COUNT_BY_QUERY);
+        }
+        console.log('modified result:', result);
+        if (offset > 0) {
+          this.resultItems.push(...result);
+        } else {
+          this.resultItems = result;
+        }
         this.isLoading = false;
       }, () => {
         alert(this.rootData.translationRoot.translations.network_error);
@@ -102,5 +113,10 @@ export class SearchComponent implements OnInit {
 
   goBack(): void {
     this.location.back();
+  }
+
+  loadMore(): void {
+    const newOffset = this.resultItems.length;
+    this.runSearch(newOffset);
   }
 }

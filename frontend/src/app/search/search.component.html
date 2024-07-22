@@ -71,13 +71,21 @@
     >
           {{rootData.translationRoot?.translations.search_result_empty}}
     </div>
+    <div class="plain-list-item invisible-list-item row">
+      <div *ngIf="!!resultItems?.length" class="col-auto">
+        <div class="btn mt-2" (click)="onShareClick()"
+             [title]="rootData.translationRoot?.translations.copy_link_to_share">
+          <img src="assets/from-bootstrap/share.svg" class="btn-img"/>
+        </div>
+      </div>
+      <div *ngIf="!!isMore" class="col-auto">
+        <div class="btn mt-2" (click)="loadMore()">
+          <img src="assets/from-bootstrap/file-arrow-down.svg" class="btn-img"/>
+          {{rootData.translationRoot?.translations.load_more}}
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
 
-<div *ngIf="!!resultItems?.length" class="row ml-0 mt-3">
-  <div class="btn col-auto mr-2 mt-2" (click)="onShareClick()"
-       [title]="rootData.translationRoot?.translations.copy_link_to_share">
-    <img src="assets/from-bootstrap/share.svg" class="btn-img"/>
-  </div>
-</div>

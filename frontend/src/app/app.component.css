@@ -89,6 +89,11 @@
   overflow: hidden;
 }
 
+.plain-list-item.invisible-list-item {
+  border: unset;
+  background-color: unset;
+}
+
 .plain-list-item-img-container {
   width: var(--search-item-size);
   height: var(--search-item-size);
