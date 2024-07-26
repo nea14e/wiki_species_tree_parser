@@ -5,7 +5,8 @@ AS
 $$
 UPDATE public.synonyms
 SET result_page_url = page_url_synonyms[1]
-WHERE replace(title, ' ', '_') != ANY (page_url_synonyms)
+WHERE result_page_url IS NULL
+  AND replace(title, ' ', '_') != ALL (page_url_synonyms)
   AND (title >= _title_from OR _title_from IS NULL)
   AND (title < _title_to OR _title_to IS NULL);
 $$
