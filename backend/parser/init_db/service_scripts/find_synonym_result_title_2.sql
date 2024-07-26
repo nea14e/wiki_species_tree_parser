@@ -14,10 +14,10 @@ $$
 
 
 
-SELECT public.find_synonym_result_title_2('Aaa', 'Gaa');
+SELECT public.find_synonym_result_title_2(NULL, 'Gaa');
 SELECT public.find_synonym_result_title_2('Gaa', 'Kaa');
 SELECT public.find_synonym_result_title_2('Kaa', 'Raa');
-SELECT public.find_synonym_result_title_2('Raa', 'Zzz');
+SELECT public.find_synonym_result_title_2('Raa', NULL);
 
 
 
