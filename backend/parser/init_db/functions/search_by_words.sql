@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION public.search_by_words(_query text, _limit int, _offs
   LANGUAGE SQL
 AS
 $$
-SELECT coalesce(json_agg(t ORDER BY rank_order DESC, title_for_language ASC), '[]'::json)
+SELECT coalesce(json_agg(t ORDER BY rank_order DESC, title_for_language), '[]'::json)
 FROM (
        SELECT max(list.id)            AS id,
               max(list.page_url)      AS page_url,
@@ -24,6 +24,7 @@ FROM (
          upper(list.title) LIKE (upper(_query) || '%') -- support Latin for any _language_key (Note: here can be used "ix_list_for_latin_search" functional index)
          )
        GROUP BY rank_for_language, title_for_language  -- удаление дубликатов (синонимов). Синонимы невозможно отсечь через is_deleted, т.к. пользователь может искать именно синоним.
+       ORDER BY rank_order DESC, title_for_language
        LIMIT _limit + 1 OFFSET _offset
      ) t;
 $$;
