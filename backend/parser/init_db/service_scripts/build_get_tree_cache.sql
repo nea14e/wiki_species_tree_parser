@@ -1,3 +1,7 @@
+CREATE EXTENSION dblink;
+
+SELECT dblink_connect('loopback', 'dbname=lifetree');
+
 CREATE OR REPLACE FUNCTION public.build_get_tree_cache(_language_key text, _page_url_from text, _page_url_to text)
   RETURNS void
   VOLATILE
@@ -9,9 +13,15 @@ DECLARE
   _total   bigint;
 BEGIN
   SELECT count(1) INTO _total
-  FROM public.list
+  FROM public.list l
   WHERE (page_url >= _page_url_from OR _page_url_from IS NULL)
-    AND (page_url <= _page_url_to OR _page_url_to IS NULL);
+    AND (page_url <= _page_url_to OR _page_url_to IS NULL)
+    AND NOT EXISTS(
+      SELECT 1
+      FROM public.get_tree_cache c
+      WHERE c.id = l.id
+        AND c.result_on_languages ? _language_key  -- пропуск уже закешированных значений
+    );
 
   _counter = 0;
 
@@ -26,10 +36,21 @@ BEGIN
 
       RAISE NOTICE 'build_get_tree_cache(): processing id = %, page_url = %', _row.id, _row.page_url;
 
-        INSERT INTO public.get_tree_cache AS t (id, result_on_languages)
-        SELECT _row.id, jsonb_build_object(_language_key, (public.get_tree_by_id(_id := _row.id, _language_key := _language_key))::jsonb)
-        ON CONFLICT (id) DO UPDATE
-        SET result_on_languages = coalesce(t.result_on_languages, '{}'::jsonb) || excluded.result_on_languages;
+      PERFORM dblink_exec(
+        'loopback',
+        format(
+          $sql$
+            INSERT INTO public.get_tree_cache AS t (id, result_on_languages)
+            SELECT '%s', jsonb_build_object('%s', (public.get_tree_by_id(_id := '%s', _language_key := '%s'))::jsonb)
+            ON CONFLICT (id) DO UPDATE
+            SET result_on_languages = coalesce(t.result_on_languages, '{}'::jsonb) || excluded.result_on_languages;
+          $sql$,
+          _row.id,
+          _language_key,
+          _row.id,
+          _language_key
+        )
+      );
 
       _counter = _counter + 1;
       RAISE NOTICE 'build_get_tree_cache(): % of % processed', _counter, _total;
