@@ -112,6 +112,10 @@ BEGIN
 
         END LOOP;  -- cycle by _cur_rank
 
+      IF _cur_parent_id = _next_parent_id THEN
+        EXIT;  -- to avoid infinity loop when such items present
+      END IF;
+
       -- Level up:
       -- move level parents
       _prev_parent_id = _cur_parent_id;
