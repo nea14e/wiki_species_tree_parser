@@ -117,6 +117,15 @@ class DbFunctions:
         else:
             Logger.print("Таблица public.changed_tips уже существует, пропускаем этап создания.")
 
+        # Таблица с кешем запросов к дереву
+        Logger.print("\nТаблица с кешем запросов к дереву:")
+        sql = "SELECT EXISTS(SELECT 1 FROM pg_class tbl WHERE tbl.relname = 'get_tree_cache');"
+        is_table_exists = bool(DbListItemsIterator("init_db", sql).fetchone()[0])
+        if not is_table_exists:
+            DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "get_tree_cache.sql"))
+        else:
+            Logger.print("Таблица public.get_tree_cache уже существует, пропускаем этап создания.")
+
         # Заполняем данными
         Logger.print("\n\n===================================================")
         Logger.print("Заполняем данными:")
