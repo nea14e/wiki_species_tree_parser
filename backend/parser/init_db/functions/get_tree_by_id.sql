@@ -5,6 +5,7 @@ CREATE OR REPLACE FUNCTION public.get_tree_by_id(_id bigint DEFAULT NULL::bigint
 AS
 $$
 DECLARE
+  _cached_result           jsonb;
   _levels_json             jsonb = '[]'::jsonb; -- jsonb is stored in pre-parsed way so operations with it are more faster
   _level_object_json       jsonb = '{}'::jsonb;
   _level_items_json        jsonb = '[]'::jsonb;
@@ -20,6 +21,15 @@ DECLARE
   _last_rank_title_for_language text;
 BEGIN
   -- Show requested element, its childes and all previous levels
+
+  SELECT result_on_languages->_language_key
+  INTO _cached_result
+  FROM public.get_tree_cache
+  WHERE id = _id;
+
+  IF _cached_result IS NOT NULL THEN
+    RETURN _cached_result::json;
+  END IF;
 
   -- Cycle by parents
   _cur_parent_id = _id;
@@ -187,6 +197,12 @@ $$;
 -- Черника. Элемент из середины дерева с parent_id = NULL
 SELECT public.get_tree_by_id(
   _id := 1027820,
+  _language_key := 'ru'
+);
+
+--
+SELECT public.get_tree_by_id(
+  _id := 173357,
   _language_key := 'ru'
 );
 */
