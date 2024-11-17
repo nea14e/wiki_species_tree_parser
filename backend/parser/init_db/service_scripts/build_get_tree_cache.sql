@@ -20,7 +20,7 @@ BEGIN
       SELECT 1
       FROM public.get_tree_cache c
       WHERE c.id = l.id
-        AND c.result_on_languages ? _language_key  -- пропуск уже закешированных значений
+        AND c.result_on_languages ? _language_key
     );
 
   _counter = 0;
@@ -30,11 +30,17 @@ BEGIN
                target.page_url
         FROM public.list target
         WHERE (target.page_url >= _page_url_from OR _page_url_from IS NULL)
-        AND (target.page_url <= _page_url_to OR _page_url_to IS NULL)
+          AND (target.page_url <= _page_url_to OR _page_url_to IS NULL)
+          AND NOT EXISTS(
+            SELECT 1
+            FROM public.get_tree_cache c
+            WHERE c.id = target.id
+              AND c.result_on_languages ? _language_key
+          )
         ORDER BY target.page_url
     LOOP
 
-      RAISE NOTICE 'build_get_tree_cache(): processing id = %, page_url = %', _row.id, _row.page_url;
+      RAISE NOTICE 'build_get_tree_cache(): processing % of %, id = %, page_url = %', _counter, _total, _row.id, _row.page_url;
 
       PERFORM dblink_exec(
         'loopback',
@@ -53,8 +59,6 @@ BEGIN
       );
 
       _counter = _counter + 1;
-      RAISE NOTICE 'build_get_tree_cache(): % of % processed', _counter, _total;
-
     END LOOP;
 
 END
