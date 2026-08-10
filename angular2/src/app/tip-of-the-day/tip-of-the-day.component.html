@@ -1,0 +1,44 @@
+<div class="row router-hr"></div>
+<h3>{{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}</h3>
+
+<div class="row">
+  @if (!!tip()?.image_url) {
+    <div class="col-auto">
+      <img [src]="tip()?.image_url">
+    </div>
+  }
+  <div class="col-auto d-flex">
+    <p class="col-8 font-weight-bold align-self-center">{{ tip()?.tip_text }}</p>
+  </div>
+</div>
+
+<div class="row ml-0 mr-0">
+  <div class="btn col-auto mr-2 mt-2"
+       [title]="rootData.translationRoot()?.translations?.show_in_tree"
+       (click)="isShowInTreeDisabled() ? $event.stopPropagation() : onShowInTreeClick()"
+       [class]="isShowInTreeDisabled() ? 'disabled' : ''">
+    <img src="/from-bootstrap/eye.svg"
+         [alt]="rootData.translationRoot()?.translations?.show_in_tree"
+         class="btn-img"/>
+  </div>
+  <div class="btn col-auto mr-2 mt-2"
+       [title]="rootData.translationRoot()?.translations?.copy_link_to_share"
+       (click)="onShareClick()">
+    <img src="/from-bootstrap/share.svg"
+         [alt]="rootData.translationRoot()?.translations?.copy_link_to_share"
+         class="btn-img"/>
+  </div>
+  <div class="btn col-auto mr-2 mt-2"
+       [title]="rootData.translationRoot()?.translations?.next_fact"
+       (click)="onNextTipClick()">
+    <img src="/from-bootstrap/chevron-double-right.svg"
+         [alt]="rootData.translationRoot()?.translations?.next_fact"
+         class="btn-img"/>
+  </div>
+  <div class="btn col-auto ml-5 mr-2 mt-2" (click)="onToTreeClick()">
+    <img src="/from-bootstrap/diagram-3.svg"
+         [alt]="rootData.translationRoot()?.translations?.to_tree"
+         class="btn-img"/>
+    {{ rootData.translationRoot()?.translations?.to_tree }}
+  </div>
+</div>

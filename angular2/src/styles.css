@@ -1,1 +1,169 @@
 /* You can add global styles to this file, and also import other style files */
+@import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+:root {
+  --item-color-0: #cddbfb;
+  --item-color-1: #849dd6;
+  --item-expanded-0: #7a84c9;
+  --item-expanded-1: #2f4e95;
+  --item-selected-0: #e8d063;
+  --item-selected-05: #dfba2b;
+  --item-selected-1: #cdb136;
+  --item-selected-2: #997b07;
+  --item-accent: #123097;
+  --item-selected-borders: #6b3991;
+}
+
+.btn {
+  background-color: var(--item-color-0);
+  border: 2px solid black;
+  font-size: 1.3rem;
+  border-radius: 0.5rem;
+}
+
+.btn.btn-selected {
+  background-color: var(--item-color-1);
+}
+
+.btn.active,
+.btn:hover:not(:disabled):not(.disabled) {
+  background-color: var(--item-color-1);
+  border: 2px solid black;
+}
+
+.btn.disabled, .btn:disabled {
+  opacity: .40;
+}
+
+.btn-img {
+  width: 32px;
+  height: 32px;
+}
+
+.router-hr {
+  width: 100%;
+  height: 3px;
+  background-color: var(--item-selected-borders);
+  margin: 1rem 0;
+  border: #9e7bb9 2px solid;
+  box-sizing: content-box;
+}
+
+.in-section-hr {
+  width: 100%;
+  height: 3px;
+  background-color: var(--item-color-1);
+  margin: 1rem 0;
+}
+
+/*
+=========================================
+    Элементы "больших" списков (поиск, перевод советов и др.)
+=========================================
+*/
+
+::ng-deep :root {
+  --search-item-size: 5rem;
+}
+
+.resize-horizontal {
+  width: 100%;
+  height: fit-content;
+  resize: vertical;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.pointer-readonly {
+  cursor: context-menu;
+}
+
+.plain-list-item {
+  width: 100%;
+  height: var(--search-item-size);
+  margin: 4px;
+  position: relative;
+  border: 1px solid var(--item-accent);
+  box-sizing: content-box;
+  background-color: var(--item-color-0);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.plain-list-item.invisible-list-item {
+  border: unset;
+  background-color: unset;
+}
+
+.plain-list-item-img-container {
+  width: var(--search-item-size);
+  height: var(--search-item-size);
+  overflow: hidden;
+  position: relative;
+  background-color: var(--item-color-1);
+}
+
+.plain-list-item-img-content {
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.favorites-item-img-content {
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tip-of-the-day-center {
+}
+
+.parent {
+  position: relative;
+}
+
+.child {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.list-item-btn {
+  background-color: var(--item-color-0);
+  border: 1px solid black;
+  font-size: 1rem;
+  padding: 0.5rem 0.5rem;
+  height: 50%;
+  margin-top: 8%;
+}
+
+.list-item-btn:hover:not(:disabled):not(.disabled) {
+  background-color: var(--item-color-1);
+  border: 1px solid black;
+  height: 50%;
+  margin-top: 8%;
+}
+
+.list-item-btn-img {
+  width: 1.3rem;
+  height: 1.3rem;
+  cursor: pointer;
+}
+
+.not-found-stub {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 0.7rem;
+  font-style: italic;
+
+}
