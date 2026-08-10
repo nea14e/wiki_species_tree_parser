@@ -1,10 +1,9 @@
-import {Injectable, Service, signal} from '@angular/core';
+import {Service, signal} from '@angular/core';
 import {Params} from '@angular/router';
 import {AdminLoginInfo} from '../admin/models/admin-login-info';
 import {AdminMainLanguage} from '../admin/models/admin-main-language';
 import {TranslationRoot} from '../models/translation-root';
 import {RIGHTS} from '../admin/models/right';
-import {v4 as uuid_v4} from 'uuid';
 
 @Service()
 export class RootDataKeeperService {

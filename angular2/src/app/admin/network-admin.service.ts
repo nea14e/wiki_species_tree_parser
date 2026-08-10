@@ -3,12 +3,12 @@ import {catchError, switchMap} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
-import {inject, Injectable, Service} from '@angular/core';
+import {inject, Service} from '@angular/core';
 import {AdminLoginInfo} from './models/admin-login-info';
 import {AdminResponse} from './models/admin-response';
 import {AdminLanguage} from './models/admin-language';
 import {AdminMainLanguage} from './models/admin-main-language';
-import {NETWORK_ERROR_DEFAULT_MESSAGE, NetworkService} from '../network.service';
+import {NETWORK_ERROR_DEFAULT_MESSAGE} from '../network.service';
 
 @Service()
 export class BaseNetworkAdminService {
