@@ -56,6 +56,8 @@ class DbFunctions:
             Logger.print("Таблица public.list уже существует, пропускаем этап создания.")
         Logger.print("Миграция public.list_MIGRATE...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list_MIGRATE.sql"))
+        Logger.print("Миграция public.list_MIGRATE_is_deleted...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list_MIGRATE_is_deleted.sql"))
 
         # Таблица с рангами
         Logger.print("\nТаблица с рангами:")
