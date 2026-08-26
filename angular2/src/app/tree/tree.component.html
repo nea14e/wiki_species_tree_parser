@@ -90,14 +90,16 @@
 
           @if (!!item.is_selected) {
             <div class="item-btn-container">
-              <div class="item-btn btn ml-2 mr-1"
-                   (click)="onReadWikiClick(item); $event.stopPropagation();"
-                   [title]="rootData.translationRoot()?.translations?.read_on_wiki"
-              >
-                <img src="/from-bootstrap/layout-text-sidebar-reverse.svg"
-                     [alt]="rootData.translationRoot()?.translations?.read_on_wiki"
-                     class="item-btn-img"/>
-              </div>
+              @if (canReadWiki(item)) {
+                <div class="item-btn btn ml-2 mr-1"
+                     (click)="onReadWikiClick(item); $event.stopPropagation();"
+                     [title]="rootData.translationRoot()?.translations?.read_on_wiki"
+                >
+                  <img src="/from-bootstrap/layout-text-sidebar-reverse.svg"
+                       [alt]="rootData.translationRoot()?.translations?.read_on_wiki"
+                       class="item-btn-img"/>
+                </div>
+              }
               <div class="item-btn btn mr-1"
                    (click)="onGoogleItemClick(item); $event.stopPropagation();"
                    [title]="rootData.translationRoot()?.translations?.search_in_google"

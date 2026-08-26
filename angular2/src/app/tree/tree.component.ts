@@ -88,8 +88,12 @@ export class TreeComponent implements OnInit {
     return '';
   }
 
+  canReadWiki(item: Item): boolean {
+    return !!item.wiki_url_for_language;
+  }
+
   onReadWikiClick(item: Item): void {
-    const url = 'https://' + this.tree()?._language_key + '.wikipedia.org/wiki/' + item.wiki_url_for_language;
+    const url = 'https://' + this.tree()?._language_key + '.ruwiki.ru/wiki/' + item.wiki_url_for_language;
     window.open(url, '_blank');
   }
 
