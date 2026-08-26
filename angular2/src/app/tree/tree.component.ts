@@ -97,8 +97,8 @@ export class TreeComponent implements OnInit {
     window.open(url, '_blank');
   }
 
-  onGoogleItemClick(item: Item): void {
-    const url = 'https://www.google.com/search?q=' + encodeURIComponent(item.title_for_language);
+  onYandexItemClick(item: Item): void {
+    const url = 'https://yandex.ru/search/?text=' + encodeURIComponent(item.title_for_language);
     window.open(url, '_blank');
   }
 

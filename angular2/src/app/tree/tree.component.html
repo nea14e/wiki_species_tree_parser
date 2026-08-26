@@ -101,11 +101,11 @@
                 </div>
               }
               <div class="item-btn btn mr-1"
-                   (click)="onGoogleItemClick(item); $event.stopPropagation();"
-                   [title]="rootData.translationRoot()?.translations?.search_in_google"
+                   (click)="onYandexItemClick(item); $event.stopPropagation();"
+                   [title]="rootData.translationRoot()?.translations?.search_in_yandex"
               >
                 <img src="/from-bootstrap/globe.svg"
-                     [alt]="rootData.translationRoot()?.translations?.search_in_google"
+                     [alt]="rootData.translationRoot()?.translations?.search_in_yandex"
                      class="item-btn-img"/>
               </div>
               <div class="item-btn btn mr-1"

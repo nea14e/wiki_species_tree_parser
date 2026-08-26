@@ -20,7 +20,7 @@ export interface Translations {
   authors_content: string;
   delete_favorite: string;
   add_to_favorites: string;
-  search_in_google: string;
+  search_in_yandex: string;
   site_description: string;
   copy_link_to_share: string;
   search_result_empty: string;
