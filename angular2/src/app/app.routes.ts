@@ -1,9 +1,10 @@
-import { Routes } from '@angular/router';
+import {Routes} from '@angular/router';
 import {TipOfTheDayComponent} from './tip-of-the-day/tip-of-the-day.component';
+import {TreeComponent} from './tree/tree.component';
 
 export const routes: Routes = [
   {path: 'tip', component: TipOfTheDayComponent},
-  // { path: 'tree', component: TreeComponent },
+  {path: 'tree', component: TreeComponent},
   // { path: 'search', component: SearchComponent },
   // { path: 'authors', component: AuthorsComponent },
   // { path: 'admin', redirectTo: 'tip' },

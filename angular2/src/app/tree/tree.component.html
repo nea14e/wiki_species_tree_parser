@@ -1,0 +1,175 @@
+<div class="row router-hr"></div>
+
+<div class="row ml-0 mb-3">
+  <div class="btn col-auto mr-5"
+       (click)="onToTreeRootClick()"
+       [title]="rootData.translationRoot()?.translations?.to_tree_root"
+  >
+    <img src="/from-bootstrap/house-door.svg" class="btn-img" alt="К корню дерева"/>
+  </div>
+
+  <label class="align-self-center mr-4">
+    <input type="radio" name="latin"
+           [title]="rootData.translationRoot()?.translations?.translated_only"
+           [value]="LATIN_MODE_ENUM.TranslatedOnly"
+           [(ngModel)]="latinMode"
+    >
+    {{ rootData.translationRoot()?.translations?.translated_only }}
+  </label>
+  <label class="align-self-center mr-4">
+    <input type="radio" name="latin"
+           [title]="rootData.translationRoot()?.translations?.both_languages"
+           [value]="LATIN_MODE_ENUM.BothLanguages"
+           [(ngModel)]="latinMode"
+    >
+    {{ rootData.translationRoot()?.translations?.both_languages }}
+  </label>
+  <label class="align-self-center mr-4">
+    <input type="radio" name="latin"
+           [title]="rootData.translationRoot()?.translations?.latin_only"
+           [value]="LATIN_MODE_ENUM.LatinOnly"
+           [(ngModel)]="latinMode"
+    >
+    {{ rootData.translationRoot()?.translations?.latin_only }}
+  </label>
+</div>
+
+@for (level of tree()?.levels; track level) {
+  <div class="row m-0">
+    <div class="level-hr col-12 mb-2" [class]="getLevelClass(level)"></div>
+
+    <div class="level-title col-2 ml-0 mr-0" [class]="getLevelClass(level)">
+      {{ rootData.translationRoot()?.translations?.rank_word }}:
+      <br/><b>{{ level.title_on_language }}</b>
+      @if (!!level.level_parent_title) {
+        <small>
+          <br/>
+          <br/>{{ rootData.translationRoot()?.translations?.parent_word }}:
+          <br/><i class="level-parent-title">{{ level.level_parent_title }}</i>
+        </small>
+      }
+
+      @if (!!level.is_level_has_selected_item) {
+        <div>
+          <br/>
+          <div style="margin-left: -12px;">
+            <img src="/from-bootstrap/caret-down-fill-darkpurple.svg"
+                 alt=""
+                 class="item-down-arrow"/>
+          </div>
+        </div>
+      }
+    </div>
+
+    @for (item of level.items; track item) {
+      <div (click)="onItemClick(item)" class="item p-0" [class]="getItemClass(item)">
+        <div class="container-fluid p-0">
+
+          <div class="item-img-container" [class]="getItemClass(item)">
+            @if (!!item.image_url) {
+              <img [src]="item.image_url"
+                   [title]="item.title_for_language"
+                   [alt]="item.title_for_language"
+                   class="item-img-content">
+            }
+          </div>
+          <div class="item-title d-flex justify-content-center" [class]="getItemClass(item)">
+            @if (latinMode === LATIN_MODE_ENUM.TranslatedOnly || latinMode === LATIN_MODE_ENUM.BothLanguages) {
+              {{ item.title_for_language }}
+            }
+            @if (latinMode === LATIN_MODE_ENUM.LatinOnly) {
+              {{ item.title_latin }}
+            }
+          </div>
+          @if (latinMode === LATIN_MODE_ENUM.BothLanguages) {
+            <div class="item-title-second d-flex justify-content-center"
+                 [class]="getItemClass(item)">
+              {{ item.title_latin }}
+            </div>
+          }
+
+          @if (!!item.is_selected) {
+            <div>
+              <div class="item-btn btn ml-2 mr-1"
+                   (click)="onReadWikiClick(item); $event.stopPropagation();"
+                   [title]="rootData.translationRoot()?.translations?.read_on_wiki"
+              >
+                <img src="/from-bootstrap/layout-text-sidebar-reverse.svg"
+                     [alt]="rootData.translationRoot()?.translations?.read_on_wiki"
+                     class="item-btn-img"/>
+              </div>
+              <div class="item-btn btn mr-1"
+                   (click)="onGoogleItemClick(item); $event.stopPropagation();"
+                   [title]="rootData.translationRoot()?.translations?.search_in_google"
+              >
+                <img src="/from-bootstrap/globe.svg"
+                     [alt]="rootData.translationRoot()?.translations?.search_in_google"
+                     class="item-btn-img"/>
+              </div>
+              <div class="item-btn btn mr-1"
+                   (click)="onShareItemClick(item); $event.stopPropagation();"
+                   [title]="rootData.translationRoot()?.translations?.copy_link_to_share"
+              >
+                <img src="/from-bootstrap/share.svg"
+                     [alt]="rootData.translationRoot()?.translations?.copy_link_to_share"
+                     class="item-btn-img"/>
+              </div>
+              @if (favoritesService.isItemInFavorites(item)) {
+                <div class="item-btn btn mr-1 item-btn-highlight"
+                     (click)="onUnFavoritesItemClick(item); $event.stopPropagation();"
+                     [title]="rootData.translationRoot()?.translations?.delete_favorite"
+                >
+                  <img src="/from-bootstrap/bookmark-check-fill.svg"
+                       [alt]="rootData.translationRoot()?.translations?.delete_favorite"
+                       class="item-btn-img"/>
+                </div>
+              } @else {
+                <div class="item-btn btn mr-1"
+                     (click)="onFavoritesItemClick(item); $event.stopPropagation();"
+                     [title]="rootData.translationRoot()?.translations?.add_to_favorites"
+                >
+                  <img src="/from-bootstrap/bookmarks.svg"
+                       [alt]="rootData.translationRoot()?.translations?.add_to_favorites"
+                       class="item-btn-img"/>
+                </div>
+              }
+            </div>
+          }
+
+          @if (!!item.leaves_count) {
+            <div class="item-leaves-count d-flex justify-content-center" [class]="getItemClass(item)"
+                 [title]="rootData.translationRoot()?.translations?.leaves_count"
+            >
+              <img src="/from-bootstrap/diagram-3.svg"
+                   [alt]="rootData.translationRoot()?.translations?.leaves_count"
+                   class="align-self-center"/>
+              &nbsp;{{ item.leaves_count }}
+            </div>
+          }
+
+          @if (item.is_expanded === true && item.is_selected === false) {
+            <div class="d-flex justify-content-center"
+                 [title]="rootData.translationRoot()?.translations?.expanded_tooltip">
+              <img src="/from-bootstrap/caret-down.svg"
+                   [alt]="rootData.translationRoot()?.translations?.expanded_tooltip"
+                   class="item-down-arrow align-self-center"/>
+            </div>
+          }
+          @if (item.is_selected === true) {
+            <div class="d-flex justify-content-center"
+                 [title]="rootData.translationRoot()?.translations?.selected_tooltip">
+              <img src="/from-bootstrap/caret-down-fill.svg"
+                   [alt]="rootData.translationRoot()?.translations?.selected_tooltip"
+                   class="item-down-arrow align-self-center"/>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+    <div class="level-hr col-12 mt-2" [class]="getLevelClass(level)"></div>
+  </div>
+}
+
+<div class="row mb-3"></div>

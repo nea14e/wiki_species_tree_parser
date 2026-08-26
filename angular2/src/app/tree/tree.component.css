@@ -1,0 +1,142 @@
+.level-title {
+}
+
+.level-title.has-selected {
+  color: var(--item-selected-borders);
+}
+
+.level-parent-title {
+  word-break: break-word;
+}
+
+.level-hr {
+  width: 100%;
+  height: 3px;
+  background-color: black;
+}
+
+.level-hr.has-selected {
+  width: 100%;
+  height: 5px;
+  background-color: var(--item-selected-borders);
+}
+
+.item {
+  width: 150px;
+  height: auto;
+  margin: 4px;
+  position: relative;
+  border: 1px solid var(--item-accent);
+  background-color: var(--item-color-0);
+  cursor: pointer;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.item.expanded {
+  width: 200px;
+  border: 3px solid var(--item-accent);
+  margin: 1px;
+  background-color: var(--item-expanded-0);
+}
+
+.item.selected {
+  width: 200px;
+  border: 3px solid var(--item-selected-borders);
+  margin: 1px;
+  background-color: var(--item-selected-0);
+  cursor: zoom-out;
+}
+
+.item-img-container {
+  width: 148px;
+  height: 150px;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--item-color-1);
+}
+
+.item-img-container.expanded {
+  width: 194px;
+  height: 200px;
+  background-color: var(--item-expanded-1);
+}
+
+.item-img-container.selected {
+  width: 194px;
+  height: 200px;
+  background-color: var(--item-selected-1);
+}
+
+.item-img-content {
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.item-title {
+  word-break: break-word;
+  line-height: 1.25rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.item-title.expanded {
+  font-weight: bold;
+}
+
+.item-title.selected {
+  font-weight: bold;
+}
+
+.item-title-second {
+  word-break: break-word;
+  font-style: italic;
+  line-height: 1.25rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.item-title-second.expanded {
+  font-weight: bold;
+}
+
+.item-title-second.selected {
+  font-weight: bold;
+}
+
+.item-leaves-count.expanded {
+  font-weight: bold;
+}
+
+.item-leaves-count.selected {
+  font-weight: bold;
+}
+
+.item-down-arrow {
+  width: 100px;
+  height: 1.3rem;
+}
+
+.item-btn {
+  background-color: var(--item-selected-05);
+  border: 2px solid var(--item-selected-borders);
+  font-size: 1rem;
+  padding: 0.5rem 0.5rem;
+}
+
+.item-btn:hover:not(:disabled):not(.disabled) {
+  background-color: var(--item-selected-1);
+}
+
+.item-btn-img {
+  width: 1.3rem;
+  height: auto;
+}
+
+.item-btn-highlight {
+  background-color: var(--item-selected-2);
+}
+
