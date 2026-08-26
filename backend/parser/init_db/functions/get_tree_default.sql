@@ -4,7 +4,6 @@ CREATE OR REPLACE FUNCTION public.get_tree_default(_language_key text DEFAULT NU
 AS
 $$
 DECLARE
-  _translation_object_json jsonb = '{}'::jsonb; -- jsonb is stored in pre-parsed way so operations with him are more faster
   _levels_json             jsonb = '[]'::jsonb;
   _level_object_json       jsonb = '{}'::jsonb;
   _level_items_json        jsonb = '[]'::jsonb;
