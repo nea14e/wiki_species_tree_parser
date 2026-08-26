@@ -89,7 +89,7 @@
           }
 
           @if (!!item.is_selected) {
-            <div>
+            <div class="item-btn-container">
               <div class="item-btn btn ml-2 mr-1"
                    (click)="onReadWikiClick(item); $event.stopPropagation();"
                    [title]="rootData.translationRoot()?.translations?.read_on_wiki"

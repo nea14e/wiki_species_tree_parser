@@ -140,3 +140,10 @@
   background-color: var(--item-selected-2);
 }
 
+.item-btn-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-wrap: wrap;
+  align-content: space-evenly;
+}
