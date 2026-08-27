@@ -9,10 +9,11 @@ import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
 import {Location, NgClass} from '@angular/common';
 import {FormsModule} from '@angular/forms';
+import {FavoritesComponent} from './favorites/favorites.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgClass, FormsModule],
+  imports: [RouterOutlet, NgClass, FormsModule, FavoritesComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -149,4 +150,7 @@ export class App implements OnInit {
     this.favoritesService.toggleTab();
   }
 
+  onFavoritesClose() {
+    this.favoritesService.isFavoritesOpen.set(false);
+  }
 }

@@ -81,12 +81,9 @@
 }
 
 .plain-list-item {
-  width: 100%;
   height: var(--search-item-size);
   margin: 4px;
-  position: relative;
   border: 1px solid var(--item-accent);
-  box-sizing: content-box;
   background-color: var(--item-color-0);
   border-radius: 0.5rem;
   overflow: hidden;

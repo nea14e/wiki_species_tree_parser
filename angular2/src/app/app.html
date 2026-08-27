@@ -1,6 +1,6 @@
 <body class="container-fluid mb-2">
-<div class="row">
-  <div [ngClass]="favoritesService.isFavoritesOpen ? 'col-9' : 'col-12'">
+<div class="d-flex">
+  <div class="main-content">
     <div class="container-fluid mb-2">
       <h1>{{ translationRoot()?.translations?.site_title }}</h1>
       <h4 style="font-size: 1.3rem">{{ translationRoot()?.translations?.site_description }}</h4>
@@ -26,7 +26,7 @@
         </div>
         <div class="btn col-auto mr-2 mt-2"
              (click)="onFavoritesToggleClick()"
-             [ngClass]="favoritesService.isFavoritesOpen ? 'btn-selected' : '' ">
+             [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
           <img src="/from-bootstrap/bookmarks.svg" class="btn-img"/>
           {{ translationRoot()?.translations?.favorites }}
         </div>
@@ -127,9 +127,9 @@
 
     </div>
   </div>
-  @if (favoritesService.isFavoritesOpen) {
-    <div class="col-3 pl-0 pt-3">
-      <!--TODO <app-favorites></app-favorites>-->
+  @if (favoritesService.isFavoritesOpen()) {
+    <div class="right-tab pl-0 pt-3">
+      <app-favorites (close)="onFavoritesClose()"></app-favorites>
     </div>
   }
 </div>

@@ -1,4 +1,4 @@
-import {inject, Service} from '@angular/core';
+import {inject, Service, signal} from '@angular/core';
 import {NetworkService} from './network.service';
 import {CookieService} from 'ngx-cookie';
 import {FavoritesItem} from './models/favorites-item';
@@ -11,8 +11,8 @@ export class FavoritesService {
   private _networkService = inject(NetworkService);
   private _ids: number[] = [];
   private _hasCookiePrivate = false;
-  public items: FavoritesItem[] = [];
-  isFavoritesOpen = false;
+  items = signal<FavoritesItem[]>([]);
+  isFavoritesOpen = signal(false);
 
   constructor() {
     this.loadData();
@@ -30,7 +30,7 @@ export class FavoritesService {
 
     this._networkService.getFavorites(this._ids)
       .subscribe(data => {
-        this.items = data;
+        this.items.set(data);
       });
   }
 
@@ -44,7 +44,7 @@ export class FavoritesService {
     console.log('Add:', this._ids);  // TODO for debug
     this._hasCookiePrivate = true;
     this.loadData();
-    this.isFavoritesOpen = true;
+    this.isFavoritesOpen.set(true);
   }
 
   deleteItem(itemId: number): void {
@@ -55,7 +55,7 @@ export class FavoritesService {
   }
 
   toggleTab(): void {
-    this.isFavoritesOpen = !(this.isFavoritesOpen);
+    this.isFavoritesOpen.update(prevValue => !prevValue);
   }
 
   isItemInFavorites(item: Item): boolean {
