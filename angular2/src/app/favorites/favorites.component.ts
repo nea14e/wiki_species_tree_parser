@@ -1,4 +1,4 @@
-import {Component, inject, output} from '@angular/core';
+import {Component, computed, inject, output} from '@angular/core';
 import {FavoritesItem} from '../models/favorites-item';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {FavoritesService} from '../common/favorites.service';
@@ -18,16 +18,16 @@ export class FavoritesComponent {
 
   close = output<void>();
 
+  isFavoritesEmpty = computed(
+    () => !this.favoritesService.items() || this.favoritesService.items().length === 0
+  );
+
   onDeleteItemClick(item: FavoritesItem): void {
     this.favoritesService.deleteItem(item.id);
   }
 
   toTree(id: number): void {
     this._router.navigate(['tree'], {queryParams: {id}});
-  }
-
-  isFavoritesEmpty(): boolean {
-    return this.favoritesService.items().length === 0;
   }
 
   onCloseFavoritesClick() {
