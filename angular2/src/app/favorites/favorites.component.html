@@ -3,9 +3,11 @@
     <div class="col-auto">
       <h3 class="ml-3">{{ rootData.translationRoot()?.translations?.favorites }}</h3>
     </div>
-    <img (click)="onCloseFavoritesClick()"
-         src="/from-bootstrap/x.svg"
-         class="list-item-btn-img mt-2 btn-favorites-x">
+    <div class="col">
+      <img (click)="onCloseFavoritesClick()"
+           src="/from-bootstrap/x.svg"
+           class="list-item-btn-img mt-2 btn-favorites-x">
+    </div>
   </div>
   <div class="row d-flex justify-content-center">
     <div class="col-auto">
