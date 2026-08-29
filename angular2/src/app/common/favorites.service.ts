@@ -31,6 +31,7 @@ export class FavoritesService {
     this._networkService.getFavorites(this._ids)
       .subscribe(data => {
         this.items.set(data);
+        this.isFavoritesOpen.set(!!data);
       });
   }
 
