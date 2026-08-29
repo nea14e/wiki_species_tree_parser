@@ -1,5 +1,6 @@
 export interface Translations {
   favorites: string;
+  favorites_is_empty: string;
   next_fact: string;
   rank_word: string;
   site_title: string;

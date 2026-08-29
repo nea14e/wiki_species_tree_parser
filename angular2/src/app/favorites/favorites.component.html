@@ -11,7 +11,7 @@
     <div class="col-auto">
       @if (isFavoritesEmpty()) {
         <div class="mr-1">
-          ничего нету
+          {{ rootData.translationRoot()?.translations?.favorites_is_empty }}
         </div>
       }
       @for (item of favoritesService.items(); track item.id) {
