@@ -9,43 +9,57 @@
         <div class="btn col-auto mr-2 mt-2"
              (click)="onTipClick()"
              [ngClass]="currentPage === PagesEnum.TipOfTheDay ? 'btn-selected' : '' ">
-          <img src="/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
+          <img src="/from-bootstrap/patch-question-fill.svg"
+               [alt]="translationRoot()?.translations?.tip_of_the_day_word"
+               class="btn-img"/>
           {{ translationRoot()?.translations?.tip_of_the_day_word }}
         </div>
         <div class="btn col-auto mr-2 mt-2"
              (click)="onToTreeClick()"
              [ngClass]="currentPage === PagesEnum.Tree ? 'btn-selected' : '' ">
-          <img src="/from-bootstrap/diagram-3.svg" class="btn-img"/>
+          <img src="/from-bootstrap/diagram-3.svg"
+               [alt]="translationRoot()?.translations?.to_tree"
+               class="btn-img"/>
           {{ translationRoot()?.translations?.to_tree }}
         </div>
         <div class="btn col-auto mr-2 mt-2"
              (click)="onSearchClick()"
              [ngClass]="currentPage === PagesEnum.Search ? 'btn-selected' : '' ">
-          <img src="/from-bootstrap/search.svg" class="btn-img"/>
+          <img src="/from-bootstrap/search.svg"
+               [alt]="translationRoot()?.translations?.search_word"
+               class="btn-img"/>
           {{ translationRoot()?.translations?.search_word }}
         </div>
         <div class="btn col-auto mr-2 mt-2"
              (click)="onFavoritesToggleClick()"
              [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
-          <img src="/from-bootstrap/bookmarks.svg" class="btn-img"/>
+          <img src="/from-bootstrap/bookmarks.svg"
+               [alt]="translationRoot()?.translations?.favorites"
+               class="btn-img"/>
           {{ translationRoot()?.translations?.favorites }}
         </div>
         <div class="btn col-auto mr-2 mt-2"
              (click)="onAuthorsClick()"
              [ngClass]="currentPage === PagesEnum.Authors ? 'btn-selected' : '' ">
-          <img src="/from-bootstrap/vector-pen.svg" class="btn-img"/>
+          <img src="/from-bootstrap/vector-pen.svg"
+               [alt]="translationRoot()?.translations?.authors_word"
+               class="btn-img"/>
           {{ translationRoot()?.translations?.authors_word }}
         </div>
         <div class="btn col-auto ml-auto mr-2 mt-2"
              (click)="onBackClick()"
         >
-          <img src="/from-bootstrap/arrow-left.svg" class="btn-img"/>
+          <img src="/from-bootstrap/arrow-left.svg"
+               [alt]="translationRoot()?.translations?.go_back"
+               class="btn-img"/>
           {{ translationRoot()?.translations?.go_back }}
         </div>
         <div class="btn col-auto mr-2 mt-2"
              (click)="onForwardClick()"
         >
-          <img src="/from-bootstrap/arrow-right.svg" class="btn-img"/>
+          <img src="/from-bootstrap/arrow-right.svg"
+               [alt]="translationRoot()?.translations?.go_forward"
+               class="btn-img"/>
           {{ translationRoot()?.translations?.go_forward }}
         </div>
       </div>
@@ -81,7 +95,9 @@
                      (click)="onToDbTasksClick()"
                      [ngClass]="currentPage === PagesEnum.DbTasks ? 'btn-selected' : '' "
                 >
-                  <img src="/from-bootstrap/alarm.svg" class="btn-img"/>
+                  <img src="/from-bootstrap/alarm.svg"
+                       [alt]="translationRoot()?.translations?.admin_db_tasks"
+                       class="btn-img"/>
                   {{ translationRoot()?.translations?.admin_db_tasks }}
                 </div>
               }
@@ -90,7 +106,9 @@
                      (click)="onToFillingStatsClick()"
                      [ngClass]="currentPage === PagesEnum.FillingStats ? 'btn-selected' : '' "
                 >
-                  <img src="/from-bootstrap/percent.svg" class="btn-img"/>
+                  <img src="/from-bootstrap/percent.svg"
+                       [alt]="translationRoot()?.translations?.admin_filling_stats"
+                       class="btn-img"/>
                   {{ translationRoot()?.translations?.admin_filling_stats }}
                 </div>
               }
@@ -99,7 +117,9 @@
                      (click)="onToTipTranslationClick()"
                      [ngClass]="currentPage === PagesEnum.TipTranslation ? 'btn-selected' : '' "
                 >
-                  <img src="/from-bootstrap/patch-question-fill.svg" class="btn-img"/>
+                  <img src="/from-bootstrap/patch-question-fill.svg"
+                       [alt]="translationRoot()?.translations?.admin_tips_list"
+                       class="btn-img"/>
                   {{ translationRoot()?.translations?.admin_tips_list }}
                 </div>
               }
@@ -108,7 +128,9 @@
                      (click)="onToAdminUsersClick()"
                      [ngClass]="currentPage === PagesEnum.AdminUsers ? 'btn-selected' : '' "
                 >
-                  <img src="/from-bootstrap/people.svg" class="btn-img"/>
+                  <img src="/from-bootstrap/people.svg"
+                       [alt]="translationRoot()?.translations?.admin_users"
+                       class="btn-img"/>
                   {{ translationRoot()?.translations?.admin_users }}
                 </div>
               }
@@ -116,7 +138,9 @@
                    (click)="adminLogout()"
                    [title]="translationRoot()?.translations?.admin_logout"
               >
-                <img src="/from-bootstrap/door-open-fill.svg" class="btn-img"/>
+                <img src="/from-bootstrap/door-open-fill.svg"
+                     [alt]="translationRoot()?.translations?.admin_logout"
+                     class="btn-img"/>
               </div>
             </div>
           }
