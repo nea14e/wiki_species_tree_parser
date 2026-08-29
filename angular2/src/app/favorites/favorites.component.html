@@ -9,44 +9,42 @@
            class="list-item-btn-img mt-2 btn-favorites-x">
     </div>
   </div>
-  <div class="row d-flex justify-content-center">
-    <div class="col-auto">
-      @if (isFavoritesEmpty()) {
-        <div class="mr-1">
+  <div>
+    @if (isFavoritesEmpty()) {
+      <div class="centered-text">
           {{ rootData.translationRoot()?.translations?.favorites_is_empty }}
         </div>
-      }
-      @for (item of favoritesService.items(); track item.id) {
-        <div class="plain-list-item pointer row"
-             (click)="toTree(item.id)">
+    }
+    @for (item of favoritesService.items(); track item.id) {
+      <div class="plain-list-item pointer row"
+           (click)="toTree(item.id)">
 
-          <div class="plain-list-item-img-container">
-            @if (!!item.image_url) {
-              <img [src]="item.image_url" [title]="item.title_for_language"
-                   [alt]="item.title_for_language"
-                   class="favorites-item-img-content">
-            }
-          </div>
-
-          <div class="col-auto mr-auto d-flex">
-            <div class="align-self-center">
-              <small>{{ item.rank_for_language }}</small>
-              <br/><b>{{ item.title_for_language }}</b>
-            </div>
-          </div>
-
-          <div class="col-auto mr-auto d-flex">
-            <img (click)="onDeleteItemClick(item); $event.stopPropagation();"
-                 src="/from-bootstrap/x.svg"
-                 [title]="rootData.translationRoot()?.translations?.delete_favorite"
-                 [alt]="rootData.translationRoot()?.translations?.delete_favorite"
-                 class="list-item-btn-img mt-2 btn-favorites-x">
-          </div>
-
+        <div class="plain-list-item-img-container">
+          @if (!!item.image_url) {
+            <img [src]="item.image_url" [title]="item.title_for_language"
+                 [alt]="item.title_for_language"
+                 class="favorites-item-img-content">
+          }
         </div>
-      }
 
-    </div>
+        <div class="col-auto mr-auto d-flex">
+          <div class="align-self-center">
+            <small>{{ item.rank_for_language }}</small>
+            <br/><b>{{ item.title_for_language }}</b>
+          </div>
+        </div>
+
+        <div class="col-auto mr-auto d-flex">
+          <img (click)="onDeleteItemClick(item); $event.stopPropagation();"
+               src="/from-bootstrap/x.svg"
+               [title]="rootData.translationRoot()?.translations?.delete_favorite"
+               [alt]="rootData.translationRoot()?.translations?.delete_favorite"
+               class="list-item-btn-img mt-2 btn-favorites-x">
+        </div>
+
+      </div>
+    }
+
   </div>
 </div>
 
