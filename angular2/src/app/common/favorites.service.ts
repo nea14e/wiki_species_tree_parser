@@ -23,16 +23,17 @@ export class FavoritesService {
     if (!!favorites) {
       this._ids = favorites as number[];
       this._hasCookiePrivate = true;
+      this._networkService.getFavorites(this._ids)
+        .subscribe(data => {
+          this.items.set(data);
+          this.isFavoritesOpen.set(!!data);
+        });
     } else {
       this._ids = [];
       this._hasCookiePrivate = false;
+      this.items.set([]);
+      this.isFavoritesOpen.set(false);
     }
-
-    this._networkService.getFavorites(this._ids)
-      .subscribe(data => {
-        this.items.set(data);
-        this.isFavoritesOpen.set(!!data);
-      });
   }
 
   hasCookie(): boolean {
