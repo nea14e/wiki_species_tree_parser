@@ -5,7 +5,7 @@ import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {NETWORK_ERROR_DEFAULT_MESSAGE, NetworkService} from '../network.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {CopyToClipboardService} from '../common/copy-to-clipboard.service';
-import {FavoritesService} from '../favorites.service';
+import {FavoritesService} from '../common/favorites.service';
 import {Item} from '../models/item';
 import {Level} from '../models/level';
 import {FormsModule} from '@angular/forms';

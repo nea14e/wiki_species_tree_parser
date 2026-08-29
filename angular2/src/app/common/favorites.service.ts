@@ -1,8 +1,8 @@
 import {inject, Service, signal} from '@angular/core';
-import {NetworkService} from './network.service';
+import {NetworkService} from '../network.service';
 import {CookieService} from 'ngx-cookie';
-import {FavoritesItem} from './models/favorites-item';
-import {Item} from './models/item';
+import {FavoritesItem} from '../models/favorites-item';
+import {Item} from '../models/item';
 
 @Service()
 export class FavoritesService {

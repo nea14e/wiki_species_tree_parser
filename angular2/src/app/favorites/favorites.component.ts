@@ -1,7 +1,7 @@
 import {Component, inject, output} from '@angular/core';
 import {FavoritesItem} from '../models/favorites-item';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
-import {FavoritesService} from '../favorites.service';
+import {FavoritesService} from '../common/favorites.service';
 import {Router} from '@angular/router';
 
 @Component({

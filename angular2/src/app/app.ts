@@ -3,7 +3,7 @@ import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
 import {TranslationRoot} from './models/translation-root';
 import {PagesEnum} from './pages-enum';
 import {RootDataKeeperService} from './common/root-data-keeper.service';
-import {FavoritesService} from './favorites.service';
+import {FavoritesService} from './common/favorites.service';
 import {NETWORK_ERROR_DEFAULT_MESSAGE, NetworkService} from './network.service';
 import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
