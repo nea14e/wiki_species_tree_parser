@@ -40,8 +40,7 @@ export class FavoritesService {
 
   addItem(item: Item): void {
     this._ids.push(item.id);
-    this._cookieService.putObject('favorites', this._ids);
-    console.log('Add:', this._ids);  // TODO for debug
+    this._cookieService.putObject('favorites', this._ids, {expires: '2999-12-31'});
     this._hasCookiePrivate = true;
     this.loadData();
     this.isFavoritesOpen.set(true);
@@ -49,8 +48,7 @@ export class FavoritesService {
 
   deleteItem(itemId: number): void {
     this._ids = this._ids.filter(id => itemId !== id);
-    this._cookieService.putObject('favorites', this._ids);
-    console.log('Delete', itemId);  // TODO for debug
+    this._cookieService.putObject('favorites', this._ids, {expires: '2999-12-31'});
     this.loadData();
   }
 
