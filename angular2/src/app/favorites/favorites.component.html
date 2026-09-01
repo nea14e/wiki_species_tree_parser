@@ -16,7 +16,7 @@
       </div>
     }
     @for (item of favoritesService.items(); track item.id) {
-      <div class="plain-list-item pointer row"
+      <div class="plain-list-item pointer"
            (click)="toTree(item.id)">
 
         <div class="plain-list-item-img-container">
@@ -28,14 +28,14 @@
           }
         </div>
 
-        <div class="col-auto mr-auto d-flex">
+        <div class="plain-list-item-title d-flex">
           <div class="align-self-center">
-            <small>{{ item.rank_for_language }}</small>
-            <br/><b>{{ item.title_for_language }}</b>
+            <small class="plain-list-item-title-rank">{{ item.rank_for_language }}</small>
+            <br/><b class="plain-list-item-title-title">{{ item.title_for_language }}</b>
           </div>
         </div>
 
-        <div class="col mr-auto d-flex justify-content-end">
+        <div class="plain-list-item-delete-btn d-flex justify-content-end">
           <img (click)="onDeleteItemClick(item); $event.stopPropagation();"
                src="/from-bootstrap/x.svg"
                [title]="rootData.translationRoot()?.translations?.delete_favorite"

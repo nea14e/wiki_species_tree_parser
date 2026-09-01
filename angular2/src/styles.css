@@ -81,6 +81,8 @@
 }
 
 .plain-list-item {
+  display: flex;
+  align-items: center;
   height: var(--search-item-size);
   margin: 4px;
   border: 1px solid var(--item-accent);
@@ -94,12 +96,27 @@
   background-color: unset;
 }
 
+.plain-list-item-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.plain-list-item-title * {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .plain-list-item-img-container {
   width: var(--search-item-size);
   height: var(--search-item-size);
   overflow: hidden;
   position: relative;
   background-color: var(--item-color-1);
+  flex-shrink: 0;
 }
 
 .plain-list-item-img-content {
@@ -133,6 +150,10 @@
   -ms-transform: translate(-50%, -50%);
   -o-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
+}
+
+.plain-list-item-delete-btn {
+  flex-shrink: 0;
 }
 
 .list-item-btn {
