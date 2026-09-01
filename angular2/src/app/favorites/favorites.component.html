@@ -21,8 +21,9 @@
 
         <div class="plain-list-item-img-container">
           @if (!!item.image_url) {
-            <img [src]="item.image_url" [title]="item.title_for_language"
-                 [alt]="item.title_for_language"
+            <img [src]="item.image_url"
+                 [title]="item.title_for_language"
+                 alt=""
                  class="favorites-item-img-content">
           }
         </div>
