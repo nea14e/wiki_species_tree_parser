@@ -34,7 +34,7 @@
           </div>
         </div>
 
-        <div class="col-auto mr-auto d-flex">
+        <div class="col mr-auto d-flex justify-content-end">
           <img (click)="onDeleteItemClick(item); $event.stopPropagation();"
                src="/from-bootstrap/x.svg"
                [title]="rootData.translationRoot()?.translations?.delete_favorite"
