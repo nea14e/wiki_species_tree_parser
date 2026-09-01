@@ -30,8 +30,14 @@
 
         <div class="plain-list-item-title">
           <div class="align-self-center d-flex flex-column">
-            <small class="plain-list-item-title-rank">{{ item.rank_for_language }}</small>
-            <b class="plain-list-item-title-title">{{ item.title_for_language }}</b>
+            <small class="plain-list-item-title-rank"
+                   [title]="item.rank_for_language">
+              {{ item.rank_for_language }}
+            </small>
+            <b class="plain-list-item-title-title"
+               [title]="item.title_for_language">
+              {{ item.title_for_language }}
+            </b>
           </div>
         </div>
 
