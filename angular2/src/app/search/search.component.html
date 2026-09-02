@@ -1,0 +1,105 @@
+<div class="row router-hr"></div>
+<h3>{{ rootData.translationRoot()?.translations?.search_word }}</h3>
+
+<div class="row ml-0 mt-2 mb-2 d-flex justify-content-center">
+  @if (!!attachToTipId) {
+    <div class="btn col-auto mt-1 mr-2"
+         (click)="goBack()"
+         [title]="rootData.translationRoot()?.translations?.go_back">
+      <img src="/from-bootstrap/arrow-left.svg"
+           alt=""
+           class="btn-img"/>
+    </div>
+  }
+  @if (!attachToTipId) {
+    <img src="/from-bootstrap/search.svg"
+         alt=""
+         class="btn-img mr-2"/>
+  }
+  <input class="col-8" type="text"
+         [(ngModel)]="query"
+         (ngModelChange)="onQueryInputChanged($event)"
+         [placeholder]="rootData.translationRoot()?.translations?.search_tooltip"
+         [title]="rootData.translationRoot()?.translations?.search_tooltip">
+  @if (isLoading) {
+    <div class="spinner-circular">
+      <sa-spinner-circular
+        class="spinner-circular"
+        size="32px"
+        color="#0000ff"
+      ></sa-spinner-circular>
+    </div>
+  }
+</div>
+
+<div class="row ml-0 d-flex justify-content-center">
+  <div class="col-8">
+    @for (item of resultItems; track item.id) {
+      <div class="plain-list-item pointer row"
+           (click)="onItemClick(item)">
+
+        <div class="plain-list-item-img-container">
+          @if (!!item.image_url) {
+            <img [src]="item.image_url"
+                 alt=""
+                 [title]="item.title_for_language"
+                 class="plain-list-item-img-content">
+          }
+        </div>
+
+        <div class="col-auto mr-auto d-flex">
+          <div class="align-self-center">
+            <small>{{ item.rank_for_language }}</small>
+            <br/><b>{{ item.title_for_language }}</b>
+          </div>
+        </div>
+
+        @if (!!item.leaves_count) {
+          <div class="col-auto d-flex"
+               [title]="rootData.translationRoot()?.translations?.leaves_count"
+          >
+            <div class="align-self-center">
+              <img src="/from-bootstrap/diagram-3.svg" alt=""/>
+              {{ item.leaves_count }}
+            </div>
+          </div>
+        }
+
+        @if (attachToTipId !== null) {
+          <div class="btn col-auto mr-3 mt-3 mb-3"
+               (click)="attachToTree(item)"
+               [title]="rootData.translationRoot()?.translations?.attach_to_tree"
+          >
+            <img src="/from-bootstrap/check.svg" alt="" class="btn-img"/>
+          </div>
+        }
+
+      </div>
+    }
+    @if (!resultItems?.length && query.length >= minQueryLength && !isLoading) {
+      <div class="not-found-stub">
+        {{ rootData.translationRoot()?.translations?.search_result_empty }}
+      </div>
+    }
+    <div class="plain-list-item invisible-list-item row">
+      @if (!!resultItems?.length) {
+        <div class="col-auto">
+          <div class="btn mt-2" (click)="onShareClick()"
+               [title]="rootData.translationRoot()?.translations?.copy_link_to_share">
+            <img src="/from-bootstrap/share.svg" alt="" class="btn-img"/>
+          </div>
+        </div>
+      }
+      @if (!!isMore) {
+        <div class="col-auto">
+          <div class="btn mt-2" (click)="loadMore()">
+            <img src="/from-bootstrap/file-arrow-down.svg" alt="" class="btn-img"/>
+            {{ rootData.translationRoot()?.translations?.load_more }}
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>
+
