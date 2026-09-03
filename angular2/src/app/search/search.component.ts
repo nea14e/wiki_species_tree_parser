@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {SearchItem} from '../models/search-item';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {NetworkService} from '../network.service';
@@ -7,27 +7,31 @@ import {CopyToClipboardService} from '../common/copy-to-clipboard.service';
 import {debounceTime, distinctUntilChanged, Subject} from 'rxjs';
 import {Location} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {SpinnersAngularModule} from "spinners-angular";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 @Component({
     selector: 'app-search.component',
     imports: [
         FormsModule,
-        SpinnersAngularModule
+      MatProgressSpinner,
     ],
     templateUrl: './search.component.html',
     styleUrl: './search.component.css',
 })
 export class SearchComponent implements OnInit {
 
-    query = '';
+  readonly ITEMS_COUNT_BY_QUERY = 2;  // TODO
+
+  query = signal('');
     minQueryLength = 3;
-    attachToTipId: number | null = null;
+  attachToTipId = signal<number | null>(null);
     queryChanged: Subject<string> = new Subject<string>();
-    resultItems: SearchItem[] = [];
-    isLoading = false;
-    isMore = false;
-    ITEMS_COUNT_BY_QUERY = 10;
+  resultItems = signal<SearchItem[]>([]);
+  isLoading = signal(false);
+  isMore = signal(false);
+  isResultsEmpty = computed(() =>
+    !this.resultItems().length && this.query().length >= this.minQueryLength && !this.isLoading()
+  );
 
     rootData = inject(RootDataKeeperService);
     private networkService = inject(NetworkService);
@@ -58,38 +62,46 @@ export class SearchComponent implements OnInit {
 
         this.activatedRoute.queryParams.subscribe(params => {
             this.rootData.lastSearchParams = params;
-            this.query = params['q'] || '';
-            this.attachToTipId = !!params['attachToTipId']
-                ? +params['attachToTipId']
-                : null;
+          const q = params['q'] as string || '';
+          this.query.set(q);
+          const attachToTipId = !!params['attachToTipId']
+            ? +params['attachToTipId']
+            : null;
+          this.attachToTipId.set(attachToTipId);
             this.runSearch(0);
         });
     }
 
     runSearch(offset: number): void {
-        if (this.query.length < this.minQueryLength) {
-            this.resultItems = [];
+      if (this.query().length < this.minQueryLength) {
+        this.resultItems.set([]);
+        this.isMore.set(false);
             return;
         }
 
-        this.isLoading = true;
-        this.networkService.search(this.query, this.ITEMS_COUNT_BY_QUERY, offset)
-            .subscribe(result => {
-                console.log('result:', result);
-                this.isMore = result.length > this.ITEMS_COUNT_BY_QUERY;
-                if (this.isMore) {
-                    result.splice(this.ITEMS_COUNT_BY_QUERY);
-                }
-                console.log('modified result:', result);
-                if (offset > 0) {
-                    this.resultItems.push(...result);
-                } else {
-                    this.resultItems = result;
-                }
-                this.isLoading = false;
-            }, () => {
-                alert(this.rootData.translationRoot()?.translations.network_error);
-                this.isLoading = false;
+      this.isLoading.set(true);
+      this.networkService.search(this.query(), this.ITEMS_COUNT_BY_QUERY, offset)
+        .subscribe({
+          next: result => {
+            console.log('result:', result);
+            const isMore = result.length > this.ITEMS_COUNT_BY_QUERY;
+            this.isMore.set(isMore);
+            if (this.isMore()) {
+              result.splice(this.ITEMS_COUNT_BY_QUERY);
+            }
+            console.log('modified result:', result);
+            if (offset > 0) {
+              const prevResult = this.resultItems();
+              prevResult.push(...result);
+              this.resultItems.set(prevResult);
+            } else {
+              this.resultItems.set(result);
+            }
+            this.isLoading.set(false);
+          }, error: () => {
+            alert(this.rootData.translationRoot()?.translations.network_error);
+            this.isLoading.set(false);
+          }
             });
     }
 
@@ -104,12 +116,13 @@ export class SearchComponent implements OnInit {
     }
 
     onQueryInputChanged(inputText: string): void {
+      this.query.set(inputText);
         this.queryChanged.next(inputText);
     }
 
     attachToTree(item: SearchItem): void {
         this.router.navigate(['admin/tip-translation'],
-            {queryParams: {speciesPageUrl: item.page_url, tipId: this.attachToTipId}}
+          {queryParams: {speciesPageUrl: item.page_url, tipId: this.attachToTipId()}}
         );
     }
 
@@ -118,7 +131,7 @@ export class SearchComponent implements OnInit {
     }
 
     loadMore(): void {
-        const newOffset = this.resultItems.length;
+      const newOffset = this.resultItems().length;
         this.runSearch(newOffset);
     }
 }

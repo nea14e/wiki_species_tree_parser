@@ -2,7 +2,7 @@
 <h3>{{ rootData.translationRoot()?.translations?.search_word }}</h3>
 
 <div class="row ml-0 mt-2 mb-2 d-flex justify-content-center">
-  @if (!!attachToTipId) {
+  @if (!!attachToTipId()) {
     <div class="btn col-auto mt-1 mr-2"
          (click)="goBack()"
          [title]="rootData.translationRoot()?.translations?.go_back">
@@ -11,30 +11,28 @@
            class="btn-img"/>
     </div>
   }
-  @if (!attachToTipId) {
+  @if (!attachToTipId()) {
     <img src="/from-bootstrap/search.svg"
          alt=""
          class="btn-img mr-2"/>
   }
   <input class="col-8" type="text"
-         [(ngModel)]="query"
+         [ngModel]="query()"
          (ngModelChange)="onQueryInputChanged($event)"
          [placeholder]="rootData.translationRoot()?.translations?.search_tooltip"
          [title]="rootData.translationRoot()?.translations?.search_tooltip">
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="spinner-circular">
-      <sa-spinner-circular
-        class="spinner-circular"
-        size="32px"
-        color="#0000ff"
-      ></sa-spinner-circular>
+      <mat-progress-spinner mode="indeterminate"
+                            diameter="32px">
+      </mat-progress-spinner>
     </div>
   }
 </div>
 
 <div class="row ml-0 d-flex justify-content-center">
   <div class="col-8">
-    @for (item of resultItems; track item.id) {
+    @for (item of resultItems(); track item.id) {
       <div class="plain-list-item pointer row"
            (click)="onItemClick(item)">
 
@@ -65,7 +63,7 @@
           </div>
         }
 
-        @if (attachToTipId !== null) {
+        @if (attachToTipId() !== null) {
           <div class="btn col-auto mr-3 mt-3 mb-3"
                (click)="attachToTree(item)"
                [title]="rootData.translationRoot()?.translations?.attach_to_tree"
@@ -76,13 +74,13 @@
 
       </div>
     }
-    @if (!resultItems?.length && query.length >= minQueryLength && !isLoading) {
+    @if (isResultsEmpty()) {
       <div class="not-found-stub">
         {{ rootData.translationRoot()?.translations?.search_result_empty }}
       </div>
     }
     <div class="plain-list-item invisible-list-item row">
-      @if (!!resultItems?.length) {
+      @if (!!resultItems().length) {
         <div class="col-auto">
           <div class="btn mt-2" (click)="onShareClick()"
                [title]="rootData.translationRoot()?.translations?.copy_link_to_share">
@@ -90,7 +88,7 @@
           </div>
         </div>
       }
-      @if (!!isMore) {
+      @if (!!isMore() && !isLoading()) {
         <div class="col-auto">
           <div class="btn mt-2" (click)="loadMore()">
             <img src="/from-bootstrap/file-arrow-down.svg" alt="" class="btn-img"/>

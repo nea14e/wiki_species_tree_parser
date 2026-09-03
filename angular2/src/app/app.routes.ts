@@ -1,11 +1,12 @@
 import {Routes} from '@angular/router';
 import {TipOfTheDayComponent} from './tip-of-the-day/tip-of-the-day.component';
 import {TreeComponent} from './tree/tree.component';
+import {SearchComponent} from './search/search.component';
 
 export const routes: Routes = [
   {path: 'tip', component: TipOfTheDayComponent},
   {path: 'tree', component: TreeComponent},
-  // { path: 'search', component: SearchComponent },
+  {path: 'search', component: SearchComponent},
   // { path: 'authors', component: AuthorsComponent },
   // { path: 'admin', redirectTo: 'tip' },
   // { path: 'admin/db-tasks', component: DbTasksComponent },
