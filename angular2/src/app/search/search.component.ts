@@ -29,6 +29,7 @@ export class SearchComponent implements OnInit {
   resultItems = signal<SearchItem[]>([]);
   isLoading = signal(false);
   isMore = signal(false);
+  isLoadingMore = signal(false);
   isResultsEmpty = computed(() =>
     !this.resultItems().length && this.query().length >= this.minQueryLength && !this.isLoading()
   );
@@ -80,6 +81,7 @@ export class SearchComponent implements OnInit {
     }
 
     this.isLoading.set(true);
+    this.isLoadingMore.set(offset > 0);
     this.networkService.search(this.query(), this.ITEMS_COUNT_BY_QUERY, offset)
       .subscribe({
         next: result => {

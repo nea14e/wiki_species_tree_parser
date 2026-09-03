@@ -21,66 +21,66 @@
          (ngModelChange)="onQueryInputChanged($event)"
          [placeholder]="rootData.translationRoot()?.translations?.search_tooltip"
          [title]="rootData.translationRoot()?.translations?.search_tooltip">
-  @if (isLoading()) {
-    <div class="spinner-circular">
-      <mat-progress-spinner mode="indeterminate"
-                            diameter="32px">
-      </mat-progress-spinner>
-    </div>
-  }
 </div>
 
 <div class="row ml-0 d-flex justify-content-center">
   <div class="col-8">
-    @for (item of resultItems(); track item.id) {
-      <div class="plain-list-item pointer row"
-           (click)="onItemClick(item)">
+    @if (!isLoading() || isLoadingMore()) {
+      @for (item of resultItems(); track item.id) {
+        <div class="plain-list-item pointer row"
+             (click)="onItemClick(item)">
 
-        <div class="plain-list-item-img-container">
-          @if (!!item.image_url) {
-            <img [src]="item.image_url"
-                 alt=""
-                 [title]="item.title_for_language"
-                 class="plain-list-item-img-content">
-          }
-        </div>
-
-        <div class="col-auto mr-auto d-flex">
-          <div class="align-self-center">
-            <small>{{ item.rank_for_language }}</small>
-            <br/><b>{{ item.title_for_language }}</b>
+          <div class="plain-list-item-img-container">
+            @if (!!item.image_url) {
+              <img [src]="item.image_url"
+                   alt=""
+                   [title]="item.title_for_language"
+                   class="plain-list-item-img-content">
+            }
           </div>
-        </div>
 
-        @if (!!item.leaves_count) {
-          <div class="col-auto d-flex"
-               [title]="rootData.translationRoot()?.translations?.leaves_count"
-          >
+          <div class="col-auto mr-auto d-flex">
             <div class="align-self-center">
-              <img src="/from-bootstrap/diagram-3.svg" alt=""/>
-              {{ item.leaves_count }}
+              <small>{{ item.rank_for_language }}</small>
+              <br/><b>{{ item.title_for_language }}</b>
             </div>
           </div>
-        }
 
-        @if (attachToTipId() !== null) {
-          <div class="btn col-auto mr-3 mt-3 mb-3"
-               (click)="attachToTree(item)"
-               [title]="rootData.translationRoot()?.translations?.attach_to_tree"
-          >
-            <img src="/from-bootstrap/check.svg" alt="" class="btn-img"/>
-          </div>
-        }
+          @if (!!item.leaves_count) {
+            <div class="col-auto d-flex"
+                 [title]="rootData.translationRoot()?.translations?.leaves_count"
+            >
+              <div class="align-self-center">
+                <img src="/from-bootstrap/diagram-3.svg" alt=""/>
+                {{ item.leaves_count }}
+              </div>
+            </div>
+          }
 
-      </div>
+          @if (attachToTipId() !== null) {
+            <div class="btn col-auto mr-3 mt-3 mb-3"
+                 (click)="attachToTree(item)"
+                 [title]="rootData.translationRoot()?.translations?.attach_to_tree"
+            >
+              <img src="/from-bootstrap/check.svg" alt="" class="btn-img"/>
+            </div>
+          }
+
+        </div>
+      }
     }
     @if (isResultsEmpty()) {
       <div class="not-found-stub">
         {{ rootData.translationRoot()?.translations?.search_result_empty }}
       </div>
     }
+    @if (isLoading() && !isLoadingMore()) {
+      <mat-progress-spinner class="spinner-circular"
+                            mode="indeterminate">
+      </mat-progress-spinner>
+    }
     <div class="plain-list-item invisible-list-item row">
-      @if (!!resultItems().length) {
+      @if (!!resultItems().length && (!isLoading() || isLoadingMore())) {
         <div class="col-auto">
           <div class="btn mt-2" (click)="onShareClick()"
                [title]="rootData.translationRoot()?.translations?.copy_link_to_share">
@@ -95,6 +95,11 @@
             {{ rootData.translationRoot()?.translations?.load_more }}
           </div>
         </div>
+      }
+      @if (isLoading() && isLoadingMore()) {
+        <mat-progress-spinner class="spinner-circular"
+                              mode="indeterminate">
+        </mat-progress-spinner>
       }
     </div>
 

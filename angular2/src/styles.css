@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
 
 :root {
   --item-color-0: #cddbfb;
@@ -184,5 +185,4 @@
   font-weight: bold;
   margin-top: 0.7rem;
   font-style: italic;
-
 }

@@ -1,4 +1,8 @@
 .spinner-circular {
-    text-align: right;
-    margin-left: 0.3rem;
+  position: relative;
+  width: 32px !important;
+  height: 32px !important;
+  --mat-progress-spinner-size: 32px !important;
+  --mat-progress-spinner-active-indicator-width: 32px !important;
+  padding: 0 !important;
 }
