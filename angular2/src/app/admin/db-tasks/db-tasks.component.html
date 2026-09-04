@@ -1,0 +1,470 @@
+<div class="row router-hr"></div>
+<h3>{{ rootData.translationRoot()?.translations?.admin_db_tasks }}</h3>
+
+<div class="row ml-0 mr-0 mb-2">
+
+  <div class="btn col-auto mr-2 mt-2"
+       (click)="onCreateClick()"
+       [title]="rootData.translationRoot()?.translations?.create"
+  >
+    <img src="/from-bootstrap/plus.svg" alt="" class="btn-img"/>
+  </div>
+
+</div>
+
+<div class="row ml-0 mr-0 mt-4 mb-2">
+  <div>
+    @if (isTestDb === true) {
+      <div>You are working with TEST database</div>
+    }
+    @if (isTestDb === false) {
+      <div class="text-warning">You are working with PRODUCTION database</div>
+    }
+    <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
+  </div>
+</div>
+
+<div class="row ml-0 mr-0">
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Id</th>
+      <th>Stage</th>
+      <th>Args</th>
+      <th>Auto restart</th>
+      <th>State</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+      @for (task of tasks; track task.id) {
+        <tr [style.background]="getColorForTask(task)">
+          <td>{{ task.id }}</td>
+          <td>
+            @switch (task.stage) {
+              @case ('0') {
+                <span>0 - init DB / migrate DB</span>
+              }
+              @case ('1') {
+                <span>1 - populate list</span>
+              }
+              @case ('2') {
+                <span>2 - parse</span>
+              }
+              @case ('3') {
+                <span>3 - correct parents</span>
+              }
+              @case ('4') {
+                <span>4 - update leaves count</span>
+              }
+              @case ('parse_language') {
+                <span>parse_language</span>
+              }
+              @case ('test_task') {
+                <span>test_task</span>
+              }
+            }
+          </td>
+          <td>
+            @if (task.is_auto_created === true) {
+              <span>[Created automatically]</span>
+            }
+            @switch (task.stage) {
+              @case ('1') {
+                <span>"{{ task.args.from_title }}" - "{{ task.args.to_title }}"</span>
+              }
+              @case ('2') {
+                <span>skip_parsed_interval: {{ task.args.skip_parsed_interval }}, "{{ task.args.where }}"</span>
+              }
+              @case ('3') {
+                <span>where: "{{ task.args.where }}"</span>
+              }
+              @case ('4') {
+                <span>-</span>
+              }
+              @case ('parse_language') {
+                <span>"{{ task.args.lang_key }}", {{ task.args.skip_parsed_interval }}, "{{ task.args.where }}"</span>
+              }
+              @case ('test_task') {
+                <span>will_success: {{ task.args.will_success }} in {{ task.args.timeout }} sec</span>
+              }
+            }
+          </td>
+          <td title="Run/resume task automatically on Backend Server's restart">
+            {{ getTaskResumeState(task) }}
+          </td>
+          <td>
+            {{ getTaskState(task) }}
+          </td>
+          <td>
+
+            <div class="btn col-auto mr-2"
+                 [ngClass]="logShowingTaskId===task.id ? 'active' : ''"
+                 (click)="onShowLogClick(task)"
+                 title="Show log"
+            >
+              <img src="/from-bootstrap/eye.svg" alt="" class="btn-img"/>
+            </div>
+
+            @if (!task.is_running_now) {
+              <div class="btn col-auto mr-2"
+                   (click)="onStartClick(task)"
+                   title="Run task"
+              >
+                <img src="/from-bootstrap/play-fill.svg" alt="" class="btn-img"/>
+              </div>
+            }
+
+            @if (!!task.is_running_now && isTaskResumeEnabled(task)) {
+              <div class="btn col-auto mr-2"
+                   (click)="onPauseClick(task)"
+                   title="Pause task. Tasks of this type can be paused & resumed"
+              >
+                <img src="/from-bootstrap/pause-fill.svg" alt="" class="btn-img"/>
+              </div>
+            }
+
+            @if (!!task.is_running_now && !isTaskResumeEnabled(task)) {
+              <div class="btn col-auto mr-2"
+                   (click)="onStopClick(task)"
+                   title="Stop task"
+              >
+                <img src="/from-bootstrap/stop-fill.svg" alt="" class="btn-img"/>
+              </div>
+            }
+
+            <div class="btn col-auto mr-2"
+                 [ngClass]="(editingTask?.id===task.id ? 'active' : '') + (isEditTaskDisabled(task) ? 'disabled' : '')"
+                 (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onEditClick(task)"
+                 [title]="rootData.translationRoot()?.translations?.edit"
+            >
+              <img src="/from-bootstrap/pencil-fill.svg" alt="" class="btn-img"/>
+            </div>
+
+            <div class="btn col-auto mr-2"
+                 [ngClass]="isEditTaskDisabled(task) ? 'disabled' : ''"
+                 (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onDuplicateClick(task)"
+                 [title]="rootData.translationRoot()?.translations?.duplicate_and_edit"
+            >
+              <img src="/from-bootstrap/stickies.svg" alt="" class="btn-img"/>
+            </div>
+
+            <div class="btn col-auto mr-2"
+                 [ngClass]="isEditTaskDisabled(task) ? 'disabled' : ''"
+                 (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onDeleteClick(task)"
+                 [title]="rootData.translationRoot()?.translations?.delete"
+            >
+              <img src="/from-bootstrap/x.svg" alt="" class="btn-img"/>
+            </div>
+
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (!!editingTask) {
+  <div class="row">
+    <div class="row ml-2 mr-2 router-hr"></div>
+
+    <h4 class="row ml-2 mr-2">
+      Edit task:
+    </h4>
+
+    <div class="container-fluid">
+
+      <div class="row mt-4">
+        <div class="col-3">
+          id:
+        </div>
+        <div class="col-9">
+          {{ editingTask.id }}
+        </div>
+      </div>
+
+      <div class="row mt-4">
+        <div class="col-3">
+          stage<span class="text-danger">*</span>:
+        </div>
+        <div class="col-9">
+          <select [(ngModel)]="editingTask.stage" (ngModelChange)="setTaskRerunDefaults(editingTask)">
+            <option value="1" [selected]="editingTask.stage==='1'">1 - populate list</option>
+            <option value="2" [selected]="editingTask.stage==='2'">2 - parse (items from stage 1)</option>
+            <option value="3" [selected]="editingTask.stage==='3'">3 - correct parents (items from stage 2)</option>
+            <option value="4" [selected]="editingTask.stage==='4'">4 - update leaves count (items from stage 3)</option>
+            <option value="parse_language" [selected]="editingTask.stage==='parse_language'">parse_language - parse
+              translations (items from stage 2)
+            </option>
+            <option value="test_task" [selected]="editingTask.stage==='test_task'">test_task - to simply test tasks
+              engine
+              (no DB)
+            </option>
+          </select>
+        </div>
+      </div>
+
+      @if (!!editingTask.stage) {
+        <div class="row mt-4">
+          <div class="col-3">
+            python_exe<span class="text-danger">*</span>:
+          </div>
+          <div class="col-9">
+            <input type="text" [(ngModel)]="editingTask.python_exe" style="width: 100%;">
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === 'parse_language') {
+        <div class="row mt-4">
+          <div class="col-3">
+            lang_key<span class="text-danger">*</span>:
+          </div>
+          <div class="col-9">
+            <select [(ngModel)]="editingTask.args.lang_key">
+              @for (lang of knownLanguagesAll; track lang.lang_key) {
+                <option [value]="lang.lang_key"
+                        [selected]="editingTask.args.lang_key === lang.lang_key">
+                  {{ lang.lang_key }} - {{ lang.comment }}
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === '1') {
+        <div class="row mt-4">
+          <div class="col-3">
+            from_title<span class="text-danger">*</span>:
+          </div>
+          <div class="col-9">
+            <input type="text" [(ngModel)]="editingTask.args.from_title">
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === '1') {
+        <div class="row mt-4">
+          <div class="col-3">
+            to_title<span class="text-danger">*</span>:
+          </div>
+          <div class="col-9">
+            <input type="text" [(ngModel)]="editingTask.args.to_title">
+            <br/>
+            <small>Including this value</small>
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === '2' || editingTask.stage === 'parse_language') {
+        <div class="row mt-4">
+          <div class="col-3">
+            skip_parsed_interval<span class="text-danger">*</span>:
+          </div>
+          <div class="col-9">
+            <input type="checkbox" [(ngModel)]="editingTask.args.skip_parsed_interval">
+            <br/>
+            <small>Do not try again failed/skipped items on the interval; always start from last parsed item on the
+              interval</small>
+            <br/>
+            <small>CHECK to not waste time on parsing resumes/restarts</small>
+            <br/>
+            <small>UNCHECK to try parse failed items again or remove gaps</small>
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === '2' || editingTask.stage === '3' || editingTask.stage === 'parse_language') {
+        <div class="row mt-4">
+          <div class="col-3">
+            where<span class="text-danger">*</span>:
+          </div>
+          <div class="col-9">
+            <input type="text" [(ngModel)]="editingTask.args.where" style="width: 100%;">
+            <br/>
+            <small>Write here "where" clause for SQL query for table "public.list". Please use "page_url" column for
+              conditions (title may change through parsing progress):</small>
+            <br/>
+            <small>page_url >= 'Aa' AND page_url < 'Ca'</small>
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === '1' || editingTask.stage === '2' || editingTask.stage === 'parse_language') {
+        <div class="row mt-4">
+          <div class="col-3">
+            proxy:
+          </div>
+          <div class="col-9">
+            <input type="text" [(ngModel)]="editingTask.args.proxy" style="width: 100%;">
+            <br/>
+            <small>For example:</small>
+            <br/>
+            <small>"protocol://address:port&#64;login:password"</small>
+            <br/>
+            <small>"protocol://address:port"</small>
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === 'test_task') {
+        <div class="row mt-4">
+          <div class="col-3">
+            will_success:
+          </div>
+          <div class="col-9">
+            <input type="checkbox" [(ngModel)]="editingTask.args.will_success">
+            <br/>
+            <small>Task will complete with success or error</small>
+          </div>
+        </div>
+      }
+
+      @if (editingTask.stage === 'test_task') {
+        <div class="row mt-4">
+          <div class="col-3">
+            timeout:
+          </div>
+          <div class="col-9">
+            <input type="number" [(ngModel)]="editingTask.args.timeout">
+            <br/>
+            <small>In seconds</small>
+          </div>
+        </div>
+      }
+
+      @if (!!editingTask.stage) {
+        <div class="row ml-2 mr-2 in-section-hr"></div>
+
+        @if (isTaskRerunEnabled(editingTask)) {
+          <div class="row mt-4">
+            <div class="col-3">
+              is_rerun_on_startup:
+            </div>
+            <div class="col-9">
+              <input type="checkbox" [(ngModel)]="editingTask.is_rerun_on_startup">
+              <br/>
+              <small>RERUN task automatically on Backend Server's restart (ALWAYS even if task completed
+                already)</small>
+            </div>
+          </div>
+        }
+
+        @if (isTaskResumeEnabled(editingTask)) {
+          <div class="row mt-4">
+            <div class="col-3">
+              is_resume_on_startup:
+            </div>
+            <div class="col-9">
+              <input type="checkbox" [(ngModel)]="editingTask.is_resume_on_startup">
+              <br/>
+              <small>RESUME task automatically on Backend Server's restart (UNTIL task completed successfully)</small>
+            </div>
+          </div>
+        }
+
+        <div class="row mt-4">
+          <div class="col-3">
+            Start/resume now<span class="text-danger">*</span>:
+          </div>
+          <div class="col-9">
+            <input type="checkbox" [(ngModel)]="editingTask.is_launch_now">
+            <br/>
+            <small>Start if checked</small>
+            <br/>
+            <small>Stop if unchecked</small>
+          </div>
+        </div>
+      }
+
+      <div class="row ml-0 mr-0 mt-4 mb-2">
+        <div>
+          @if (isTestDb === true) {
+            <div>You are working with TEST database</div>
+          }
+          @if (isTestDb === false) {
+            <div class="text-warning">You are working with PRODUCTION database</div>
+          }
+          <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
+        </div>
+      </div>
+
+      <div class="row ml-0 mr-0 mb-2">
+
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onCancelClick()"
+        >
+          <img src="/from-bootstrap/arrow-left.svg" alt="" class="btn-img"/>
+          {{ rootData.translationRoot()?.translations?.cancel }}
+        </div>
+
+        @if (!!editingTask.stage) {
+          <div class="btn col-auto mr-2 mt-2"
+               (click)="onSaveClick()"
+          >
+            <img src="/from-bootstrap/check-2.svg" alt="" class="btn-img"/>
+            {{ rootData.translationRoot()?.translations?.save }}
+          </div>
+        }
+
+      </div>
+
+    </div>
+  </div>
+}
+
+@if (!!logShowingTaskId) {
+  <div class="row ml-0 mr-0">
+    <div class="row ml-0 mr-0 in-section-hr"></div>
+
+    <h4 class="row ml-0 mr-0">
+      Logs of #{{ logShowingTaskId }}
+    </h4>
+
+    <div class="container-fluid">
+
+      <div class="row mt-2">
+        <h5 class="col-12 ml-0">
+          <b>From STDOUT:</b>
+        </h5>
+      </div>
+      <div class="row">
+        <div class="col-12" [innerHTML]="logShowingTask?.recent_stdout">
+        </div>
+      </div>
+
+      <div class="row mt-2">
+        @if (!!logShowingTask?.recent_stderr) {
+          <h5 class="col-12 ml-0 text-danger">
+            <b>From STDERR:</b>
+          </h5>
+        }
+      </div>
+      <div class="row">
+        @if (!!logShowingTask?.recent_stderr) {
+          <div class="col-12 text-danger"
+               [innerHTML]="logShowingTask?.recent_stderr">
+          </div>
+        }
+      </div>
+
+      <div class="row mt-2">
+        <div class="col-auto mr-2 mt-2">
+          <input type="checkbox" [(ngModel)]="logShowingAutoScroll">
+          Autoscroll to the end
+        </div>
+      </div>
+
+      <div class="row ml-0 mr-0 mt-2 mb-2">
+        <div class="btn col-auto mr-2 mt-2"
+             (click)="onLogBackClick()"
+        >
+          <img src="/from-bootstrap/arrow-left.svg" alt="" class="btn-img"/>
+          {{ rootData.translationRoot()?.translations?.go_back }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
