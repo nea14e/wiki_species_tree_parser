@@ -1,3 +1,11 @@
+.invisible-btn {
+  display: contents;
+}
+
+.fixed-mr {
+  margin-right: 0.5em;
+}
+
 .spinner-circular {
   position: relative;
   width: 32px !important;

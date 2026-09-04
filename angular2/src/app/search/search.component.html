@@ -12,9 +12,11 @@
     </div>
   }
   @if (!attachToTipId()) {
-    <img src="/from-bootstrap/search.svg"
-         alt=""
-         class="btn-img mr-2"/>
+    <div class="invisible-btn btn col-auto">
+      <img src="/from-bootstrap/search.svg"
+           alt=""
+           class="btn-img fixed-mr"/>
+    </div>
   }
   <input class="col-8" type="text"
          [ngModel]="query()"
