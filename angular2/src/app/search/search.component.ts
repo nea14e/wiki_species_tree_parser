@@ -20,7 +20,7 @@ import {MatProgressSpinner} from "@angular/material/progress-spinner";
 })
 export class SearchComponent implements OnInit {
 
-  readonly ITEMS_COUNT_BY_QUERY = 2;  // TODO
+  readonly ITEMS_COUNT_BY_QUERY = 10;
 
   query = signal('');
   minQueryLength = 3;
