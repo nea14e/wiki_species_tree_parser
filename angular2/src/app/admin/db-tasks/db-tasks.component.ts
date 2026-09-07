@@ -95,13 +95,16 @@ export class DbTasksComponent implements OnInit {
   }
 
   onEditClick(task: DbTask): void {
-    this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. To can be enabled to cancel changes
+    // Deep copy of object. To can be enabled to cancel changes:
+    const clonedTask = JSON.parse(JSON.stringify((task))) as DbTask;
+    this.editingTask.set(clonedTask);
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
   }
 
   onDuplicateClick(task: DbTask): void {
+    // Deep copy of object. To can be enabled to cancel changes:
     const clonedTask = JSON.parse(JSON.stringify((task))) as DbTask;
     clonedTask.id = null;  // mark task as new
     this.editingTask.set(clonedTask);
