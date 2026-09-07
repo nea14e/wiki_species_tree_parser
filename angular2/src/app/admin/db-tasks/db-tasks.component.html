@@ -14,10 +14,10 @@
 
 <div class="row ml-0 mr-0 mt-4 mb-2">
   <div>
-    @if (isTestDb === true) {
+    @if (isTestDb() === true) {
       <div>You are working with TEST database</div>
     }
-    @if (isTestDb === false) {
+    @if (isTestDb() === false) {
       <div class="text-warning">You are working with PRODUCTION database</div>
     }
     <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
@@ -37,7 +37,7 @@
     </tr>
     </thead>
     <tbody>
-      @for (task of tasks; track task.id) {
+      @for (task of tasks(); track task.id) {
         <tr [style.background]="getColorForTask(task)">
           <td>{{ task.id }}</td>
           <td>
@@ -99,7 +99,7 @@
           <td>
 
             <div class="btn col-auto mr-2"
-                 [ngClass]="logShowingTaskId===task.id ? 'active' : ''"
+                 [ngClass]="logShowingTaskId()===task.id ? 'active' : ''"
                  (click)="onShowLogClick(task)"
                  title="Show log"
             >
@@ -134,7 +134,7 @@
             }
 
             <div class="btn col-auto mr-2"
-                 [ngClass]="(editingTask?.id===task.id ? 'active' : '') + (isEditTaskDisabled(task) ? 'disabled' : '')"
+                 [ngClass]="(editingTask()?.id===task.id ? 'active' : '') + (isEditTaskDisabled(task) ? 'disabled' : '')"
                  (click)="isEditTaskDisabled(task) ? $event.stopPropagation() : onEditClick(task)"
                  [title]="rootData.translationRoot()?.translations?.edit"
             >
@@ -164,7 +164,7 @@
   </table>
 </div>
 
-@if (!!editingTask) {
+@if (!!editingTask()) {
   <div class="row">
     <div class="row ml-2 mr-2 router-hr"></div>
 
@@ -179,7 +179,7 @@
           id:
         </div>
         <div class="col-9">
-          {{ editingTask.id }}
+          {{ editingTask()!.id }}
         </div>
       </div>
 
@@ -188,15 +188,16 @@
           stage<span class="text-danger">*</span>:
         </div>
         <div class="col-9">
-          <select [(ngModel)]="editingTask.stage" (ngModelChange)="setTaskRerunDefaults(editingTask)">
-            <option value="1" [selected]="editingTask.stage==='1'">1 - populate list</option>
-            <option value="2" [selected]="editingTask.stage==='2'">2 - parse (items from stage 1)</option>
-            <option value="3" [selected]="editingTask.stage==='3'">3 - correct parents (items from stage 2)</option>
-            <option value="4" [selected]="editingTask.stage==='4'">4 - update leaves count (items from stage 3)</option>
-            <option value="parse_language" [selected]="editingTask.stage==='parse_language'">parse_language - parse
+          <select [(ngModel)]="editingTask()!.stage" (ngModelChange)="setTaskRerunDefaults(editingTask())">
+            <option value="1" [selected]="editingTask()!.stage==='1'">1 - populate list</option>
+            <option value="2" [selected]="editingTask()!.stage==='2'">2 - parse (items from stage 1)</option>
+            <option value="3" [selected]="editingTask()!.stage==='3'">3 - correct parents (items from stage 2)</option>
+            <option value="4" [selected]="editingTask()!.stage==='4'">4 - update leaves count (items from stage 3)
+            </option>
+            <option value="parse_language" [selected]="editingTask()!.stage==='parse_language'">parse_language - parse
               translations (items from stage 2)
             </option>
-            <option value="test_task" [selected]="editingTask.stage==='test_task'">test_task - to simply test tasks
+            <option value="test_task" [selected]="editingTask()!.stage==='test_task'">test_task - to simply test tasks
               engine
               (no DB)
             </option>
@@ -204,27 +205,27 @@
         </div>
       </div>
 
-      @if (!!editingTask.stage) {
+      @if (!!editingTask()!.stage) {
         <div class="row mt-4">
           <div class="col-3">
             python_exe<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask.python_exe" style="width: 100%;">
+            <input type="text" [(ngModel)]="editingTask()!.python_exe" style="width: 100%;">
           </div>
         </div>
       }
 
-      @if (editingTask.stage === 'parse_language') {
+      @if (editingTask()!.stage === 'parse_language') {
         <div class="row mt-4">
           <div class="col-3">
             lang_key<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <select [(ngModel)]="editingTask.args.lang_key">
-              @for (lang of knownLanguagesAll; track lang.lang_key) {
+            <select [(ngModel)]="editingTask()!.args.lang_key">
+              @for (lang of knownLanguagesAll(); track lang.lang_key) {
                 <option [value]="lang.lang_key"
-                        [selected]="editingTask.args.lang_key === lang.lang_key">
+                        [selected]="editingTask()!.args.lang_key === lang.lang_key">
                   {{ lang.lang_key }} - {{ lang.comment }}
                 </option>
               }
@@ -233,37 +234,37 @@
         </div>
       }
 
-      @if (editingTask.stage === '1') {
+      @if (editingTask()!.stage === '1') {
         <div class="row mt-4">
           <div class="col-3">
             from_title<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask.args.from_title">
+            <input type="text" [(ngModel)]="editingTask()!.args.from_title">
           </div>
         </div>
       }
 
-      @if (editingTask.stage === '1') {
+      @if (editingTask()!.stage === '1') {
         <div class="row mt-4">
           <div class="col-3">
             to_title<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask.args.to_title">
+            <input type="text" [(ngModel)]="editingTask()!.args.to_title">
             <br/>
             <small>Including this value</small>
           </div>
         </div>
       }
 
-      @if (editingTask.stage === '2' || editingTask.stage === 'parse_language') {
+      @if (editingTask()!.stage === '2' || editingTask()!.stage === 'parse_language') {
         <div class="row mt-4">
           <div class="col-3">
             skip_parsed_interval<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="checkbox" [(ngModel)]="editingTask.args.skip_parsed_interval">
+            <input type="checkbox" [(ngModel)]="editingTask()!.args.skip_parsed_interval">
             <br/>
             <small>Do not try again failed/skipped items on the interval; always start from last parsed item on the
               interval</small>
@@ -275,13 +276,13 @@
         </div>
       }
 
-      @if (editingTask.stage === '2' || editingTask.stage === '3' || editingTask.stage === 'parse_language') {
+      @if (editingTask()!.stage === '2' || editingTask()!.stage === '3' || editingTask()!.stage === 'parse_language') {
         <div class="row mt-4">
           <div class="col-3">
             where<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask.args.where" style="width: 100%;">
+            <input type="text" [(ngModel)]="editingTask()!.args.where" style="width: 100%;">
             <br/>
             <small>Write here "where" clause for SQL query for table "public.list". Please use "page_url" column for
               conditions (title may change through parsing progress):</small>
@@ -291,13 +292,13 @@
         </div>
       }
 
-      @if (editingTask.stage === '1' || editingTask.stage === '2' || editingTask.stage === 'parse_language') {
+      @if (editingTask()!.stage === '1' || editingTask()!.stage === '2' || editingTask()!.stage === 'parse_language') {
         <div class="row mt-4">
           <div class="col-3">
             proxy:
           </div>
           <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask.args.proxy" style="width: 100%;">
+            <input type="text" [(ngModel)]="editingTask()!.args.proxy" style="width: 100%;">
             <br/>
             <small>For example:</small>
             <br/>
@@ -308,42 +309,42 @@
         </div>
       }
 
-      @if (editingTask.stage === 'test_task') {
+      @if (editingTask()!.stage === 'test_task') {
         <div class="row mt-4">
           <div class="col-3">
             will_success:
           </div>
           <div class="col-9">
-            <input type="checkbox" [(ngModel)]="editingTask.args.will_success">
+            <input type="checkbox" [(ngModel)]="editingTask()!.args.will_success">
             <br/>
             <small>Task will complete with success or error</small>
           </div>
         </div>
       }
 
-      @if (editingTask.stage === 'test_task') {
+      @if (editingTask()!.stage === 'test_task') {
         <div class="row mt-4">
           <div class="col-3">
             timeout:
           </div>
           <div class="col-9">
-            <input type="number" [(ngModel)]="editingTask.args.timeout">
+            <input type="number" [(ngModel)]="editingTask()!.args.timeout">
             <br/>
             <small>In seconds</small>
           </div>
         </div>
       }
 
-      @if (!!editingTask.stage) {
+      @if (!!editingTask()!.stage) {
         <div class="row ml-2 mr-2 in-section-hr"></div>
 
-        @if (isTaskRerunEnabled(editingTask)) {
+        @if (isTaskRerunEnabled(editingTask()!)) {
           <div class="row mt-4">
             <div class="col-3">
               is_rerun_on_startup:
             </div>
             <div class="col-9">
-              <input type="checkbox" [(ngModel)]="editingTask.is_rerun_on_startup">
+              <input type="checkbox" [(ngModel)]="editingTask()!.is_rerun_on_startup">
               <br/>
               <small>RERUN task automatically on Backend Server's restart (ALWAYS even if task completed
                 already)</small>
@@ -351,13 +352,13 @@
           </div>
         }
 
-        @if (isTaskResumeEnabled(editingTask)) {
+        @if (isTaskResumeEnabled(editingTask()!)) {
           <div class="row mt-4">
             <div class="col-3">
               is_resume_on_startup:
             </div>
             <div class="col-9">
-              <input type="checkbox" [(ngModel)]="editingTask.is_resume_on_startup">
+              <input type="checkbox" [(ngModel)]="editingTask()!.is_resume_on_startup">
               <br/>
               <small>RESUME task automatically on Backend Server's restart (UNTIL task completed successfully)</small>
             </div>
@@ -369,7 +370,7 @@
             Start/resume now<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="checkbox" [(ngModel)]="editingTask.is_launch_now">
+            <input type="checkbox" [(ngModel)]="editingTask()!.is_launch_now">
             <br/>
             <small>Start if checked</small>
             <br/>
@@ -380,10 +381,10 @@
 
       <div class="row ml-0 mr-0 mt-4 mb-2">
         <div>
-          @if (isTestDb === true) {
+          @if (isTestDb() === true) {
             <div>You are working with TEST database</div>
           }
-          @if (isTestDb === false) {
+          @if (isTestDb() === false) {
             <div class="text-warning">You are working with PRODUCTION database</div>
           }
           <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
@@ -399,7 +400,7 @@
           {{ rootData.translationRoot()?.translations?.cancel }}
         </div>
 
-        @if (!!editingTask.stage) {
+        @if (!!editingTask()!.stage) {
           <div class="btn col-auto mr-2 mt-2"
                (click)="onSaveClick()"
           >
@@ -414,12 +415,12 @@
   </div>
 }
 
-@if (!!logShowingTaskId) {
+@if (!!logShowingTaskId()) {
   <div class="row ml-0 mr-0">
     <div class="row ml-0 mr-0 in-section-hr"></div>
 
     <h4 class="row ml-0 mr-0">
-      Logs of #{{ logShowingTaskId }}
+      Logs of #{{ logShowingTaskId() }}
     </h4>
 
     <div class="container-fluid">
@@ -430,21 +431,21 @@
         </h5>
       </div>
       <div class="row">
-        <div class="col-12" [innerHTML]="logShowingTask?.recent_stdout">
+        <div class="col-12" [innerHTML]="logShowingTask()?.recent_stdout">
         </div>
       </div>
 
       <div class="row mt-2">
-        @if (!!logShowingTask?.recent_stderr) {
+        @if (!!logShowingTask()?.recent_stderr) {
           <h5 class="col-12 ml-0 text-danger">
             <b>From STDERR:</b>
           </h5>
         }
       </div>
       <div class="row">
-        @if (!!logShowingTask?.recent_stderr) {
+        @if (!!logShowingTask()?.recent_stderr) {
           <div class="col-12 text-danger"
-               [innerHTML]="logShowingTask?.recent_stderr">
+               [innerHTML]="logShowingTask()?.recent_stderr">
           </div>
         }
       </div>

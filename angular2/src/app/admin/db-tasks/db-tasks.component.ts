@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, signal} from '@angular/core';
 import {DbTask} from '../models/db-task';
 import {AdminLanguage} from '../models/admin-language';
 import {RootDataKeeperService} from '../../common/root-data-keeper.service';
@@ -23,13 +23,13 @@ export class DbTasksComponent implements OnInit {
   rootData = inject(RootDataKeeperService);
   private networkAdminService = inject(NetworkDbTasksService);
 
-  tasks: DbTask[] = [];
-  isTestDb: boolean | null = null;
-  editingTask: DbTask | null = null;
-  logShowingTaskId: number | null = null;
-  logShowingTask: DbTask | null = null;
-  logShowingAutoScroll = true;
-  knownLanguagesAll: AdminLanguage[] = [];
+  tasks = signal<DbTask[]>([]);
+  isTestDb = signal(false);
+  editingTask = signal<DbTask | null>(null);
+  logShowingTaskId = signal<number | null>(null);
+  logShowingTask = signal<DbTask | null>(null);
+  logShowingAutoScroll = signal(true);
+  knownLanguagesAll = signal<AdminLanguage[]>([]);
 
   balloonMessage: string | null = null;
   balloonTimeoutId: number | null = null;
@@ -41,7 +41,7 @@ export class DbTasksComponent implements OnInit {
       this.networkAdminService.getKnownLanguagesAll(this.rootData.adminPassword).subscribe(
         {
           next: data => {
-            this.knownLanguagesAll = data;
+            this.knownLanguagesAll.set(data);
           }, error: error => {
             alert(error);
           }
@@ -55,8 +55,8 @@ export class DbTasksComponent implements OnInit {
     }
     this.networkAdminService.getDbTasks(this.rootData.adminPassword).subscribe({
       next: data => {
-        this.tasks = data.tasks;
-        this.isTestDb = data.is_test_db;
+        this.tasks.set(data.tasks);
+        this.isTestDb.set(data.is_test_db);
         this.updateShowedLog();
         if (!!this.autoReloadTimeoutId) {
           clearTimeout(this.autoReloadTimeoutId);
@@ -84,7 +84,7 @@ export class DbTasksComponent implements OnInit {
   }
 
   onCreateClick(): void {
-    this.editingTask = new DbTask();
+    this.editingTask.set(new DbTask());
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -102,8 +102,9 @@ export class DbTasksComponent implements OnInit {
   }
 
   onDuplicateClick(task: DbTask): void {
-    this.editingTask = JSON.parse(JSON.stringify((task)));  // deep copy of object. Copying of object.
-    this.editingTask!.id = null;  // mark task as new
+    const clonedTask = JSON.parse(JSON.stringify((task))) as DbTask;
+    clonedTask.id = null;  // mark task as new
+    this.editingTask.set(clonedTask);
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
@@ -143,25 +144,26 @@ export class DbTasksComponent implements OnInit {
   }
 
   onCancelClick(): void {
-    this.editingTask = null;
+    this.editingTask.set(null);
   }
 
   onSaveClick(): void {
-    if (!this.editingTask || !this.rootData.adminPassword) {
+    const editingTask = this.editingTask();
+    if (!editingTask || !this.rootData.adminPassword) {
       return;
     }
-    if (!this.editingTask.id) {
-      this.networkAdminService.createTask(this.editingTask, this.rootData.adminPassword).subscribe(adminResponse => {
+    if (!editingTask.id) {
+      this.networkAdminService.createTask(editingTask, this.rootData.adminPassword).subscribe(adminResponse => {
         this.showBalloon(adminResponse.message);
-        this.editingTask = null;
+        this.editingTask.set(null);
         this.reloadList();
       }, error => {
         alert(error);
       });
     } else {
-      this.networkAdminService.saveTask(this.editingTask, this.rootData.adminPassword).subscribe(adminResponse => {
+      this.networkAdminService.saveTask(editingTask, this.rootData.adminPassword).subscribe(adminResponse => {
         this.showBalloon(adminResponse.message);
-        this.editingTask = null;
+        this.editingTask.set(null);
         this.reloadList();
       }, error => {
         alert(error);
@@ -212,7 +214,7 @@ export class DbTasksComponent implements OnInit {
     this.networkAdminService.startOneTask(task, this.rootData.adminPassword).subscribe({
       next: adminResponse => {
         this.showBalloon(adminResponse.message);
-        this.logShowingAutoScroll = true;
+        this.logShowingAutoScroll.set(true);
         this.reloadList();
       }, error: error => {
         alert(error);
@@ -242,30 +244,30 @@ export class DbTasksComponent implements OnInit {
   }
 
   onShowLogClick(task: DbTask): void {
-    this.logShowingTaskId = task.id;
-    this.logShowingTask = task;
-    this.logShowingAutoScroll = true;
+    this.logShowingTaskId.set(task.id);
+    this.logShowingTask.set(task);
+    this.logShowingAutoScroll.set(true);
     setTimeout(() => {
       window.scrollTo(0, 9999999);
     }, 250);
   }
 
   private updateShowedLog(): void {
-    if (!this.logShowingTaskId) {
-      this.logShowingTask = null;
+    if (!this.logShowingTaskId()) {
+      this.logShowingTask.set(null);
       return;
     }
 
-    const task = this.tasks.find(t => t.id === this.logShowingTaskId);
+    const task = this.tasks().find(t => t.id === this.logShowingTaskId());
     if (!task) {
-      this.logShowingTaskId = null;
-      this.logShowingTask = null;
+      this.logShowingTaskId.set(null);
+      this.logShowingTask.set(null);
       return;
     }
-    const prevTask = this.logShowingTask;
-    this.logShowingTask = task;
+    const prevTask = this.logShowingTask();
+    this.logShowingTask.set(task);
 
-    if (this.logShowingAutoScroll === true &&
+    if (this.logShowingAutoScroll() === true &&
       (prevTask?.recent_stdout !== task.recent_stdout ||
         prevTask?.recent_stderr !== task.recent_stderr)) {
       setTimeout(() => {
@@ -275,6 +277,6 @@ export class DbTasksComponent implements OnInit {
   }
 
   onLogBackClick(): void {
-    this.logShowingTaskId = null;
+    this.logShowingTaskId.set(null);
   }
 }
