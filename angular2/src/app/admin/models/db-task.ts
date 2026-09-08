@@ -13,4 +13,19 @@ export class DbTask {
   recent_stdout!: string;
   recent_stderr!: string;
   is_auto_created = false;
+
+  color!: string;
+
+  static computeColor(task: DbTask): string {
+    if (task.is_running_now) {
+      return 'lightblue';
+    }
+    if (task.is_success === true) {
+      return '#a6dca6';
+    }
+    if (task.is_success === false) {
+      return '#f57c7c';
+    }
+    return 'white';
+  }
 }

@@ -37,8 +37,8 @@
     </tr>
     </thead>
     <tbody>
-      @for (task of tasks(); track task.id) {
-        <tr [style.background]="getColorForTask(task)">
+      @for (task of tasksWithColor(); track $index) {
+        <tr [style.background]="task.color">
           <td>{{ task.id }}</td>
           <td>
             @switch (task.stage) {

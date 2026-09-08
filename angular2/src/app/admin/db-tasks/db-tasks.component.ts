@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectorRef, Component, computed, inject, OnInit, signal} from '@angular/core';
 import {DbTask} from '../models/db-task';
 import {AdminLanguage} from '../models/admin-language';
 import {RootDataKeeperService} from '../../common/root-data-keeper.service';
@@ -22,8 +22,15 @@ export class DbTasksComponent implements OnInit {
 
   rootData = inject(RootDataKeeperService);
   private networkAdminService = inject(NetworkDbTasksService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
 
   tasks = signal<DbTask[]>([]);
+  tasksChangeCounter = signal(0);
+  tasksWithColor = computed(() => {
+    this.tasksChangeCounter();
+    console.log('tasksWithColor');
+    return this.tasks().map(task => ({...task, color: DbTask.computeColor(task)}));
+  });
   isTestDb = signal(false);
   editingTask = signal<DbTask | null>(null);
   logShowingTaskId = signal<number | null>(null);
@@ -56,8 +63,10 @@ export class DbTasksComponent implements OnInit {
     this.networkAdminService.getDbTasks(this.rootData.adminPassword).subscribe({
       next: data => {
         this.tasks.set(data.tasks);
+        this.tasksChangeCounter.update(n => n + 1);
         this.isTestDb.set(data.is_test_db);
         this.updateShowedLog();
+        this.changeDetectorRef.detectChanges();
         if (!!this.autoReloadTimeoutId) {
           clearTimeout(this.autoReloadTimeoutId);
         }
@@ -172,19 +181,6 @@ export class DbTasksComponent implements OnInit {
         alert(error);
       });
     }
-  }
-
-  getColorForTask(task: DbTask): string {
-    if (task.is_running_now) {
-      return 'lightblue';
-    }
-    if (task.is_success === true) {
-      return '#a6dca6';
-    }
-    if (task.is_success === false) {
-      return '#f57c7c';
-    }
-    return 'white';
   }
 
   getTaskState(task: DbTask): string {
