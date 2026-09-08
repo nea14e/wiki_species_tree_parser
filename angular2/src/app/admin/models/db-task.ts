@@ -14,9 +14,7 @@ export class DbTask {
   recent_stderr!: string;
   is_auto_created = false;
 
-  color!: string;
-
-  static computeColor(task: DbTask): string {
+  static getColor(task: DbTask): string {
     if (task.is_running_now) {
       return 'lightblue';
     }
@@ -27,5 +25,28 @@ export class DbTask {
       return '#f57c7c';
     }
     return 'white';
+  }
+
+  static getTaskState(task: DbTask): string {
+    if (task.is_running_now) {
+      return 'Running';
+    }
+    if (task.is_success === true) {
+      return 'Ended with success';
+    }
+    if (task.is_success === false) {
+      return 'Ended with error';
+    }
+    return 'Idle';
+  }
+
+  static getTaskResumeState(task: DbTask): string {
+    if (task.is_rerun_on_startup) {
+      return 'Rerun';
+    }
+    if (task.is_resume_on_startup) {
+      return 'Resume';
+    }
+    return '';
   }
 }

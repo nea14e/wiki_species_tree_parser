@@ -37,10 +37,10 @@
     </tr>
     </thead>
     <tbody>
-      @for (task of tasksWithColor(); track $index) {
-        <tr [style.background]="task.color">
-          <td>{{ task.id }}</td>
-          <td>
+      @for (task of tasks(); track task.id) {
+        <tr [style.background-color]="DbTask.getColor(task)">
+          <td class="table-cell">{{ task.id }}</td>
+          <td class="table-cell">
             @switch (task.stage) {
               @case ('0') {
                 <span>0 - init DB / migrate DB</span>
@@ -65,7 +65,7 @@
               }
             }
           </td>
-          <td>
+          <td class="table-cell">
             @if (task.is_auto_created === true) {
               <span>[Created automatically]</span>
             }
@@ -90,13 +90,14 @@
               }
             }
           </td>
-          <td title="Run/resume task automatically on Backend Server's restart">
-            {{ getTaskResumeState(task) }}
+          <td class="table-cell"
+              title="Run/resume task automatically on Backend Server's restart">
+            {{ DbTask.getTaskResumeState(task) }}
           </td>
-          <td>
-            {{ getTaskState(task) }}
+          <td class="table-cell">
+            {{ DbTask.getTaskState(task) }}
           </td>
-          <td>
+          <td class="table-cell">
 
             <div class="btn col-auto mr-2"
                  [ngClass]="logShowingTaskId()===task.id ? 'active' : ''"

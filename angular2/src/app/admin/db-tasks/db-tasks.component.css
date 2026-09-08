@@ -1,3 +1,7 @@
 .show_log_textarea {
   width: 100%;
 }
+
+.table-cell {
+  background: transparent !important;
+}
