@@ -1,7 +1,7 @@
 <div class="row router-hr"></div>
 <h3>Filling stats</h3>
 
-<div [ngClass]="isLoading ? 'wait' : ''">
+<div [ngClass]="isLoading() ? 'wait' : ''">
   <div class="row">
     <div class="col-3">
       <p class="rangeValue">Is test data:</p>
@@ -15,41 +15,41 @@
   </div>
   <div class="row">
     <div class="col-3">
-      <p class="rangeValue">Groups count: {{ groupsCount }}</p>
+      <p class="rangeValue">Groups count: {{ groupsCount() }}</p>
     </div>
     <div class="col-9 clear-padding-margin">
-      <input type="range" min="10" max="100" class="range" id="myRange" [value]="groupsCount"
+      <input type="range" min="10" max="100" class="range" id="myRange" [value]="groupsCount()"
              (change)="onGroupsCountChanged($event)">
     </div>
   </div>
   <div class="row">
     <h4>
-      {{ items.length >= 1 ? items[0].page_url_from : '...' }}&nbsp;- {{ items.length >= 1 ? items[items.length - 1].page_url_to : '...' }}
+      {{ items().length >= 1 ? items()[0].page_url_from : '...' }}&nbsp;- {{ items().length >= 1 ? items()[items().length - 1].page_url_to : '...' }}
     </h4>
   </div>
   <div class="row">
     <div class="btn col-auto mr-2 mt-2 mb-2"
          title="Home"
          (click)="home()"
-         [ngClass]="bordersStack.length===0 ? 'active' : ''"
+         [ngClass]="bordersStack().length===0 ? 'active' : ''"
     >
       <img src="/from-bootstrap/house-door.svg" alt="" class="btn-img"/>
     </div>
     <div class="btn col-auto mr-2 mt-2 mb-2"
          title="Back"
-         (click)="bordersStack.length > 0 ? back() : $event.stopPropagation()"
-         [ngClass]="bordersStack.length > 0 ? '' : 'disabled'"
+         (click)="bordersStack().length > 0 ? back() : $event.stopPropagation()"
+         [ngClass]="bordersStack().length > 0 ? '' : 'disabled'"
     >
       <img src="/from-bootstrap/arrow-left.svg" alt="" class="btn-img"/>
     </div>
     <div class="btn col-auto mr-2 mt-2 mb-2"
-         (click)="isLoading ? $event.stopPropagation() : reload()"
-         [ngClass]="isLoading ? 'active' : ''"
+         (click)="isLoading() ? $event.stopPropagation() : reload()"
+         [ngClass]="isLoading() ? 'active' : ''"
          title="Reload"
     >
       <img src="/from-bootstrap/arrow-clockwise.svg" alt="" class="btn-img"/>
     </div>
-    @if (!!isLoading) {
+    @if (!!isLoading()) {
       <div class="col-auto loading-text">
         Loading...
       </div>
@@ -68,9 +68,9 @@
         <select [(ngModel)]="languageKey"
                 (change)="reload()"
         >
-          @for (lang of knownLanguagesAll; track lang.lang_key) {
+          @for (lang of knownLanguagesAll(); track lang.lang_key) {
             <option [value]="lang.lang_key"
-                    [selected]="languageKey === lang.lang_key">
+                    [selected]="languageKey() === lang.lang_key">
               {{ lang.lang_key }} - {{ lang.comment }}
             </option>
           }
@@ -79,33 +79,33 @@
     </tr>
     </thead>
     <tbody>
-      @for (item of items; track item) {
+      @for (item of items(); track item) {
         <tr (click)="onRowClick(item)"
             class="list-item"
-            [ngClass]="isLoading ? 'wait' : ''">
+            [ngClass]="isLoading() ? 'wait' : ''">
           <td>{{ item.page_url_from }}</td>
           <td>{{ item.page_url_to }}</td>
           <td class="text-right">{{ item.total }}</td>
           <td class="text-right"
-              [ngClass]="isLoading ? 'wait' : 'has-tooltip'"
+              [ngClass]="isLoading() ? 'wait' : 'has-tooltip'"
               [title]="item.stage_2_percent + '%'"
               [ngStyle]="{'background-color': item.stage_2_color, color: 'white'}">
             {{ item.stage_2 }}
           </td>
           <td class="text-right"
-              [ngClass]="isLoading ? 'wait' : 'has-tooltip'"
+              [ngClass]="isLoading() ? 'wait' : 'has-tooltip'"
               [title]="item.stage_3_percent + '%'"
               [ngStyle]="{'background-color': item.stage_3_color, 'color': 'white'}">
             {{ item.stage_3 }}
           </td>
           <td class="text-right"
-              [ngClass]="isLoading ? 'wait' : 'has-tooltip'"
+              [ngClass]="isLoading() ? 'wait' : 'has-tooltip'"
               [title]="item.stage_4_percent + '%'"
               [ngStyle]="{'background-color': item.stage_4_color, 'color': 'white'}">
             {{ item.stage_4 }}
           </td>
           <td class="text-right"
-              [ngClass]="isLoading ? 'wait' : 'has-tooltip'"
+              [ngClass]="isLoading() ? 'wait' : 'has-tooltip'"
               [title]="item.stage_language_percent + '%'"
               [ngStyle]="{'background-color': item.stage_language_color, 'color': 'white'}">
             {{ item.stage_language }}
