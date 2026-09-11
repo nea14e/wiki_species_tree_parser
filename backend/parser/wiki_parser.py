@@ -74,16 +74,16 @@ def main():
 
     if stage_number == '1':
         if len(sys.argv) >= 4:
-            from_title = sys.argv[3]
+            list_page_title = sys.argv[3]
+        else:
+            list_page_title = "Категория:Животные_по_алфавиту"
+        if len(sys.argv) >= 5:
+            from_title = sys.argv[4]
         else:
             from_title = ""
-        if len(sys.argv) >= 5:
-            to_title = sys.argv[4]
-        else:
-            to_title = ""
         if len(sys.argv) >= 6:
             apply_proxy(str(sys.argv[5]))
-        populate_list(from_title, to_title)  # 1 этап
+        populate_list(list_page_title, from_title)  # 1 этап
     elif stage_number == '2':
         if len(sys.argv) >= 4:
             if sys.argv[3] == "True":
@@ -136,7 +136,7 @@ def print_usage():
     Logger.print("Для 0 этапа - инициализации базы:")
     Logger.print("python3.6 wiki_parser.py 0 [\"test\" для тестового наполнения]")
     Logger.print("Для 1 этапа - составления списка:")
-    Logger.print("python3.6 wiki_parser.py 1 [from_title] [to_title] [proxy_string]")
+    Logger.print("python3.6 wiki_parser.py 1 [list_page_title] [from_title] [proxy_string]")
     Logger.print("Для 2 этапа - получения деталей по списку:")
     Logger.print("python3.6 wiki_parser.py 2 [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL] [proxy_string]")
     Logger.print("Для 3 этапа - построения древовидной структуры:")
@@ -149,17 +149,14 @@ def print_usage():
     Logger.print("Где proxy_string = \"протокол://адрес:порт@логин:пароль\" или \"протокол://адрес:порт\"")
 
 
-def populate_list(from_title: str = "", to_title: str = ""):
-    Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Ограничения: с '{}' по '{}'".format(from_title, to_title))
+def populate_list(list_page_title: str, from_title: str = ""):
+    Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Название списка: '{}' Ограничения: с '{}'"
+                 .format(list_page_title, from_title))
 
-    url = "https://species.wikimedia.org/wiki/Special:AllPages?"
-    params = []
+    url = "https://ru.ruwiki.ru/w/index.php?"
+    params = ["title={}".format(list_page_title)]
     if from_title:
-        params.append("from={}".format(requote_uri(from_title)))
-    if to_title:
-        params.append("to={}".format(requote_uri(to_title)))
-    if from_title or to_title:
-        params.append("namespace=0")
+        params.append("pagefrom={}".format(requote_uri(from_title)))
     url += "&".join(params)
 
     html = MyRequests.get_session().get(url).content  # Парсим саму страницу
@@ -170,10 +167,10 @@ def populate_list(from_title: str = "", to_title: str = ""):
     errors = 0
     while True:  # Цикл перехода на след. страницу
         # Cсылка на следующую страницу
-        navigate_page_elems = wiki_html.select("div.mw-allpages-nav > a")
+        navigate_page_elems = wiki_html.select("a")
         next_page_elem = None
         for el in navigate_page_elems:
-            if "Next page" in el.text:
+            if "Следующая страница" in el.text:
                 next_page_elem = el
                 break
 
@@ -184,17 +181,9 @@ def populate_list(from_title: str = "", to_title: str = ""):
             next_page_url = None
 
         # Сохраем в базу ссылки, чтобы потом по ним переходить
-        is_go_to_next_page = True
-        for link in wiki_html.select("ul.mw-allpages-chunk > li > a"):
+        for link in wiki_html.select("#mw-pages ul > li > a"):
             try:
                 item_title = link.text
-                if to_title:
-                    if item_title >= to_title:  # Дошли до верхей границы отрезка имён, заданного для выкачки
-                        is_go_to_next_page = False
-                        break
-                if "." in item_title:  # Пропускаем имена учёных (с инициалами, поэтому у них точки)
-                    skipped += 1
-                    continue
                 item_title = item_title.replace("'", "''")  # Экранирование для базы
                 item_details_href = str(link["href"])
                 if Config.URL_START_RELATIVE in item_details_href:
@@ -206,16 +195,18 @@ def populate_list(from_title: str = "", to_title: str = ""):
                 errors += 1
                 Logger.print('Ошибка:\n', traceback.format_exc())
 
-        if next_page_url and is_go_to_next_page:
-            Logger.print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок.".format(
-                next_page_elem.text, succeeds, skipped, errors))
+        if next_page_url:
+            Logger.print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок."
+                         .format(next_page_url, succeeds, skipped, errors)
+            )
             html = MyRequests.get_session().get(Config.URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
             wiki_html = BeautifulSoup(html, "html.parser")
             time.sleep(Config.NEXT_PAGE_DELAY)
         else:
             Logger.print(
-                "ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок.".format(succeeds, skipped,
-                                                                                                     errors))
+                "ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок."
+                .format(succeeds, skipped, errors)
+            )
             return
 
 

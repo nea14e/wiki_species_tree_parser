@@ -71,7 +71,7 @@
             }
             @switch (task.stage) {
               @case ('1') {
-                <span>"{{ task.args.from_title }}" - "{{ task.args.to_title }}"</span>
+                <span>"{{ task.args.list_page_title }} from {{ task.args.from_title }}"</span>
               }
               @case ('2') {
                 <span>skip_parsed_interval: {{ task.args.skip_parsed_interval }}, "{{ task.args.where }}"</span>
@@ -238,10 +238,17 @@
       @if (editingTask()!.stage === '1') {
         <div class="row mt-4">
           <div class="col-3">
-            from_title<span class="text-danger">*</span>:
+            list_page_title<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask()!.args.from_title">
+            <select [(ngModel)]="editingTask()!.args.list_page_title">
+              @for (wikiListCategory of WIKI_LIST_CATEGORIES; track wikiListCategory) {
+                <option [value]="wikiListCategory"
+                        [selected]="editingTask()!.args.list_page_title === wikiListCategory">
+                  {{ wikiListCategory }}
+                </option>
+              }
+            </select>
           </div>
         </div>
       }
@@ -249,12 +256,10 @@
       @if (editingTask()!.stage === '1') {
         <div class="row mt-4">
           <div class="col-3">
-            to_title<span class="text-danger">*</span>:
+            from_title<span class="text-danger">*</span>:
           </div>
           <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask()!.args.to_title">
-            <br/>
-            <small>Including this value</small>
+            <input type="text" [(ngModel)]="editingTask()!.args.from_title">
           </div>
         </div>
       }

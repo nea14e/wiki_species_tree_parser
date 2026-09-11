@@ -28,11 +28,12 @@ class Config:
     NEXT_PAGE_DELAY = 0.01
 
     # URL-адреса и маски для них. Иногда надо их править.
-    URL_DOMAIN = "https://species.wikimedia.org/"
-    URL_START = "https://species.wikimedia.org/wiki/"
+    URL_DOMAIN = "https://ru.ruwiki.ru/"
+    URL_API = "https://ru.ruwiki.ru/w/api.php?"
+    URL_START = "https://ru.ruwiki.ru/wiki/"
     URL_START_RELATIVE = "/wiki/"
-    WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"
-    WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"
+    WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"  # TODO ruwiki
+    WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"  # TODO ruwiki
 
     PROC_STATE_UPDATE_TIMER = 3.0
     LOGS_UPDATE_TIMER = 3.0

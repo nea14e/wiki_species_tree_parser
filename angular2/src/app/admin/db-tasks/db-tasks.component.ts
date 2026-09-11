@@ -20,6 +20,16 @@ export class DbTasksComponent implements OnInit {
   LIST_AUTORELOAD_INTERVAL = 2000;
   autoReloadTimeoutId: number | null = null;
 
+  WIKI_LIST_CATEGORIES = [
+    "Категория:Археи_по_алфавиту",
+    "Категория:Бактерии_по_алфавиту",
+    "Категория:Вирусы_по_алфавиту",
+    "Категория:Грибы_по_алфавиту",
+    "Категория:Животные_по_алфавиту",
+    "Категория:Протисты_по_алфавиту",
+    "Категория:Растения_по_алфавиту",
+  ]
+
   rootData = inject(RootDataKeeperService);
   private networkAdminService = inject(NetworkDbTasksService);
 

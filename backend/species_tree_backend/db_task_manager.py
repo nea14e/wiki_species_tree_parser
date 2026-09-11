@@ -147,8 +147,8 @@ class DbTaskManager:
         stage = str(task["stage"])
         args.append(stage)
         if stage == "1":
+            args.append(task["args"]["list_page_title"])
             args.append(task["args"]["from_title"])
-            args.append(task["args"]["to_title"])
             if task["args"].get("proxy", None):
                 args.append(task["args"]["proxy"])
         elif stage == "2":
