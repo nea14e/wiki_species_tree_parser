@@ -191,15 +191,15 @@ class DbFunctions:
         Logger.print("\n\n")
 
     @staticmethod
-    def add_list_item(title, page_url):
+    def add_list_item(title: str, page_url: str):
         # Добавляем новый элемент в список или обновляем уже существующий
         sql = """
                 INSERT INTO public.list (title, page_url)
-                  VALUES ('{}', '{}')
+                  VALUES ({}, {})
                 ON CONFLICT ON CONSTRAINT uq_page_url 
                   DO UPDATE 
                   SET title = EXCLUDED.title;
-            """.format(str(title), str(page_url))
+            """.format(quote_string(title), quote_string(page_url))
         DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 
     @staticmethod

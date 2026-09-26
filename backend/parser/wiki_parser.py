@@ -6,6 +6,7 @@ import traceback
 
 # import requests
 from multiprocessing.queues import Queue
+from urllib import parse
 
 from requests import Session
 from requests.utils import requote_uri
@@ -25,6 +26,9 @@ class MyRequests:
     def get_session(cls):
         if cls.session is None:
             cls.session = Session()
+            # cls.session.headers.update({
+            #     "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+            # })
         return cls.session
 
 
@@ -153,38 +157,95 @@ def populate_list(list_page_title: str, from_title: str = ""):
     Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Название списка: '{}' Ограничения: с '{}'"
                  .format(list_page_title, from_title))
 
-    url = "https://ru.ruwiki.ru/w/index.php?"
-    params = ["title={}".format(list_page_title)]
-    if from_title:
-        params.append("pagefrom={}".format(requote_uri(from_title)))
-    url += "&".join(params)
+    url = "https://ru.ruwiki.ru/w/api.php"
 
-    html = MyRequests.get_session().get(url).content  # Парсим саму страницу
-    wiki_html = BeautifulSoup(html, "html.parser")
+    # # 1. Получаем логин-токен
+    # response = MyRequests.get_session().get(url, params={
+    #     "action": "query",
+    #     "meta": "tokens",
+    #     "type": "login",
+    #     "format": "json"
+    # })
+    # token = response.json()["query"]["tokens"]["logintoken"]
+
+    # 2. Логинимся (используй обычный пароль от аккаунта)
+    # response = MyRequests.get_session().post(url, data={
+    #     "action": "login",
+    #     "lgname": Config.WIKI_USER_NAME,
+    #     "lgpassword": Config.WIKI_USER_PASSWORD,
+    #     # "lgtoken": token,
+    #     "format": "json"
+    # }, headers={
+    #     "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+    # })
+    # print("Login:", response.json())
+
+    # 2. Логинимся (используй обычный пароль от аккаунта)
+    # response = MyRequests.get_session().post(
+    #     url,
+    #     data={
+    #         "action": "query",
+    #         "meta": "tokens",
+    #         "type": "login",
+    #         "lgname": Config.WIKI_USER_NAME,
+    #         "lgpassword": Config.WIKI_USER_PASSWORD,
+    #         # "lgtoken": token,
+    #         "format": "json"
+    #     },
+    #     headers={
+    #         "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+    #     }
+    # )
+    # print("Login:", response.json())
+    # token = response.json()["query"]["tokens"]["logintoken"]
+
+    # 3. Создаём бот-пароль (если логин успешен)
+    # response = MyRequests.get_session().post(url, data={
+    #     "action": "createbotpassword",
+    #     "bpappid": "SpeciesTreeParser",  # короткое описание приложения
+    #     "bpname": "SpeciesTreeParser",  # имя бот-пароля (то, что ты вводил в форме)
+    #     "bprights": "basic",  # права
+    #     "format": "json"
+    # }, headers={
+    #     "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+    # })
+    # print("CreateBotPassword:", response.json())
 
     succeeds = 0
     skipped = 0
     errors = 0
     while True:  # Цикл перехода на след. страницу
-        # Cсылка на следующую страницу
-        navigate_page_elems = wiki_html.select("a")
-        next_page_elem = None
-        for el in navigate_page_elems:
-            if "Следующая страница" in el.text:
-                next_page_elem = el
-                break
+        response = MyRequests.get_session().post(
+            url,
+            data={
+                "action": "parse",
+                "page": "Категория:Животные_по_алфавиту",
+                "prop": "text",
+                "format": "json"
+            },
+            headers={
+                "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+            }
+        )
+        html = response.json()["parse"]["text"]["*"]
+        escaped_html = parse.unquote(html, encoding='utf-8', errors='replace')
+        wiki_html = BeautifulSoup(escaped_html, "html.parser")
 
-        # Адрес из ссылки на следующую страницу
-        if next_page_elem:
-            next_page_url = next_page_elem["href"]
+        # Cсылка на следующую страницу
+        # TODO Страница не имеет содержимого при этих запросах к API
+        service_refs = list(wiki_html.select("#mw-pages > a"))
+        next_page_refs = list(filter(lambda x: "Следующая страница" in x.text, service_refs))
+        if next_page_refs:
+            next_page_ref = next_page_refs[0]
+            # Адрес из ссылки на следующую страницу
+            next_page_url = next_page_ref["href"]
         else:
             next_page_url = None
 
-        # Сохраем в базу ссылки, чтобы потом по ним переходить
+        # Сохраняем в базу ссылки, чтобы потом по ним переходить
         for link in wiki_html.select("#mw-pages ul > li > a"):
             try:
                 item_title = link.text
-                item_title = item_title.replace("'", "''")  # Экранирование для базы
                 item_details_href = str(link["href"])
                 if Config.URL_START_RELATIVE in item_details_href:
                     item_details_href = item_details_href[len(Config.URL_START_RELATIVE):]  # Ссылка (без начала)
@@ -199,9 +260,8 @@ def populate_list(list_page_title: str, from_title: str = ""):
             Logger.print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок."
                          .format(next_page_url, succeeds, skipped, errors)
             )
-            html = MyRequests.get_session().get(Config.URL_DOMAIN.rstrip('/') + next_page_url).content  # Переходим на след страницу
-            wiki_html = BeautifulSoup(html, "html.parser")
-            time.sleep(Config.NEXT_PAGE_DELAY)
+            wiki_html = # TODO Параметр pagefrom не работает для API
+            time.sleep(Config.NEXT_LIST_PAGE_DELAY)
         else:
             Logger.print(
                 "ВЕСЬ СПИСОК СОСТАВЛЕН! Всего успешно {} элементов, {} пропущено, {} ошибок."
@@ -311,7 +371,7 @@ def parse_details(skip_parsed_interval, where=""):
             DbExecuteNonQuery.execute('parse_details:update_details', query)
             errors += 1
 
-        time.sleep(Config.NEXT_PAGE_DELAY)
+        time.sleep(Config.NEXT_DETAILS_PAGE_DELAY)
     Logger.print("\n")
     Logger.print("ПАРСИНГ ДЕТАЛЕЙ ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
     Logger.print("Добавлены детали о " + str(item_counter) + " элементов.")
@@ -430,7 +490,7 @@ def parse_levels(tree_box, details: ListItemDetails):
     ind = current_level_ind - 1
     while ind >= 0 and not levels[ind]:  # Пропускаем уровни-пустые строки (почему-то такие бывают, они видны и в браузере)
         ind = ind - 1
-        
+
     def handle_parent_level(algorithm_type: str, parent_level: str):
         matches = re.match(r"""(.+?):.+?<a.+?href="(.+?)".*?>(.+?)</a>.*""", parent_level, re.DOTALL)
         if matches is not None:
@@ -439,7 +499,7 @@ def parse_levels(tree_box, details: ListItemDetails):
             href = matches.group(2)
             if href[:len("/wiki/")] == "/wiki/":
                 details.parent_page_url = href[len("/wiki/"):]
-                Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type, 
+                Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type,
                                                                                      details.parent_type,
                                                                                      details.parent_title,
                                                                                      details.parent_page_url))
@@ -606,7 +666,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
             DbExecuteNonQuery.execute('parse_language:update_details', query)
             errors += 1
 
-        time.sleep(Config.NEXT_PAGE_DELAY)
+        time.sleep(Config.NEXT_DETAILS_PAGE_DELAY)
     Logger.print("\n")
     Logger.print("ПАРСИНГ ЯЗЫКА ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
     Logger.print("Добавлены переводы для " + str(item_counter) + " элементов.")
