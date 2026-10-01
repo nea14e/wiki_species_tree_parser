@@ -76,18 +76,16 @@ def main():
     def apply_proxy(proxy_string: str):
         MyRequests.get_session().proxies = {"http": proxy_string, "https": proxy_string}
 
+    init_session()
+
     if stage_number == '1':
         if len(sys.argv) >= 4:
             list_page_title = sys.argv[3]
         else:
             list_page_title = "Категория:Животные_по_алфавиту"
         if len(sys.argv) >= 5:
-            from_title = sys.argv[4]
-        else:
-            from_title = ""
-        if len(sys.argv) >= 6:
             apply_proxy(str(sys.argv[5]))
-        populate_list(list_page_title, from_title)  # 1 этап
+        populate_list(list_page_title)  # 1 этап
     elif stage_number == '2':
         if len(sys.argv) >= 4:
             if sys.argv[3] == "True":
@@ -153,114 +151,126 @@ def print_usage():
     Logger.print("Где proxy_string = \"протокол://адрес:порт@логин:пароль\" или \"протокол://адрес:порт\"")
 
 
-def populate_list(list_page_title: str, from_title: str = ""):
-    Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Название списка: '{}' Ограничения: с '{}'"
-                 .format(list_page_title, from_title))
+def init_session():
+    Logger.print("ИНИЦИАЛИЗАЦИЯ СЕССИИ...")
 
     url = "https://ru.ruwiki.ru/w/api.php"
+    http_headers = {
+        "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+    }
 
-    # # 1. Получаем логин-токен
-    # response = MyRequests.get_session().get(url, params={
-    #     "action": "query",
-    #     "meta": "tokens",
-    #     "type": "login",
-    #     "format": "json"
-    # })
-    # token = response.json()["query"]["tokens"]["logintoken"]
-
-    # 2. Логинимся (используй обычный пароль от аккаунта)
-    # response = MyRequests.get_session().post(url, data={
-    #     "action": "login",
-    #     "lgname": Config.WIKI_USER_NAME,
-    #     "lgpassword": Config.WIKI_USER_PASSWORD,
-    #     # "lgtoken": token,
-    #     "format": "json"
-    # }, headers={
-    #     "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-    # })
-    # print("Login:", response.json())
-
-    # 2. Логинимся (используй обычный пароль от аккаунта)
-    # response = MyRequests.get_session().post(
+    # 1. Получаем логин-токен
+    # 403 - Forbidden
+    # response = MyRequests.get_session().get(
     #     url,
-    #     data={
+    #     params={
     #         "action": "query",
     #         "meta": "tokens",
     #         "type": "login",
-    #         "lgname": Config.WIKI_USER_NAME,
-    #         "lgpassword": Config.WIKI_USER_PASSWORD,
-    #         # "lgtoken": token,
     #         "format": "json"
     #     },
-    #     headers={
-    #         "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-    #     }
+    #     headers=http_headers
     # )
-    # print("Login:", response.json())
-    # token = response.json()["query"]["tokens"]["logintoken"]
+    # response.raise_for_status()
+    # data = response.json()
+    # if "error" in data:
+    #     raise RuntimeError(f"Ошибка при получении токена:\n{data['error']}")
+    # login_token = data["query"]["tokens"]["logintoken"]
+    # print("Логин-токен получен:", login_token)
 
-    # 3. Создаём бот-пароль (если логин успешен)
-    # response = MyRequests.get_session().post(url, data={
-    #     "action": "createbotpassword",
-    #     "bpappid": "SpeciesTreeParser",  # короткое описание приложения
-    #     "bpname": "SpeciesTreeParser",  # имя бот-пароля (то, что ты вводил в форме)
-    #     "bprights": "basic",  # права
-    #     "format": "json"
-    # }, headers={
-    #     "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-    # })
-    # print("CreateBotPassword:", response.json())
+    # 2. Логинимся (используя логин и пароль от аккаунта бота)
+    response = MyRequests.get_session().post(
+        url,
+        data={
+            "action": "query",
+            "meta": "tokens",
+            "type": "login",
+            "lgname": Config.WIKI_USER_NAME,
+            "lgpassword": Config.WIKI_USER_PASSWORD,
+            # "lgtoken": login_token,
+            "format": "json"
+        },
+        headers=http_headers
+    )
+    response.raise_for_status()
+    data = response.json()
+    if "error" in data:
+        raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
+
+    # 3. Узнаём текущие лимиты запросов API
+    response = MyRequests.get_session().post(
+        url,
+        data={
+            "action": "query",
+            "meta": "userinfo",
+            "uiprop": "ratelimits",
+            "format": "json",
+        },
+        headers=http_headers
+    )
+    response.raise_for_status()
+    data = response.json()
+    if "error" in data:
+        raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
+    user_info = json.dumps(data["query"]["userinfo"])
+    Logger.print("Действующие лимиты API:\n", user_info)
+
+    Logger.print("СЕССИЯ УСПЕШНО ПРОИНИЦИАЛИЗИРОВАНА")
+
+
+def populate_list(list_page_title: str):
+    Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Название списка: '{}'."
+                 .format(list_page_title))
+
+    url = "https://ru.ruwiki.ru/w/api.php"
+    query_params = {
+        "action": "query",
+        "list": "categorymembers",
+        "cmtitle": "Категория:Животные по алфавиту",
+        "cmlimit": "500",  # максимум 500 (или 5000 с флагом бота)
+        "format": "json",
+        "cmtype": "page",  # только статьи (не подкатегории и не файлы)
+        "continue": ""  # обязательно для постраничной выдачи
+    }
+    http_headers = {
+        "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+    }
 
     succeeds = 0
     skipped = 0
     errors = 0
+    cmcontinue = None
     while True:  # Цикл перехода на след. страницу
-        response = MyRequests.get_session().post(
-            url,
-            data={
-                "action": "parse",
-                "page": "Категория:Животные_по_алфавиту",
-                "prop": "text",
-                "format": "json"
-            },
-            headers={
-                "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-            }
-        )
-        html = response.json()["parse"]["text"]["*"]
-        escaped_html = parse.unquote(html, encoding='utf-8', errors='replace')
-        wiki_html = BeautifulSoup(escaped_html, "html.parser")
-
-        # Cсылка на следующую страницу
-        # TODO Страница не имеет содержимого при этих запросах к API
-        service_refs = list(wiki_html.select("#mw-pages > a"))
-        next_page_refs = list(filter(lambda x: "Следующая страница" in x.text, service_refs))
-        if next_page_refs:
-            next_page_ref = next_page_refs[0]
-            # Адрес из ссылки на следующую страницу
-            next_page_url = next_page_ref["href"]
-        else:
-            next_page_url = None
+        if cmcontinue is not None:
+            query_params["cmcontinue"] = cmcontinue
+        response = MyRequests.get_session().post(url, data=query_params, headers=http_headers)
+        if response.status_code == 429:
+            print("Лимит запросов превышен!")
+            retry_after = int(response.headers.get("Retry-After"))
+            print(f"Ждать: {retry_after} сек")
+            time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
+        data = response.json()
+        if "error" in data:
+            raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
+        response.raise_for_status()
+        cmcontinue = data["continue"]["cmcontinue"] if "continue" in data and "cmcontinue" in data["continue"] else None
+        list_data = data["query"]["categorymembers"]
 
         # Сохраняем в базу ссылки, чтобы потом по ним переходить
-        for link in wiki_html.select("#mw-pages ul > li > a"):
+        for item in list_data:
             try:
-                item_title = link.text
-                item_details_href = str(link["href"])
-                if Config.URL_START_RELATIVE in item_details_href:
-                    item_details_href = item_details_href[len(Config.URL_START_RELATIVE):]  # Ссылка (без начала)
-                # Logger.print("Новый элемент в списке для парсинга: '%s', '%s'" % (item_title, item_details_href))  # debug only
-                DbFunctions.add_list_item(item_title, item_details_href)
+                item_page_id = str(item["pageid"])
+                item_title = item["title"]
+                DbFunctions.add_list_item(item_title, item_page_id)
                 succeeds += 1
             except BaseException:
                 errors += 1
                 Logger.print('Ошибка:\n', traceback.format_exc())
 
-        if next_page_url:
+        if cmcontinue is not None:
             Logger.print("Страница обработана. Следующая - {}. Всего успешно {} элементов, {} пропущено, {} ошибок."
-                         .format(next_page_url, succeeds, skipped, errors)
+                         .format(cmcontinue, succeeds, skipped, errors)
             )
-            wiki_html = # TODO Параметр pagefrom не работает для API
             time.sleep(Config.NEXT_LIST_PAGE_DELAY)
         else:
             Logger.print(

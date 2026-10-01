@@ -25,8 +25,9 @@ class Config:
     # Задаёт интервал отдыха между концом парсинга предыдущей страницы и началом загрузки следующей (в секундах).
     # Поскольку парсинг страницы Викивидов и связанных с ней Википедий по языкам занимают значительное время,
     # реальный интервал между загрузкой предыдущей страницы и следующей будет значительно больше этого числа.
-    NEXT_LIST_PAGE_DELAY = 1.0  # Для составления списка
-    NEXT_DETAILS_PAGE_DELAY = 0.1  # Для детализации
+    NEXT_LIST_PAGE_DELAY = 8.0  # Для составления списка
+    NEXT_DETAILS_PAGE_DELAY = 8.0  # Для детализации
+    TOO_MANY_REQUESTS_ADDITIONAL_DELAY = 10.0  # Дополнительное ожидание, когда запросы шлём слишком часто
 
     # URL-адреса и маски для них. Иногда надо их править.
     URL_DOMAIN = "https://ru.ruwiki.ru/"
@@ -35,7 +36,7 @@ class Config:
     URL_START_RELATIVE = "/wiki/"
     WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"  # TODO ruwiki
     WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"  # TODO ruwiki
-    WIKI_USER_NAME = "WikiSpeciesTreeParser"
+    WIKI_USER_NAME = "SpeciesTreeParser@SpeciesTreeParser"
     WIKI_USER_PASSWORD = ""
 
     PROC_STATE_UPDATE_TIMER = 3.0
