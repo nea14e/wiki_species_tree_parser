@@ -71,7 +71,7 @@
             }
             @switch (task.stage) {
               @case ('1') {
-                <span>"{{ task.args.list_page_title }} from {{ task.args.from_title }}"</span>
+                <span>"{{ task.args.list_page_title }}</span>
               }
               @case ('2') {
                 <span>skip_parsed_interval: {{ task.args.skip_parsed_interval }}, "{{ task.args.where }}"</span>
@@ -249,17 +249,6 @@
                 </option>
               }
             </select>
-          </div>
-        </div>
-      }
-
-      @if (editingTask()!.stage === '1') {
-        <div class="row mt-4">
-          <div class="col-3">
-            from_title<span class="text-danger">*</span>:
-          </div>
-          <div class="col-9">
-            <input type="text" [(ngModel)]="editingTask()!.args.from_title">
           </div>
         </div>
       }
