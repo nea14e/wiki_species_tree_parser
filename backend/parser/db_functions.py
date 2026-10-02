@@ -58,6 +58,8 @@ class DbFunctions:
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list_MIGRATE.sql"))
         Logger.print("Миграция public.list_MIGRATE_is_deleted...")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list_MIGRATE_is_deleted.sql"))
+        Logger.print("Миграция public.list_MIGRATE_synonyms.sql...")
+        DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "list_MIGRATE_synonyms.sql"))
 
         # Таблица с рангами
         Logger.print("\nТаблица с рангами:")
@@ -196,9 +198,11 @@ class DbFunctions:
         sql = """
                 INSERT INTO public.list (title, page_id)
                   VALUES ({}, {})
-                ON CONFLICT ON CONSTRAINT uq_page_id 
+                ON CONFLICT ON CONSTRAINT uq_list_page_id 
                   DO UPDATE 
-                  SET title = EXCLUDED.title;
+                  SET synonyms = CASE WHEN list.synonyms IS NULL THEN ARRAY [list.title, EXCLUDED.title]
+                                    ELSE array_append(list.synonyms, EXCLUDED.title)
+                                 END;
             """.format(quote_string(title), quote_string(page_id))
         DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 
