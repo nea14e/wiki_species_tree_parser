@@ -32,20 +32,20 @@ FROM (
               public.percent_of_to_color(stage_language, total) AS stage_language_color
        FROM (
               SELECT group_number,
-                     min(page_url)                                     AS page_url_from,
-                     max(page_url)                                     AS page_url_to,
+                     min(page_id)                                     AS page_url_from,
+                     max(page_id)                                     AS page_url_to,
                      count(1)                                          AS total,
                      count(1) FILTER ( WHERE "type" IS NOT NULL)       AS stage_2,
                      count(1) FILTER ( WHERE parent_id IS NOT NULL)    AS stage_3,
                      count(1) FILTER ( WHERE leaves_count IS NOT NULL) AS stage_4,
                      count(1) FILTER ( WHERE title_on_language IS NOT NULL) AS stage_language
               FROM (
-                     SELECT page_url,
+                     SELECT page_id,
                             "type",
                             parent_id,
                             leaves_count,
                             title_on_language,
-                            ntile(_groups_count) OVER (ORDER BY page_url) AS group_number -- сквозная нумерация групп на текущем уровне
+                            ntile(_groups_count) OVER (ORDER BY page_id) AS group_number -- сквозная нумерация групп на текущем уровне
                      FROM (
                             /*
                                    Тестовые данные:
@@ -55,7 +55,7 @@ FROM (
                                    так, что каждый последующий этап заполнен меньше, чем предыдущий,
                                    к 2100 и позже уже совсем ничего не заполнено.
                              */
-                            SELECT 'test_' || lpad(ser.i::text, 4, '0') AS page_url,
+                            SELECT 'test_' || lpad(ser.i::text, 4, '0') AS page_id,
                                    CASE WHEN ser.i % 10 < 10 - (ser.i - 2000) / 10 THEN 'type123' END        AS "type",
                                    CASE WHEN ser.i % 10 < 10 - 2 * (ser.i - 2000) / 10 THEN 123::bigint END  AS parent_id,
                                    CASE WHEN ser.i % 10 < 10 - 3 * (ser.i - 2000) / 10 THEN 123::bigint END  AS leaves_count,
@@ -64,7 +64,7 @@ FROM (
                             WHERE _is_test_data = TRUE
                             UNION ALL
                             -- Реальная таблица из БД:
-                            SELECT page_url,
+                            SELECT page_id,
                                    "type",
                                    parent_id,
                                    leaves_count,
@@ -75,8 +75,8 @@ FROM (
                             FROM public.list
                             WHERE _is_test_data = FALSE
                           ) t_source
-                     WHERE (page_url >= _page_url_from OR _page_url_from IS NULL)
-                       AND (page_url <= _page_url_to OR _page_url_to IS NULL)
+                     WHERE (page_id >= _page_url_from OR _page_url_from IS NULL)
+                       AND (page_id <= _page_url_to OR _page_url_to IS NULL)
                    ) t_filtered
               GROUP BY group_number
             ) t_counts

@@ -1,8 +1,8 @@
 -- Штампуем записи
-INSERT INTO public.list(id, title, page_url, titles_by_languages)
+INSERT INTO public.list(id, title, page_id, titles_by_languages)
 SELECT t.id,
        t.title,
-       t.title || '_url' AS page_url,
+       t.title || '_url' AS page_id,
        CASE
          WHEN t.has_en AND t.has_ru THEN
            jsonb_build_object(

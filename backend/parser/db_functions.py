@@ -89,7 +89,7 @@ class DbFunctions:
             DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day.sql"))
         else:
             Logger.print("Таблица public.tips_of_the_day уже существует, пропускаем этап создания.")
-        Logger.print("\nТаблица с советами дня: добавление колонки page_url:")
+        Logger.print("\nТаблица с советами дня: добавление колонки page_id:")
         DbExecuteNonQuery.execute_file("init_db", os.path.join("init_db", "tables", "tips_of_the_day_ADD_page_url.sql"))
 
         # Таблица с запущенными задачами
@@ -191,19 +191,19 @@ class DbFunctions:
         Logger.print("\n\n")
 
     @staticmethod
-    def add_list_item(title: str, page_url: str):
+    def add_list_item(title: str, page_id: str):
         # Добавляем новый элемент в список или обновляем уже существующий
         sql = """
-                INSERT INTO public.list (title, page_url)
+                INSERT INTO public.list (title, page_id)
                   VALUES ({}, {})
-                ON CONFLICT ON CONSTRAINT uq_page_url 
+                ON CONFLICT ON CONSTRAINT uq_page_id 
                   DO UPDATE 
                   SET title = EXCLUDED.title;
-            """.format(quote_string(title), quote_string(page_url))
+            """.format(quote_string(title), quote_string(page_id))
         DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 
     @staticmethod
-    def add_details_to_item(title, page_url, _type, image_url, wikipedias_by_languages, titles_by_languages, parent_page_url):
+    def add_details_to_item(title, page_id, _type, image_url, wikipedias_by_languages, titles_by_languages, parent_title):
         # Добавляем новый элемент в список или обновляем уже существующий
         sql = """
                 UPDATE public.list
@@ -213,16 +213,16 @@ class DbFunctions:
                   , image_url = '{}'
                   , wikipedias_by_languages = '{}'
                   , titles_by_languages = '{}'
-                  , parent_page_url = '{}'
-                WHERE page_url = '{}';
+                  , parent_title = '{}'
+                WHERE page_id = '{}';
             """.format(
                 str(title)
                 , str(_type)
                 , str(image_url)
                 , json.dumps(wikipedias_by_languages)
                 , json.dumps(titles_by_languages)
-                , str(parent_page_url)
-                , str(page_url)
+                , str(parent_title)
+                , str(page_id)
             )
         DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 

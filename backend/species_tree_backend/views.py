@@ -477,10 +477,10 @@ def admin_add_tip(request):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO public.tips_of_the_day (id, tip_on_languages, page_url)
+        INSERT INTO public.tips_of_the_day (id, tip_on_languages, page_id)
         VALUES ((SELECT MAX(id) + 1 FROM public.tips_of_the_day), %s, %s)
         RETURNING id;
-    """, (json.dumps(body["data"]["tip_on_languages"]), body["data"]["page_url"]))
+    """, (json.dumps(body["data"]["tip_on_languages"]), body["data"]["page_id"]))
     tip_id = int(cur.fetchone()[0])
     return JsonResponse({"is_ok": True, "message": "Tip {id} added successfully.".format(id=tip_id)})
 
@@ -508,13 +508,13 @@ def admin_edit_tip(request):
         )
         UPDATE public.tips_of_the_day
         SET tip_on_languages = %(tip_on_languages)s,
-            page_url = %(page_url)s 
+            page_id = %(page_id)s 
         WHERE id = %(tip_id)s
     """, {
         "tip_id": body["data"]["id"],
         "adminKey": str(body["adminKey"]),
         "user_id": user_id,
-        "page_url": body["data"]["page_url"],
+        "page_id": body["data"]["page_id"],
         "tip_on_languages": json.dumps(body["data"]["tip_on_languages"]),
     }
     )
@@ -597,11 +597,11 @@ def admin_attach_tip_to_tree(request):
             WHERE NOT EXISTS(SELECT 1 FROM log_upd)
         )
         UPDATE public.tips_of_the_day
-        SET page_url = %(page_url)s 
+        SET page_id = %(page_id)s 
         WHERE id = %(tip_id)s
     """, {
         "tip_id": body["tipId"],
-        "page_url": body["speciesPageUrl"],
+        "page_id": body["speciesPageUrl"],
         "user_id": user_id,
     }
     )
@@ -631,7 +631,7 @@ def admin_detach_tip_from_tree(request):
             WHERE NOT EXISTS(SELECT 1 FROM log_upd)
         )
         UPDATE public.tips_of_the_day
-        SET page_url = NULL
+        SET page_id = NULL
         WHERE id = %(tip_id)s
     """, {
         "tip_id": body["tipId"],

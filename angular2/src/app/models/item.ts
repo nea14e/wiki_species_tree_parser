@@ -1,6 +1,6 @@
 export interface Item {
   id: number;
-  page_url: string;
+  page_id: string;
   image_url: string;
   parent_id: number | null;
   is_expanded: boolean;

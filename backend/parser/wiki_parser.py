@@ -282,13 +282,13 @@ def populate_list(list_page_title: str):
 
 def parse_details(skip_parsed_interval, where=""):
     query = """
-      SELECT id, title, page_url
+      SELECT id, title, page_id
       FROM public.list
       WHERE type IS NULL
       """
     if skip_parsed_interval:
         query += """
-            AND page_url > (SELECT COALESCE(MAX(page_url), '')
+            AND page_id > (SELECT COALESCE(MAX(page_id), '')
                       FROM public.list
                       WHERE type IS NOT NULL
             """
@@ -302,7 +302,7 @@ def parse_details(skip_parsed_interval, where=""):
         AND {}
         """.format(where)
     query += """
-      ORDER BY page_url;
+      ORDER BY page_id;
     """
     Logger.print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_details:list_to_parse", query)
@@ -316,10 +316,10 @@ def parse_details(skip_parsed_interval, where=""):
         if not list_item:
             break
         try:
-            details = ListItemDetails(id=list_item[0], title=list_item[1], page_url=list_item[2])
-            url = Config.URL_START + details.page_url
+            details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2])
+            url = Config.URL_START + details.page_id
             Logger.print('===========================================')
-            Logger.print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.page_url + " название: " + details.title + " ссылка: " + url)
+            Logger.print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.page_id + " название: " + details.title + " ссылка: " + url)
             html = MyRequests.get_session().get(url).content
             wiki_html = BeautifulSoup(html, "html.parser")
 
@@ -349,7 +349,7 @@ def parse_details(skip_parsed_interval, where=""):
               SET title = {}
                 , type = {}
                 , image_url = {}
-                , parent_page_url = {}
+                , parent_title = {}
                 , wikipedias_by_languages = {}
                 , titles_by_languages = {}
                 , last_error_message = NULL
@@ -358,7 +358,7 @@ def parse_details(skip_parsed_interval, where=""):
                 quote_string(details.title)
                 , quote_string(details.type)
                 , quote_nullable(details.image_url)
-                , quote_nullable(details.parent_page_url)
+                , quote_nullable(details.parent_title)
                 , quote_string(json.dumps(details.wikipedias_by_languages))
                 , quote_string(json.dumps(details.titles_by_languages))
                 , quote_string(details.id)
@@ -390,13 +390,13 @@ def parse_details(skip_parsed_interval, where=""):
 
 
 class ListItemDetails:
-    def __init__(self, id, title, page_url):
+    def __init__(self, id, title, page_id):
         self.id = id
         self.title = title
-        self.page_url = page_url
+        self.page_id = page_id
         self.type = None
         self.image_url = None
-        self.parent_page_url = None
+        self.parent_title = None
         self.parent_title = None
         self.parent_type = None
         self.wikipedias_by_languages = {}
@@ -508,18 +508,18 @@ def parse_levels(tree_box, details: ListItemDetails):
             details.parent_title = matches.group(3)
             href = matches.group(2)
             if href[:len("/wiki/")] == "/wiki/":
-                details.parent_page_url = href[len("/wiki/"):]
+                details.parent_title = href[len("/wiki/"):]
                 Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type,
                                                                                      details.parent_type,
                                                                                      details.parent_title,
-                                                                                     details.parent_page_url))
+                                                                                     details.parent_title))
                 return details, None  # Успех
             elif href[:len("/w/index.php?title=")] == "/w/index.php?title=":
-                details.parent_page_url = href[len("/w/index.php?title="):].split("&amp;")[0]
+                details.parent_title = href[len("/w/index.php?title="):].split("&amp;")[0]
                 Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type,
                                                                                      details.parent_type,
                                                                                      details.parent_title,
-                                                                                     details.parent_page_url))
+                                                                                     details.parent_title))
                 return details, None  # Успех
             else:
                 raise RuntimeError("Stage 2 error ({}): <a href> starts with unknown prefix instead of '/wiki/' or '/w/': href='{}'!" \
@@ -587,7 +587,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
       """.format(quote_string(lang_key), quote_string(lang_key))
     if skip_parsed_interval:
         query += """
-            AND page_url > (SELECT COALESCE(MAX(page_url), '')
+            AND page_id > (SELECT COALESCE(MAX(page_id), '')
                       FROM public.list
                       WHERE (titles_by_languages ? {})
             """.format(quote_string(lang_key), quote_string(lang_key))
@@ -601,7 +601,7 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
         AND {}
         """.format(where)
     query += """
-      ORDER BY page_url;
+      ORDER BY page_id;
     """
     Logger.print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_language:list_to_parse", query)
@@ -686,13 +686,13 @@ def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
 
 def correct_parents(where: str = None):
     """
-    После парсинга списка пройдёмся по базе и заполним parent_id по parent_page_url.
+    После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
     """
     Logger.print("Поправляем ссылки на родителей (построение дерева)...")
     query = """
-        SELECT id, parent_page_url
+        SELECT id, parent_title
         FROM public.list
-        WHERE parent_page_url IS NOT NULL AND parent_id IS NULL  -- Только у которых уже заполнен текст родителя, но ещё не привязаны
+        WHERE parent_title IS NOT NULL AND parent_id IS NULL  -- Только у которых уже заполнен текст родителя, но ещё не привязаны
     """
     if where is not None and where != "":
         query += " AND " + where
@@ -710,11 +710,11 @@ def correct_parents(where: str = None):
             break
         cur_id = list_item[0]
         cur_parent_url = list_item[1]
-        # Ищем родителя в базе по parent_page_url
+        # Ищем родителя в базе по parent_title
         query = """
             SELECT id
             FROM public.list
-            WHERE page_url = '{}'
+            WHERE page_id = '{}'
             LIMIT 1;
         """.format(cur_parent_url)
         parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)

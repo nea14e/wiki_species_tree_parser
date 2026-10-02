@@ -8,7 +8,7 @@ $$
 SELECT coalesce(json_agg(t ORDER BY rank_order DESC, title_for_language), '[]'::json)
 FROM (
        SELECT max(list.id)            AS id,
-              max(list.page_url)      AS page_url,
+              max(list.page_id)      AS page_id,
               COALESCE(ranks.titles_by_languages ->> _language_key, ranks."type") AS rank_for_language,  -- Latin name if not present
               COALESCE(list.titles_by_languages ->> _language_key, list.title)    AS title_for_language, -- Latin name if not present
               max(list.image_url)     AS image_url,

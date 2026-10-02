@@ -69,7 +69,7 @@ BEGIN
                  SELECT id,
                         title AS title_latin,
                         COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,    -- Latin name if not present
-                        page_url,
+                        page_id,
                         image_url,
                         COALESCE(wikipedias_by_languages ->> _language_key,
                                  wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wiki if not present
@@ -144,7 +144,7 @@ BEGIN
                SELECT id,
                       title AS title_latin,
                       COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,    -- Latin name if not present
-                      page_url,
+                      page_id,
                       image_url,
                       COALESCE(wikipedias_by_languages ->> _language_key,
                                wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wiki if not present
@@ -200,7 +200,7 @@ $$;
 /*
 -- Черника. Элемент из середины дерева с parent_id = NULL
 SELECT public.get_tree_by_id(
-  _id := 1027820,
+  _id := 222,
   _language_key := 'ru'
 );
 

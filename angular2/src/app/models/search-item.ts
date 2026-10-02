@@ -1,6 +1,6 @@
 export interface SearchItem {
   id: number;
-  page_url: string;
+  page_id: string;
   rank_for_language: string;
   title_for_language: string;
   image_url: string;

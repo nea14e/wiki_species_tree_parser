@@ -13,7 +13,7 @@ public class Item implements Parcelable {
     @SerializedName("id")
     @Expose
     public long id;
-    @SerializedName("page_url")
+    @SerializedName("page_id")
     @Expose
     public String pageUrl;
     @Nullable

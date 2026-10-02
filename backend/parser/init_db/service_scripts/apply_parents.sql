@@ -10,19 +10,19 @@ DECLARE
 BEGIN
   SELECT count(1) INTO _total
   FROM public.list
-  WHERE (page_url >= _page_url_from OR _page_url_from IS NULL)
-    AND (page_url <= _page_url_to OR _page_url_to IS NULL);
+  WHERE (page_id >= _page_url_from OR _page_url_from IS NULL)
+    AND (page_id <= _page_url_to OR _page_url_to IS NULL);
 
   _counter = 0;
 
   FOR _row IN
     SELECT target.id,
-           coalesce(target.parent_page_url_actual, target.parent_page_url) AS parent_page_url,
+           coalesce(target.parent_page_url_actual, target.parent_title) AS parent_title,
            parent.id AS parent_id
     FROM public.list target
-      LEFT JOIN public.list parent ON parent.page_url = coalesce(target.parent_page_url_actual, target.parent_page_url)
-    WHERE (target.page_url >= _page_url_from OR _page_url_from IS NULL)
-    AND (target.page_url <= _page_url_to OR _page_url_to IS NULL)
+      LEFT JOIN public.list parent ON parent.page_id = coalesce(target.parent_page_url_actual, target.parent_title)
+    WHERE (target.page_id >= _page_url_from OR _page_url_from IS NULL)
+    AND (target.page_id <= _page_url_to OR _page_url_to IS NULL)
     LOOP
 
       UPDATE public.list target
@@ -67,7 +67,7 @@ SELECT public.apply_parents('Zaa', 'Zzz');
 
 
 SELECT count(1 WHERE parent_id IS NULL)       AS parent_id_is_null,
-       count(1 WHERE parent_page_url IS NULL) AS parent_page_url_is_null,
+       count(1 WHERE parent_title IS NULL) AS parent_page_url_is_null,
        count(1)                               AS total_count
 FROM public.list;
 

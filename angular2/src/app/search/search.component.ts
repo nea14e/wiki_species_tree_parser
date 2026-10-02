@@ -124,7 +124,7 @@ export class SearchComponent implements OnInit {
 
   attachToTree(item: SearchItem): void {
     this.router.navigate(['admin/tip-translation'],
-      {queryParams: {speciesPageUrl: item.page_url, tipId: this.attachToTipId()}}
+      {queryParams: {speciesPageUrl: item.page_id, tipId: this.attachToTipId()}}
     );
   }
 

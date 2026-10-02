@@ -15,7 +15,7 @@ $$
       list.id AS species_id,
       list.image_url
     FROM public.tips_of_the_day t
-      LEFT JOIN public.list list ON t.page_url = list.page_url
+      LEFT JOIN public.list list ON t.page_id = list.page_id
     WHERE t.id = _id
     LIMIT 1
   ) t;

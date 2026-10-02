@@ -14,8 +14,8 @@ DECLARE
 BEGIN
   SELECT count(1) INTO _total
   FROM public.list l
-  WHERE (page_url >= _page_url_from OR _page_url_from IS NULL)
-    AND (page_url <= _page_url_to OR _page_url_to IS NULL)
+  WHERE (page_id >= _page_url_from OR _page_url_from IS NULL)
+    AND (page_id <= _page_url_to OR _page_url_to IS NULL)
     AND NOT EXISTS(
       SELECT 1
       FROM public.get_tree_cache c
@@ -27,20 +27,20 @@ BEGIN
 
     FOR _row IN
         SELECT target.id,
-               target.page_url
+               target.page_id
         FROM public.list target
-        WHERE (target.page_url >= _page_url_from OR _page_url_from IS NULL)
-          AND (target.page_url <= _page_url_to OR _page_url_to IS NULL)
+        WHERE (target.page_id >= _page_url_from OR _page_url_from IS NULL)
+          AND (target.page_id <= _page_url_to OR _page_url_to IS NULL)
           AND NOT EXISTS(
             SELECT 1
             FROM public.get_tree_cache c
             WHERE c.id = target.id
               AND c.result_on_languages ? _language_key
           )
-        ORDER BY target.page_url
+        ORDER BY target.page_id
     LOOP
 
-      RAISE NOTICE 'build_get_tree_cache(): processing % of %, id = %, page_url = %', _counter, _total, _row.id, _row.page_url;
+      RAISE NOTICE 'build_get_tree_cache(): processing % of %, id = %, page_id = %', _counter, _total, _row.id, _row.page_id;
 
       PERFORM dblink_exec(
         'loopback',

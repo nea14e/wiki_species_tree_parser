@@ -11,7 +11,7 @@ $$
       list.id AS species_id,
       list.image_url
     FROM public.tips_of_the_day t
-      LEFT JOIN public.list list ON t.page_url = list.page_url
+      LEFT JOIN public.list list ON t.page_id = list.page_id
     WHERE t.tip_on_languages ? _language_key  -- get translated tips if exists
     ORDER BY random()
     LIMIT 1
@@ -23,7 +23,7 @@ $$
       list.id AS species_id,
       list.image_url
     FROM public.tips_of_the_day t
-      LEFT JOIN public.list list ON t.page_url = list.page_url
+      LEFT JOIN public.list list ON t.page_id = list.page_id
       LEFT JOIN translated_cte ON TRUE
     WHERE t.tip_on_languages ? 'en'
       AND translated_cte.id IS NULL  -- else get any tips on English
