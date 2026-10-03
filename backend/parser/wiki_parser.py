@@ -4,9 +4,7 @@ import re
 import sys
 import traceback
 
-# import requests
 from multiprocessing.queues import Queue
-from urllib import parse
 
 from requests import Session
 from requests.utils import requote_uri
@@ -51,13 +49,13 @@ def main():
         print_usage()
         return
 
-    is_test = sys.argv[1] == "test"
+    # is_test = sys.argv[1] == "test"
 
     stage_number = str(sys.argv[2])
 
     # Выберите нужное и подставьте сюда перед запуском
     if stage_number == '0':
-        DbFunctions.init_db(is_test)
+        DbFunctions.init_db()
         return
     elif stage_number == 'test_task':  # Task to test tasks progress engine
         if len(sys.argv) >= 4:
@@ -70,8 +68,6 @@ def main():
             timeout = 30.0
         test_task(timeout, will_success)
         return
-
-    DbFunctions.prepare_to_work(is_test=is_test)
 
     def apply_proxy(proxy_string: str):
         MyRequests.get_session().proxies = {"http": proxy_string, "https": proxy_string}

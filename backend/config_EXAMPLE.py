@@ -13,7 +13,9 @@ class Config:
 
     # ============== Для бэкенда: =======================
 
-    BACKEND_IS_USE_TEST_DB = True  # Использует ли бэкенд тестовую базу данных 'lifetree_test' или основную `lifetree`
+    BACKEND_IS_USE_TEST_DB = True  # Использует ли бэкенд тестовую базу данных или основную
+    TEST_DB_NAME = str("lifetree_test")
+    PROD_DB_NAME = str("lifetree")
 
     # Придумайте его сами и ДЕРЖИТЕ В СЕКРЕТЕ:
     BACKEND_SECRET_KEY = "3ie74_tbjloei6icg2+_a@g3nd9w+kruw@6turwe34AS9IVGFDOP0324"  # Просто некий ключ для работы бэкенда Django.
