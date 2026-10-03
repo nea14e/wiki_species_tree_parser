@@ -284,7 +284,7 @@ def parse_details(skip_parsed_interval, where=""):
       """
     if skip_parsed_interval:
         query += """
-            AND page_id > (SELECT COALESCE(MAX(page_id), '')
+            AND title > (SELECT COALESCE(MAX(title), '')
                       FROM public.list
                       WHERE type IS NOT NULL
             """
@@ -298,7 +298,7 @@ def parse_details(skip_parsed_interval, where=""):
         AND {}
         """.format(where)
     query += """
-      ORDER BY page_id;
+      ORDER BY title;
     """
     Logger.print("Список для парсинга:\n" + query)
     list_iterator = DbListItemsIterator("parse_details:list_to_parse", query)
@@ -313,11 +313,34 @@ def parse_details(skip_parsed_interval, where=""):
             break
         try:
             details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2])
-            url = Config.URL_START + details.page_id
             Logger.print('===========================================')
-            Logger.print('ПОЛУЧАЕМ ДЕТАЛИ О: ' + details.page_id + " название: " + details.title + " ссылка: " + url)
-            html = MyRequests.get_session().get(url).content
-            wiki_html = BeautifulSoup(html, "html.parser")
+            Logger.print(f"ПОЛУЧАЕМ ДЕТАЛИ О: id: {details.id} title: {details.title} page_id: {details.page_id}")
+
+            url = "https://ru.wikipedia.org/w/api.php"
+            query_params = {
+                "action": "query",
+                "format": "json",
+                "prop": "info|revisions",
+                "inprop": "title",  # TODO оптимизировать запрос
+                "rvprop": "content",
+                "pageids": details.page_id,
+                "rvslots": "main"
+            }
+            http_headers = {
+                "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
+            }
+
+            response = MyRequests.get_session().get(url, params=query_params, headers=http_headers)
+            response.raise_for_status()
+            data = response.json()
+            if "error" in data:
+                raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
+            pages = data.get("query", {}).get("pages", {})
+            # В ответе ключ — это page_id (или -1, если не найдено)
+            page_data = next(iter(pages.values()), None)
+
+            # TODO
+            wiki_html = BeautifulSoup('TODO', "html.parser")
 
             # Парсинг информации
             all_content = wiki_html.select_one("div.mw-parser-output")
