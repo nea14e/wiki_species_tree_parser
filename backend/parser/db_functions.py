@@ -68,6 +68,7 @@ class DbFunctions:
         run_script("tables", "list_MIGRATE")
         run_script("tables", "list_MIGRATE_is_deleted")
         run_script("tables", "list_MIGRATE_synonyms")
+        run_script("tables", "list_MIGRATE_parent_type")
 
         # Таблица с рангами
         create_table("ranks", "Таблица с рангами")
@@ -80,6 +81,10 @@ class DbFunctions:
         # Таблица с советами дня
         create_table("tips_of_the_day", "Таблица с советами дня")
         run_script("tables", "tips_of_the_day_ADD_page_url")
+
+        # Таблица с названиями на разных языках
+        # Один и тот же вид может иметь несколько названий на одном языке
+        create_table("synonyms", "Таблица с названиями на разных языках")
 
         # Таблица с запущенными задачами
         create_table("tasks", "Таблица с запущенными задачами")
@@ -136,19 +141,6 @@ class DbFunctions:
         Logger.print("\n\n===================================================")
         Logger.print("\n\n")
 
-    @staticmethod
-    def add_list_item(title: str, page_id: str):
-        # Добавляем новый элемент в список или обновляем уже существующий
-        sql = """
-                INSERT INTO public.list (title, page_id)
-                  VALUES ({}, {})
-                ON CONFLICT ON CONSTRAINT uq_list_page_id 
-                  DO UPDATE 
-                  SET synonyms = CASE WHEN list.synonyms IS NULL THEN ARRAY [list.title, EXCLUDED.title]
-                                    ELSE array_append(list.synonyms, EXCLUDED.title)
-                                 END;
-            """.format(quote_string(title), quote_string(page_id))
-        DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
 
     @staticmethod
     def add_details_to_item(title, page_id, _type, image_url, wikipedias_by_languages, titles_by_languages, parent_title):

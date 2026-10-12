@@ -32,14 +32,13 @@ class Config:
     TOO_MANY_REQUESTS_ADDITIONAL_DELAY = 10.0  # Дополнительное ожидание, когда запросы шлём слишком часто
 
     # URL-адреса и маски для них. Иногда надо их править.
-    URL_DOMAIN = "https://ru.ruwiki.ru/"
-    URL_API = "https://ru.ruwiki.ru/w/api.php?"
-    URL_START = "https://ru.ruwiki.ru/wiki/"
-    URL_START_RELATIVE = "/wiki/"
+    API_URL = "https://ru.wikipedia.org/w/api.php"  # "https://ru.ruwiki.ru/w/api.php"
     WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"  # TODO ruwiki
     WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"  # TODO ruwiki
+    # Создать бота и его пароль можно здесь: https://ru.ruwiki.ru/wiki/Служебная:BotPasswords
     WIKI_USER_NAME = "SpeciesTreeParser@SpeciesTreeParser"
     WIKI_USER_PASSWORD = ""
+    WIKI_USER_AGENT = "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
 
     PROC_STATE_UPDATE_TIMER = 3.0
     LOGS_UPDATE_TIMER = 3.0

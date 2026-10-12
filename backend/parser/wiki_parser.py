@@ -6,6 +6,7 @@ import traceback
 
 from multiprocessing.queues import Queue
 
+from django.db import ProgrammingError
 from requests import Session
 from requests.utils import requote_uri
 from bs4 import BeautifulSoup
@@ -24,9 +25,9 @@ class MyRequests:
     def get_session(cls):
         if cls.session is None:
             cls.session = Session()
-            # cls.session.headers.update({
-            #     "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-            # })
+            cls.session.headers.update({
+                "User-Agent": Config.WIKI_USER_AGENT
+            })
         return cls.session
 
 
@@ -72,7 +73,7 @@ def main():
     def apply_proxy(proxy_string: str):
         MyRequests.get_session().proxies = {"http": proxy_string, "https": proxy_string}
 
-    init_session()
+    # init_session()  # нужно только для РуВики. С Википедии можно скачивать данные без логина
 
     if stage_number == '1':
         if len(sys.argv) >= 4:
@@ -150,22 +151,16 @@ def print_usage():
 def init_session():
     Logger.print("ИНИЦИАЛИЗАЦИЯ СЕССИИ...")
 
-    url = "https://ru.ruwiki.ru/w/api.php"
-    http_headers = {
-        "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-    }
-
     # 1. Получаем логин-токен
     # 403 - Forbidden
     # response = MyRequests.get_session().get(
-    #     url,
+    #     Config.API_URL,
     #     params={
     #         "action": "query",
     #         "meta": "tokens",
     #         "type": "login",
     #         "format": "json"
-    #     },
-    #     headers=http_headers
+    #     }
     # )
     # response.raise_for_status()
     # data = response.json()
@@ -176,7 +171,7 @@ def init_session():
 
     # 2. Логинимся (используя логин и пароль от аккаунта бота)
     response = MyRequests.get_session().post(
-        url,
+        Config.API_URL,
         data={
             "action": "query",
             "meta": "tokens",
@@ -185,8 +180,7 @@ def init_session():
             "lgpassword": Config.WIKI_USER_PASSWORD,
             # "lgtoken": login_token,
             "format": "json"
-        },
-        headers=http_headers
+        }
     )
     response.raise_for_status()
     data = response.json()
@@ -195,14 +189,13 @@ def init_session():
 
     # 3. Узнаём текущие лимиты запросов API
     response = MyRequests.get_session().post(
-        url,
+        Config.API_URL,
         data={
             "action": "query",
             "meta": "userinfo",
             "uiprop": "ratelimits",
             "format": "json",
-        },
-        headers=http_headers
+        }
     )
     response.raise_for_status()
     data = response.json()
@@ -218,7 +211,6 @@ def populate_list(list_page_title: str):
     Logger.print("ЗАПУЩЕН 1 ЭТАП - СОСТАВЛЕНИЕ СПИСКА. Название списка: '{}'."
                  .format(list_page_title))
 
-    url = "https://ru.ruwiki.ru/w/api.php"
     query_params = {
         "action": "query",
         "list": "categorymembers",
@@ -228,9 +220,6 @@ def populate_list(list_page_title: str):
         "cmtype": "page",  # только статьи (не подкатегории и не файлы)
         "continue": ""  # обязательно для постраничной выдачи
     }
-    http_headers = {
-        "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-    }
 
     succeeds = 0
     skipped = 0
@@ -239,7 +228,7 @@ def populate_list(list_page_title: str):
     while True:  # Цикл перехода на след. страницу
         if cmcontinue is not None:
             query_params["cmcontinue"] = cmcontinue
-        response = MyRequests.get_session().post(url, data=query_params, headers=http_headers)
+        response = MyRequests.get_session().post(Config.API_URL, data=query_params)
         if response.status_code == 429:
             print("Лимит запросов превышен!")
             retry_after = int(response.headers.get("Retry-After"))
@@ -247,7 +236,7 @@ def populate_list(list_page_title: str):
             time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
         data = response.json()
         if "error" in data:
-            raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
+            raise RuntimeError("Ошибка на этапе 1:\n", json.dumps(data['error']))
         response.raise_for_status()
         cmcontinue = data["continue"]["cmcontinue"] if "continue" in data and "cmcontinue" in data["continue"] else None
         list_data = data["query"]["categorymembers"]
@@ -257,7 +246,18 @@ def populate_list(list_page_title: str):
             try:
                 item_page_id = str(item["pageid"])
                 item_title = item["title"]
-                DbFunctions.add_list_item(item_title, item_page_id)
+
+                query = """
+                    INSERT INTO public.list (title, page_id)
+                      VALUES ({}, {})
+                    ON CONFLICT ON CONSTRAINT uq_list_page_id 
+                      DO NOTHING;
+                """.format(
+                    quote_string(item_title),
+                    quote_string(item_page_id)
+                )
+                DbExecuteNonQuery.execute('populate_list', query)
+
                 succeeds += 1
             except BaseException:
                 errors += 1
@@ -277,11 +277,19 @@ def populate_list(list_page_title: str):
 
 
 def parse_details(skip_parsed_interval, where=""):
+    lang_key = "ru"
+
     query = """
-      SELECT id, title, page_id
-      FROM public.list
-      WHERE type IS NULL
-      """
+      SELECT l.id,
+             l.title,
+             l.page_id,
+             (SELECT array_agg(s.title)
+              FROM public.synonyms s
+              WHERE s.lang_key = {}
+                AND s.list_id = l.id) AS synonyms
+      FROM public.list l
+      WHERE l.type IS NULL
+      """.format(quote_string(lang_key))
     if skip_parsed_interval:
         query += """
             AND title > (SELECT COALESCE(MAX(title), '')
@@ -312,63 +320,80 @@ def parse_details(skip_parsed_interval, where=""):
         if not list_item:
             break
         try:
-            details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2])
+            details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2], synonyms=list_item[3])
+            if details.synonyms is None:
+                details.synonyms = []
             Logger.print('===========================================')
             Logger.print(f"ПОЛУЧАЕМ ДЕТАЛИ О: id: {details.id} title: {details.title} page_id: {details.page_id}")
 
-            url = "https://ru.wikipedia.org/w/api.php"
-            query_params = {
-                "action": "query",
-                "format": "json",
-                "prop": "info|revisions",
-                "inprop": "title",  # TODO оптимизировать запрос
-                "rvprop": "content",
-                "pageids": details.page_id,
-                "rvslots": "main"
-            }
-            http_headers = {
-                "User-Agent": "SpeciesTreeParser/0.1 (https://gitverse.ru/nea14e/wiki_species_tree_parser; enozdrev@yandex.ru)"
-            }
+            # Получение wikitext по page_id:
+            # query_params = {
+            #     "action": "query",
+            #     "format": "json",
+            #     "prop": "info|revisions",
+            #     "inprop": "title",  # TODO оптимизировать запрос
+            #     "rvprop": "content",
+            #     "pageids": details.page_id,
+            #     "rvslots": "main"
+            # }
+            # Получение wikitext по title
+            # query_params = {
+            #     "action": "query",
+            #     "format": "json",
+            #     "prop": "revisions",
+            #     "rvprop": "content",
+            #     "titles": "Панда",
+            #     "redirects": 1,
+            #     "rvslots": "main"
+            # }
+            # response = MyRequests.get_session().get(Config.API_URL, params=query_params)
+            # response.raise_for_status()
+            # data = response.json()
+            # if "error" in data:
+            #     raise RuntimeError("Ошибка на стадии 2 РуВики:\n", json.dumps(data['error']))
+            # pages = data.get("query", {}).get("pages", {})
+            # # В ответе ключ — это page_id (или -1, если не найдено)
+            # page_info = next(iter(pages.values()), None)
+            # page_wikitext = page_info["revisions"][0]["slots"]["main"]["*"]
 
-            response = MyRequests.get_session().get(url, params=query_params, headers=http_headers)
+
+            # Получение html по title
+            query_params = {
+                "action": "parse",
+                "format": "json",
+                "prop": "text",
+                "page": details.title,
+                "redirects": 1
+            }
+            response = MyRequests.get_session().get(Config.API_URL, params=query_params)
+            if response.status_code == 429:
+                print("Лимит запросов превышен!")
+                retry_after = int(response.headers.get("Retry-After"))
+                print(f"Ждать: {retry_after} сек")
+                time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
             response.raise_for_status()
             data = response.json()
             if "error" in data:
-                raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
-            pages = data.get("query", {}).get("pages", {})
-            # В ответе ключ — это page_id (или -1, если не найдено)
-            page_data = next(iter(pages.values()), None)
+                raise RuntimeError("Ошибка на стадии 2 Википедия:\n", json.dumps(data['error']))
+            parse = data["parse"]
+            if details.title not in details.synonyms:
+                details.synonyms.append(details.title)
+            if parse["title"] not in details.synonyms:
+                details.synonyms.append(parse["title"])
+            html = parse["text"]["*"]
+            soup = BeautifulSoup(html, "html.parser")
 
-            # TODO
-            wiki_html = BeautifulSoup('TODO', "html.parser")
+            details = parse_levels(soup, details)
+            details = parse_image(soup, details)
+            details = parse_wikipedias_hrefs(soup, details)
 
-            # Парсинг информации
-            all_content = wiki_html.select_one("div.mw-parser-output")
-            details, err_message = parse_levels(all_content, details)
-            if err_message:
-                without_parents += 1
-                DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
-                query = """
-                  UPDATE public.list
-                  SET last_error_message = {}
-                  WHERE id = {};
-                """.format(
-                    quote_string(err_message)
-                    , quote_string(str(list_item[0]))
-                )
-                DbExecuteNonQuery.execute('parse_details:update_details', query)
-                continue
-            details = parse_image_wikispecies(all_content, details)
-            details = parse_wikipedias_hrefs(wiki_html, details)
-
-            # Запись всех подробностей в базу
-            # (только если нашли родителя - без родителей в дереве элементы не нужны)
             query = """
               UPDATE public.list
               SET title = {}
                 , type = {}
                 , image_url = {}
                 , parent_title = {}
+                , parent_type = {}
                 , wikipedias_by_languages = {}
                 , titles_by_languages = {}
                 , last_error_message = NULL
@@ -378,14 +403,30 @@ def parse_details(skip_parsed_interval, where=""):
                 , quote_string(details.type)
                 , quote_nullable(details.image_url)
                 , quote_nullable(details.parent_title)
+                , quote_nullable(details.parent_type)
                 , quote_string(json.dumps(details.wikipedias_by_languages))
                 , quote_string(json.dumps(details.titles_by_languages))
                 , quote_string(details.id)
             )
             DbExecuteNonQuery.execute('parse_details:update_details', query)
+
+            for synonym in details.synonyms:
+                query = """
+                    INSERT INTO public.synonyms(lang_key, list_id, title)
+                    VALUES ({}, {}, {})
+                    ON CONFLICT
+                        ON CONSTRAINT pk_synonyms
+                            DO NOTHING;
+                """.format(
+                    quote_string(lang_key),
+                    int(details.id),
+                    quote_string(synonym)
+                )
+                DbExecuteNonQuery.execute('parse_details:update_details', query)
+
             item_counter += 1
 
-        except:  # Ошибки базы могут разных видов. Ловим вообще все
+        except:
             err_message = "Stage 2 error:\n" + traceback.format_exc()
             Logger.print('Ошибка:\n', err_message)
             DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
@@ -409,17 +450,17 @@ def parse_details(skip_parsed_interval, where=""):
 
 
 class ListItemDetails:
-    def __init__(self, id, title, page_id):
+    def __init__(self, id, title, page_id, synonyms):
         self.id = id
         self.title = title
         self.page_id = page_id
         self.type = None
         self.image_url = None
         self.parent_title = None
-        self.parent_title = None
         self.parent_type = None
         self.wikipedias_by_languages = {}
         self.titles_by_languages = {}
+        self.synonyms = synonyms
 
 
 class MyException(BaseException):
@@ -427,173 +468,82 @@ class MyException(BaseException):
         self.message = message
 
 
-def parse_image_wikispecies(main_content, details: ListItemDetails):
-    images = main_content.select("figure img.mw-file-element")  # Перебираем все картинки справа в основном содержимом
-    for img in images:
-        if img is not None:
-            if img.get("alt", None) != "edit":  # не картинка карандаша
-                src = img['src']
-                Logger.print("Картинка в Викивидах: " + str(src))
-                details.image_url = src
-                return details
-    # Картинки может не быть - всё равно обрабатывать эту страницу дальше
-    Logger.print("Картинка в Викивидах НЕ НАЙДЕНА")
-    details.image_url = None
+def parse_levels(soup, details: ListItemDetails):
+    # Side panel
+    infobox = soup.select_one(".infobox")
+
+    # Hierarchy levels (for example, Genus: †Avaceratops, Species: †A. lammersi)
+    levels = list(infobox.select(".ts-Taxonomy-rang-row"))
+    if not levels:
+        levels_table = infobox.select_one("tbody > tr:nth-of-type(4) > td > table")
+        if levels_table:
+            levels = list(levels_table.select("tr"))
+        else:
+            raise ProgrammingError("Не удалось найти таблицу с иерархией.")
+    levels = list(reversed(levels))
+
+    if not levels:
+        raise ProgrammingError("Найденная таблица с иерархией пуста.")
+
+    # Parse one level:
+    def get_level_info(level):
+        # Searching for elements:
+        if level.name == "div":
+            level_type_el = level.select_one(".ts-Taxonomy-rang-label")
+            level_title_el = level.select_one(".ts-Taxonomy-rang-name")
+        elif level.name == "tr":
+            level_type_el = level.select_one("th")
+            level_title_el = level.select_one("td")
+        else:
+            raise ProgrammingError(f"Неизвестный тип уровня иерархии: level.name = '{level.name}'")
+
+        b_el = level_title_el.select_one("b")
+        a_href_el = level_title_el.select_one("a")
+
+        # Extracting data from elements:
+        level_type = (level_type_el
+                      .text
+                      .rstrip(":"))
+        level_title = ((b_el if b_el else a_href_el if a_href_el else level_title_el)
+                       .text
+                       .lstrip("†")
+                       .replace("\u00A0", ""))
+        can_be_current_level = bool(b_el is not None and a_href_el is None)
+        return level_type, level_title, can_be_current_level
+
+    current_level = levels[0]
+    level_0_type, level_0_title, can_be_current_level = get_level_info(current_level)
+    if can_be_current_level:
+        details.type = level_0_type
+        if level_0_title not in details.synonyms:
+            details.synonyms.append(level_0_title)
+        if len(levels) > 1:
+            parent_level = levels[1]
+            details.parent_type, details.parent_title, _ = get_level_info(parent_level)
+    else:
+        details.parent_type = level_0_type
+        details.parent_title = level_0_title
+
     return details
 
 
-def parse_levels(tree_box, details: ListItemDetails):
-    """
-            Парсим таблицу элементов-родителей, в которые вложен данный элемент
-            (для черепах это будет что-то вроде
-              Царство: Животные, Тип: Хордовые, Подтип: Позвоночные, Класс: Пресмыкающиеся, Отряд: Черепахи)
-            Вытаскивает: тип текущего элемента (Отряд),
-              название и тип ближайшего имеющегося в базе родителя (Класс: Пресмыкающиеся)
-
-    Например, для https://species.wikimedia.org/wiki/Aaptos
-    в раскрывающейся таблице
-    [
-        'Superregnum: <a href="/wiki/Eukaryota" title="Eukaryota">Eukaryota</a>',
-        ...
-        'Ordo: <a href="/wiki/Suberitida" title="Suberitida">Suberitida</a> ',
-        ''
-    ]
-    а вне таблицы содержатся
-    [
-        'Familia: <a href="/wiki/Suberitidae" title="Suberitidae">Suberitidae</a>',
-        'Genus: <i><a href="/wiki/Aaptos" title="Aaptos">Aaptos</a></i>',     <--- предыдущий перед mw-selflink - родитель. Он может быть внутри таблицы.
-        'Species: <i><a class="mw-selflink selflink">Aaptos rosacea</a></i>'  <--- mw-selflink указывает, что это текущий элемент, которому посвящена страница
-
-    ]
-    """
-
-
-    levels_p = tree_box.find("p", recursive=False)
-    levels = str(levels_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
-    levels = [level.replace('<i>', '').replace('</i>', '') for level in levels]
-
-    # Если это страница-выбор для названия, имеющего несколько значений
-    if len(levels) == 1:
-        only_level = levels[0]
-        if only_level[:len('The taxon name <b>')] == 'The taxon name <b>' \
-                and only_level[-len('</b> may refer to:'):] == '</b> may refer to:':
-            return details, "Page-chooser for multiple pages with the same title."
-
-    # Текущий уровень
-
-    is_current_found = False
-    current_level_ind = None
-    for ind, level in enumerate(levels):
-        matches_a_selflink = re.match(r"(.+?):.+?<a.+?mw-selflink.+?>(.+?)</a>.*", level, re.DOTALL)
-        if matches_a_selflink is not None:
-            # Случай: ссылка с mw-selflink
-            is_current_found = True
-            current_level_ind = ind
-            details.type = matches_a_selflink.group(1)  # текст до двоеточия
-            details.title = matches_a_selflink.group(2)  # текст внутри <a>...</a>
-            Logger.print("Текущий уровень (a_selflink): тип: {} название: {}".format(details.type, details.title))
-            break
-        matches_non_a = re.match(r"(.+?): +(.+)", level, re.DOTALL)
-        if matches_non_a and  \
-                '<a' not in level and '</a>' not in level:
-            # Случай: без ссылки вообще
-            is_current_found = True
-            current_level_ind = ind
-            details.type = matches_non_a.group(1)  # текст до двоеточия
-            details.title = matches_non_a.group(2)  # текст после двоеточия
-            Logger.print("Текущий уровень (non-a): тип: {} название: {}".format(details.type, details.title))
-            break
-
-    # Если текущий уровень почему-то не найден
-    if not is_current_found:
-        Logger.print("Ошибка: текущий уровень не найден!")
-        return details, "Stage 2 error: current level not found on this page."
-
-    if details.title is not None and len(details.title) > len("<b>") and details.title[:len("<b>")] == "<b>":
-        details.title = details.title[len("<b>"):]
-    if details.title is not None and len(details.title) > len("</b>") and details.title[-len("</b>"):] == "</b>":
-        details.title = details.title[:-len("</b>")]
-
-    # Предыдущий уровень
-
-    ind = current_level_ind - 1
-    while ind >= 0 and not levels[ind]:  # Пропускаем уровни-пустые строки (почему-то такие бывают, они видны и в браузере)
-        ind = ind - 1
-
-    def handle_parent_level(algorithm_type: str, parent_level: str):
-        matches = re.match(r"""(.+?):.+?<a.+?href="(.+?)".*?>(.+?)</a>.*""", parent_level, re.DOTALL)
-        if matches is not None:
-            details.parent_type = matches.group(1)
-            details.parent_title = matches.group(3)
-            href = matches.group(2)
-            if href[:len("/wiki/")] == "/wiki/":
-                details.parent_title = href[len("/wiki/"):]
-                Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type,
-                                                                                     details.parent_type,
-                                                                                     details.parent_title,
-                                                                                     details.parent_title))
-                return details, None  # Успех
-            elif href[:len("/w/index.php?title=")] == "/w/index.php?title=":
-                details.parent_title = href[len("/w/index.php?title="):].split("&amp;")[0]
-                Logger.print("Предыдущий уровень ({}): '{}': '{}', href='{}'".format(algorithm_type,
-                                                                                     details.parent_type,
-                                                                                     details.parent_title,
-                                                                                     details.parent_title))
-                return details, None  # Успех
-            else:
-                raise RuntimeError("Stage 2 error ({}): <a href> starts with unknown prefix instead of '/wiki/' or '/w/': href='{}'!" \
-                    .format(algorithm_type, href))
-        else:
-            Logger.print("Предыдущий уровень ({}): не найден!".format(algorithm_type))
-            return details, "Stage 2 error ({}): previous level not found on this page. parent_level='{}'"  \
-                .format(algorithm_type, parent_level)
-
-    if ind >= 0:
-        # Предыдущий уровень в основной части:
-        parent_level = levels[ind]
-        details, error = handle_parent_level("general", parent_level)
-        return details, error
-    else:
-        # Предыдущий уровень запрятан в таблицу:
-        tables = tree_box.select("table.wikitable.mw-collapsible")
-        for table in tables:
-            th = table.select_one("tbody > tr:nth-child(1) > th")
-            if th is None or 'Taxonavigation:' not in str(th):
-                continue  # это не та таблица, ищем другую
-
-            table_levels_p = table.select_one("tbody > tr:nth-child(2) > td > p")
-            if table_levels_p is None:
-                raise RuntimeError("Алгоритм для доставания родителя из таблицы требует обновления "
-                                   "(вероятно, на сайте изменилась разметка).")
-            table_levels = str(table_levels_p)[len("<p>"):-len("</p>")].replace("\n", "").split("<br/>")
-            table_levels = [level.replace('<i>', '').replace('</i>', '') for level in table_levels]
-            if len(table_levels) == 0:
-                raise RuntimeError("Алгоритм для доставания родителя из таблицы требует обновления "
-                                   "(вероятно, на сайте изменилась разметка).")
-
-            ind = len(table_levels) - 1
-            while ind >= 0 and not table_levels[ind]:  # Пропускаем уровни-пустые строки (почему-то такие бывают, они видны и в браузере)
-                ind = ind - 1
-
-            parent_level = table_levels[ind]
-            details, error = handle_parent_level("in table", parent_level)
-            return details, error
-        Logger.print("Предыдущий уровень (in table): подходящей таблицы не найдено!")
-        return details, "Stage 2 error (in table): table for previous level not found."
+def parse_image(soup, details: ListItemDetails):
+    images = soup.select(".infobox .infobox-image img")
+    for img in images:
+        if img is not None:
+            if img.get("alt", None) != "edit":  # не картинка карандаша
+                src = img.get('src', None)
+                if src is not None:
+                    Logger.print("Картинка: " + str(src))
+                    details.image_url = src
+                    return details
+    # Картинки может не быть - всё равно обрабатывать эту страницу дальше
+    Logger.print("Картинка НЕ НАЙДЕНА")
+    return details
 
 
 def parse_wikipedias_hrefs(wiki_html, details: ListItemDetails):
-    # Ссылки на Википедии разных языков
-    a_s = wiki_html.select("#p-lang > div > ul > li > a")
-    for a in a_s:
-        if a.text != "":
-            match = re.search(Config.WIKIPEDIAS_URL_MASK, a["href"])
-            hreflang = match[1]
-            href = match[2]
-            details.wikipedias_by_languages[hreflang] = href
-            if Config.IS_DEBUG:
-                wikipedia_page_url = Config.WIKIPEDIA_URL_CONSTRUCTOR.format(hreflang, href)
-                Logger.print("Найдена ссылка на Википедию: язык: {} ссылка: {}".format(hreflang, wikipedia_page_url))
+    # TODO Ссылки на Википедии разных языков
     return details
 
 
