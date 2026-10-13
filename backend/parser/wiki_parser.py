@@ -12,6 +12,7 @@ from requests.utils import requote_uri
 from bs4 import BeautifulSoup
 import time
 
+from parser.exceptions.must_be_skipped_exception import MustBeSkippedException
 from .db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
 from config import Config
@@ -289,6 +290,7 @@ def parse_details(skip_parsed_interval, where=""):
                 AND s.list_id = l.id) AS synonyms
       FROM public.list l
       WHERE l.type IS NULL
+            AND is_deleted = false
       """.format(quote_string(lang_key))
     if skip_parsed_interval:
         query += """
@@ -313,6 +315,7 @@ def parse_details(skip_parsed_interval, where=""):
 
     # Цикл по элементам из списка, подготовленного с помощью populate_list()
     item_counter = 0
+    skipped_counter = 0
     without_parents = 0
     errors = 0
     while True:
@@ -426,10 +429,23 @@ def parse_details(skip_parsed_interval, where=""):
 
             item_counter += 1
 
-        except:
+        except MustBeSkippedException as e:
+            Logger.print(e.message)
+            skipped_counter += 1
+            query = """
+                          UPDATE public.list
+                          SET last_error_message = {},
+                              is_deleted = true
+                          WHERE id = {};
+                        """.format(
+                quote_string(e.message)
+                , quote_string(str(list_item[0]))
+            )
+            DbExecuteNonQuery.execute('parse_details:update_details', query)
+
+        except BaseException as e:
             err_message = "Stage 2 error:\n" + traceback.format_exc()
             Logger.print('Ошибка:\n', err_message)
-            DbExecuteNonQuery.execute('parse_details:update_details', "ROLLBACK;")
             query = """
               UPDATE public.list
               SET last_error_message = {}
@@ -444,9 +460,10 @@ def parse_details(skip_parsed_interval, where=""):
         time.sleep(Config.NEXT_DETAILS_PAGE_DELAY)
     Logger.print("\n")
     Logger.print("ПАРСИНГ ДЕТАЛЕЙ ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
-    Logger.print("Добавлены детали о " + str(item_counter) + " элементов.")
-    Logger.print("Не найдены родители для " + str(without_parents) + " элементов.")
-    Logger.print("Ошибки для " + str(errors) + " элементов.")
+    Logger.print(f"Добавлены детали о {item_counter} элементов.")
+    Logger.print(f"Пропущено {skipped_counter} ненужных элементов.")
+    Logger.print(f"Не найдены родители для {without_parents} элементов.")
+    Logger.print(f"Ошибки для {errors} элементов.")
 
 
 class ListItemDetails:
@@ -463,14 +480,12 @@ class ListItemDetails:
         self.synonyms = synonyms
 
 
-class MyException(BaseException):
-    def __init__(self, message):
-        self.message = message
-
-
 def parse_levels(soup, details: ListItemDetails):
     # Side panel
     infobox = soup.select_one(".infobox")
+
+    if "Устаревшее таксономическое" in infobox.text:
+        raise MustBeSkippedException("Таксон устарел и должен быть пропущен")
 
     # Hierarchy levels (for example, Genus: †Avaceratops, Species: †A. lammersi)
     levels = list(infobox.select(".ts-Taxonomy-rang-row"))
