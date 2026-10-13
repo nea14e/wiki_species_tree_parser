@@ -557,8 +557,18 @@ def parse_image(soup, details: ListItemDetails):
     return details
 
 
-def parse_wikipedias_hrefs(wiki_html, details: ListItemDetails):
-    # TODO Ссылки на Википедии разных языков
+def parse_wikipedias_hrefs(soup, details: ListItemDetails):
+    ul = soup.find(attrs={"id": "v-0-listbox-all"})
+    if not ul:
+        raise CodeMustBeFixedException("Языки не найдены")
+    li_s = ul.select("li")
+    a_href_s = map(lambda li: li.select_one("a"), li_s)
+    regexp_items = map(lambda a_href: re.search(Config.WIKIPEDIAS_URL_REGEXP, a_href["href"]), a_href_s)
+
+    details.titles_by_languages = {item.group(1): item.group(2) for item in regexp_items}
+    details.wikipedias_by_languages = {item.group(1): item.group(0) for item in regexp_items}
+
+    Logger.print(f"Найдено {len(details.titles_by_languages)} языков")
     return details
 
 

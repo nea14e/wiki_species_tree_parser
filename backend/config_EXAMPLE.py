@@ -1,3 +1,6 @@
+import re
+
+
 class Config:
 
     # ============== Общее для парсера и бэкенда: =======================
@@ -33,8 +36,7 @@ class Config:
 
     # URL-адреса и маски для них. Иногда надо их править.
     API_URL = "https://ru.wikipedia.org/w/api.php"  # "https://ru.ruwiki.ru/w/api.php"
-    WIKIPEDIAS_URL_MASK = r"https:\/\/(.+)\.wikipedia\.org\/wiki\/(.+)"  # TODO ruwiki
-    WIKIPEDIA_URL_CONSTRUCTOR = "https://{}.wikipedia.org/wiki/{}"  # TODO ruwiki
+    WIKIPEDIAS_URL_REGEXP = re.compile(r"https://(.+?)\.wikipedia\.org/wiki/(.+)")
     # Создать бота и его пароль можно здесь: https://ru.ruwiki.ru/wiki/Служебная:BotPasswords
     WIKI_USER_NAME = "SpeciesTreeParser@SpeciesTreeParser"
     WIKI_USER_PASSWORD = ""
