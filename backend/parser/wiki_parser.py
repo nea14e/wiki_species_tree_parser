@@ -494,7 +494,11 @@ def parse_levels(soup, details: ListItemDetails):
         if levels_table:
             levels = list(levels_table.select("tr"))
         else:
-            raise CodeMustBeFixedException("Не удалось найти таблицу с иерархией.")
+            levels_table = infobox.select_one("tbody > tr:nth-of-type(3) > td > table")
+            if levels_table:
+                levels = list(levels_table.select("tr"))
+            else:
+                raise CodeMustBeFixedException("Не удалось найти таблицу с иерархией.")
     levels = list(reversed(levels))
 
     if not levels:
