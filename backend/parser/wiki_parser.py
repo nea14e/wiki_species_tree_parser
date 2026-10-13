@@ -546,6 +546,7 @@ def parse_levels(soup, details: ListItemDetails):
         details.parent_type = level_0_type
         details.parent_title = level_0_title
 
+    Logger.print(f"Детали: {details.type} {details.title}, родитель: {details.parent_type} {details.parent_title}")
     return details
 
 
