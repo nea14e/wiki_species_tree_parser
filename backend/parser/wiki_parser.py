@@ -6,12 +6,12 @@ import traceback
 
 from multiprocessing.queues import Queue
 
-from django.db import ProgrammingError
 from requests import Session
 from requests.utils import requote_uri
 from bs4 import BeautifulSoup
 import time
 
+from parser.exceptions.code_must_be_fixed_exception import CodeMustBeFixedException
 from parser.exceptions.must_be_skipped_exception import MustBeSkippedException
 from .db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
@@ -494,11 +494,11 @@ def parse_levels(soup, details: ListItemDetails):
         if levels_table:
             levels = list(levels_table.select("tr"))
         else:
-            raise ProgrammingError("Не удалось найти таблицу с иерархией.")
+            raise CodeMustBeFixedException("Не удалось найти таблицу с иерархией.")
     levels = list(reversed(levels))
 
     if not levels:
-        raise ProgrammingError("Найденная таблица с иерархией пуста.")
+        raise CodeMustBeFixedException("Найденная таблица с иерархией пуста.")
 
     # Parse one level:
     def get_level_info(level):
@@ -510,7 +510,7 @@ def parse_levels(soup, details: ListItemDetails):
             level_type_el = level.select_one("th")
             level_title_el = level.select_one("td")
         else:
-            raise ProgrammingError(f"Неизвестный тип уровня иерархии: level.name = '{level.name}'")
+            raise CodeMustBeFixedException(f"Неизвестный тип уровня иерархии: level.name = '{level.name}'")
 
         b_el = level_title_el.select_one("b")
         a_href_el = level_title_el.select_one("a")
