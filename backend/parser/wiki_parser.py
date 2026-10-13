@@ -558,17 +558,35 @@ def parse_image(soup, details: ListItemDetails):
 
 
 def parse_wikipedias_hrefs(soup, details: ListItemDetails):
-    ul = soup.find(attrs={"id": "v-0-listbox-all"})
-    if not ul:
-        raise CodeMustBeFixedException("Языки не найдены")
-    li_s = ul.select("li")
-    a_href_s = map(lambda li: li.select_one("a"), li_s)
-    regexp_items = map(lambda a_href: re.search(Config.WIKIPEDIAS_URL_REGEXP, a_href["href"]), a_href_s)
+    params = {
+        "action": "query",
+        "format": "json",
+        "titles": details.title,
+        "prop": "langlinks",
+        "lllimit": "500"  # максимум ссылок в одном ответе
+    }
+    response = MyRequests.get_session().get(Config.API_URL, params=params)
+    if response.status_code == 429:
+        print("Лимит запросов превышен!")
+        retry_after = int(response.headers.get("Retry-After"))
+        print(f"Ждать: {retry_after} сек")
+        time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
+    response.raise_for_status()
+    data = response.json()
+    if "error" in data:
+        raise RuntimeError("Ошибка на стадии 2 Википедия Языки:\n", json.dumps(data['error']))
 
-    details.titles_by_languages = {item.group(1): item.group(2) for item in regexp_items}
-    details.wikipedias_by_languages = {item.group(1): item.group(0) for item in regexp_items}
+    pages = data["query"]["pages"]
+    # В pages один ключ — id страницы; если страница не найдена, там будет ключ "-1"
+    page_id = next(iter(pages))
+    if page_id == "-1":
+        return {}  # страница не существует
 
-    Logger.print(f"Найдено {len(details.titles_by_languages)} языков")
+    lang_links = pages[page_id].get("langlinks", [])
+    details.titles_by_languages = {ll["lang"]: ll["*"] for ll in lang_links}
+    details.wikipedias_by_languages = {ll["lang"]: Config.WIKIPEDIAS_URL_MASK.format(ll["lang"], ll["*"])
+                                       for ll in lang_links}
+    Logger.print(f"Найдено {len(lang_links)} языков")
     return details
 
 
