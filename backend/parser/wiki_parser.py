@@ -522,10 +522,13 @@ def parse_levels(soup, details: ListItemDetails):
         # Extracting data from elements:
         level_type = (level_type_el
                       .text
-                      .rstrip(":"))
+                      .replace(" ", "")
+                      .replace("\n", "")
+                      .replace("\u00A0", "")
+                      .replace(":", ""))
         level_title = ((b_el if b_el else a_href_el if a_href_el else level_title_el)
                        .text
-                       .lstrip("†")
+                       .replace("†", "")
                        .replace("\u00A0", ""))
         can_be_current_level = bool(b_el is not None and a_href_el is None)
         return level_type, level_title, can_be_current_level
