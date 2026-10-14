@@ -89,11 +89,16 @@ export class TreeComponent implements OnInit {
   }
 
   canReadWiki(item: Item): boolean {
-    return !!item.wiki_url_for_language;
+    const langKey = this.tree()?._language_key;
+    return !!langKey && langKey in item.titles_by_languages;
   }
 
   onReadWikiClick(item: Item): void {
-    const url = 'https://' + this.tree()?._language_key + '.ruwiki.ru/wiki/' + item.wiki_url_for_language;
+    const langKey = this.tree()?._language_key;
+    if (!langKey || !(langKey in item.titles_by_languages)) {
+      return;
+    }
+    const url = 'https://' + langKey + '.ruwiki.ru/wiki/' + item.titles_by_languages[langKey];  // TODO ruwiki
     window.open(url, '_blank');
   }
 
