@@ -71,8 +71,7 @@ BEGIN
                         COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,    -- Latin name if not present
                         page_id,
                         image_url,
-                        COALESCE(wikipedias_by_languages ->> _language_key,
-                                 wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wiki if not present
+                        titles_by_languages,
                         parent_id,
                         leaves_count,
                         COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,
@@ -146,8 +145,7 @@ BEGIN
                       COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,    -- Latin name if not present
                       page_id,
                       image_url,
-                      COALESCE(wikipedias_by_languages ->> _language_key,
-                               wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wiki if not present
+                      titles_by_languages,
                       parent_id,
                       leaves_count,
                       COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,

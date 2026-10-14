@@ -17,7 +17,6 @@ FROM (
               li.image_url,
               li.title                                           AS title_by_latin,
               li.titles_by_languages,
-              li.wikipedias_by_languages,
               li.titles_by_languages ->> admin_lang_cte.lang_key AS title_by_admin,
               li.titles_by_languages ->> _language_key           AS title_by_language,
               r.titles_by_languages ->> admin_lang_cte.lang_key  AS rank_by_admin,

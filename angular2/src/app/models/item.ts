@@ -8,5 +8,5 @@ export interface Item {
   leaves_count: number;
   title_latin: string;
   title_for_language: string;
-  wiki_url_for_language: string;
+  titles_by_languages: Map<string, string>;
 }

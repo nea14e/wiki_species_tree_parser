@@ -46,8 +46,7 @@ BEGIN
                     COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,    -- Latin name if not present
                     page_id,
                     image_url,
-                    COALESCE(wikipedias_by_languages ->> _language_key,
-                             wikipedias_by_languages ->> 'en')             AS wiki_url_for_language, -- English wiki if not present
+                    titles_by_languages,
                     _id   AS parent_id,
                     leaves_count,
                     FALSE AS is_expanded,  -- childes of current selected element does not expanded when them just loaded

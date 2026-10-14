@@ -378,7 +378,6 @@ def parse_details(skip_parsed_interval, where=""):
                 , image_url = {}
                 , parent_title = {}
                 , parent_type = {}
-                , wikipedias_by_languages = {}
                 , titles_by_languages = {}
                 , last_error_message = NULL
               WHERE id = {};
@@ -388,7 +387,6 @@ def parse_details(skip_parsed_interval, where=""):
                 , quote_nullable(details.image_url)
                 , quote_nullable(details.parent_title)
                 , quote_nullable(details.parent_type)
-                , quote_string(json.dumps(details.wikipedias_by_languages))
                 , quote_string(json.dumps(details.titles_by_languages))
                 , quote_string(details.id)
             )
@@ -456,7 +454,6 @@ class ListItemDetails:
         self.image_url = None
         self.parent_title = None
         self.parent_type = None
-        self.wikipedias_by_languages = {}
         self.titles_by_languages = {}
         self.synonyms = synonyms
 
@@ -575,8 +572,6 @@ def parse_wikipedias_hrefs(soup, details: ListItemDetails):
 
     lang_links = pages[page_id].get("langlinks", [])
     details.titles_by_languages = {ll["lang"]: ll["*"] for ll in lang_links}
-    details.wikipedias_by_languages = {ll["lang"]: Config.WIKIPEDIAS_URL_MASK.format(ll["lang"], ll["*"])
-                                       for ll in lang_links}
     Logger.print(f"Найдено {len(lang_links)} языков")
     return details
 
