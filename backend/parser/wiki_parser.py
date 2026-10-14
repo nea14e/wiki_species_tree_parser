@@ -531,6 +531,8 @@ def parse_levels(soup, details: ListItemDetails):
                        .text
                        .replace("†", "")
                        .replace("\u00A0", ""))
+        if "," in level_title:
+            level_title = level_title.split(",")[0]
         can_be_current_level = bool(b_el is not None and a_href_el is None)
         return level_type, level_title, can_be_current_level
 
