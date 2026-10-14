@@ -13,6 +13,7 @@ import time
 
 from parser.exceptions.code_must_be_fixed_exception import CodeMustBeFixedException
 from parser.exceptions.must_be_skipped_exception import MustBeSkippedException
+from parser.exceptions.wiki_api_exception import WikiApiException
 from .db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
 from config import Config
@@ -166,7 +167,7 @@ def init_session():
     # response.raise_for_status()
     # data = response.json()
     # if "error" in data:
-    #     raise RuntimeError(f"Ошибка при получении токена:\n{data['error']}")
+    #     raise WikiApiException("Ошибка API при получении токена", data['error'])
     # login_token = data["query"]["tokens"]["logintoken"]
     # print("Логин-токен получен:", login_token)
 
@@ -186,7 +187,7 @@ def init_session():
     response.raise_for_status()
     data = response.json()
     if "error" in data:
-        raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
+        raise WikiApiException("Ошибка API при залогинивании", data['error'])
 
     # 3. Узнаём текущие лимиты запросов API
     response = MyRequests.get_session().post(
@@ -201,7 +202,7 @@ def init_session():
     response.raise_for_status()
     data = response.json()
     if "error" in data:
-        raise RuntimeError("Ошибка при залогинивании:\n", json.dumps(data['error']))
+        raise WikiApiException("Ошибка API при залогинивании", data['error'])
     user_info = json.dumps(data["query"]["userinfo"])
     Logger.print("Действующие лимиты API:\n", user_info)
 
@@ -237,7 +238,7 @@ def populate_list(list_page_title: str):
             time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
         data = response.json()
         if "error" in data:
-            raise RuntimeError("Ошибка на этапе 1:\n", json.dumps(data['error']))
+            raise WikiApiException("Ошибка API на этапе 1:\n" + json.dumps(data['error']))
         response.raise_for_status()
         cmcontinue = data["continue"]["cmcontinue"] if "continue" in data and "cmcontinue" in data["continue"] else None
         list_data = data["query"]["categorymembers"]
@@ -353,7 +354,7 @@ def parse_details(skip_parsed_interval, where=""):
             # response.raise_for_status()
             # data = response.json()
             # if "error" in data:
-            #     raise RuntimeError("Ошибка на стадии 2 РуВики:\n", json.dumps(data['error']))
+            #     raise WikiApiException("Ошибка API на стадии 2", data['error'])
             # pages = data.get("query", {}).get("pages", {})
             # # В ответе ключ — это page_id (или -1, если не найдено)
             # page_info = next(iter(pages.values()), None)
@@ -377,7 +378,7 @@ def parse_details(skip_parsed_interval, where=""):
             response.raise_for_status()
             data = response.json()
             if "error" in data:
-                raise RuntimeError("Ошибка на стадии 2 Википедия:\n", json.dumps(data['error']))
+                raise WikiApiException("Ошибка API на стадии 2", data['error'])
             parse = data["parse"]
             if details.title not in details.synonyms:
                 details.synonyms.append(details.title)
@@ -582,7 +583,7 @@ def parse_wikipedias_hrefs(soup, details: ListItemDetails):
     response.raise_for_status()
     data = response.json()
     if "error" in data:
-        raise RuntimeError("Ошибка на стадии 2 Википедия Языки:\n", json.dumps(data['error']))
+        raise WikiApiException("Ошибка API на стадии 2 Языки:\n", data['error'])
 
     pages = data["query"]["pages"]
     # В pages один ключ — id страницы; если страница не найдена, там будет ключ "-1"
