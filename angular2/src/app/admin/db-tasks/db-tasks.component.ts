@@ -138,7 +138,7 @@ export class DbTasksComponent implements OnInit {
   }
 
   isTaskResumeEnabled(task: DbTask): boolean {
-    return task.stage === '2' || task.stage === 'parse_language';
+    return task.stage === '2';
   }
 
   onDeleteClick(task: DbTask): void {

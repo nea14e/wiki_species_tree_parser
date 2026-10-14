@@ -110,24 +110,6 @@ def main():
         correct_parents(where)  # 3 этап
     elif stage_number == '4':
         DbFunctions.update_leaves_count()
-    elif stage_number == 'parse_language':
-        lang_key = str(sys.argv[3])
-        if len(sys.argv) >= 5:
-            if sys.argv[4] == "True":
-                skip_parsed_interval = True
-            elif sys.argv[4] == "False":
-                skip_parsed_interval = False
-            else:
-                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[3]))
-        else:
-            skip_parsed_interval = True
-        if len(sys.argv) >= 6:
-            where = sys.argv[5]
-        else:
-            where = ""
-        if len(sys.argv) >= 7:
-            apply_proxy(str(sys.argv[6]))
-        parse_language(lang_key, skip_parsed_interval, where)  # Добавление языка
     else:
         print_usage()
 
@@ -144,8 +126,6 @@ def print_usage():
     Logger.print("python3.6 wiki_parser.py 3 [where_фильтр_на_список_как_в_SQL]")
     Logger.print("Для 4 этапа - подсчёта количества видов в каждом узле дерева:")
     Logger.print("python3.6 wiki_parser.py 4")
-    Logger.print("Отдельно - для получения перевода на язык по списку:")
-    Logger.print("python3.6 wiki_parser.py parse_language <lang_key> [\"True\" - начать от последнего распарсенного (по умолчанию) / \"False\"] [where_фильтр_на_список_как_в_SQL] [proxy_string]")
     Logger.print()
     Logger.print("Где proxy_string = \"протокол://адрес:порт@логин:пароль\" или \"протокол://адрес:порт\"")
 
@@ -599,112 +579,6 @@ def parse_wikipedias_hrefs(soup, details: ListItemDetails):
                                        for ll in lang_links}
     Logger.print(f"Найдено {len(lang_links)} языков")
     return details
-
-
-def parse_language(lang_key: str, skip_parsed_interval: bool, where: str = ""):
-    Logger.print("Парсим язык: {}, skip_parsed_interval = {}, where = \"{}\"".format(lang_key, skip_parsed_interval, where))
-    query = """
-      SELECT id, title, image_url, wikipedias_by_languages, titles_by_languages
-      FROM public.list
-      WHERE (wikipedias_by_languages ? {}) AND NOT(titles_by_languages ? {})
-      """.format(quote_string(lang_key), quote_string(lang_key))
-    if skip_parsed_interval:
-        query += """
-            AND page_id > (SELECT COALESCE(MAX(page_id), '')
-                      FROM public.list
-                      WHERE (titles_by_languages ? {})
-            """.format(quote_string(lang_key), quote_string(lang_key))
-        if where is not None and where != "":
-            query += """
-                        AND {}
-            """.format(where)
-        query += ")"
-    if where is not None and where != "":
-        query += """
-        AND {}
-        """.format(where)
-    query += """
-      ORDER BY page_id;
-    """
-    Logger.print("Список для парсинга:\n" + query)
-    list_iterator = DbListItemsIterator("parse_language:list_to_parse", query)
-
-    # Цикл по элементам из списка, подготовленного с помощью populate_list()
-    item_counter = 0
-    added_images = 0
-    errors = 0
-    while True:
-        list_item = list_iterator.fetchone()
-        if not list_item:
-            break
-        try:
-            cur_id = list_item[0]
-            cur_title = list_item[1]
-            cur_image_url = list_item[2]
-            cur_wikipedias_by_languages = list_item[3]
-            cur_titles_by_languages = list_item[4]
-
-            # Заходим на саму страницу Википедии нужного языка,
-            # т.к. переведённое название вида не содержится на Викивидах и поэтому надо заходить на Википедию
-            wikipedia_page_url = Config.WIKIPEDIA_URL_CONSTRUCTOR.format(lang_key, cur_wikipedias_by_languages[lang_key])
-            Logger.print("Парсим Википедию: язык: {}, название: {}, ссылка: {}".format(lang_key, cur_title, wikipedia_page_url))
-            html = MyRequests.get_session().get(wikipedia_page_url).content
-            wiki_html = BeautifulSoup(html, "html.parser")
-
-            # Парсим перевод названия вида
-            title_on_lang = wiki_html.select_one("#content > h1#firstHeading").text
-            if Config.IS_DEBUG:
-                Logger.print("...переведённое название: {}".format(title_on_lang))
-            cur_titles_by_languages[lang_key] = title_on_lang
-
-            # Парсим картинку, если её ещё не нашли ранее для текущего вида
-            if cur_image_url is None:
-                image = wiki_html.select_one(  # Картинка в карточке вида (при этом не карта распространения)
-                    "#mw-content-text > div > table.infobox > tbody > tr:nth-child(2) img"
-                )
-                if image is not None:
-                    if image.get("alt", None) != "edit" and image.get("alt", None) != "e":  # картинка карандаша
-                        cur_image_url = str(image['src'])
-                        Logger.print("...добавили картинку: {}".format(cur_image_url))
-                        added_images += 1
-
-            # Запись всех подробностей в базу
-            # (только если нашли родителя - без родителей в дереве элементы не нужны)
-            query = """
-              UPDATE public.list
-              SET image_url = {}
-                , titles_by_languages = {}
-                , last_error_message = NULL
-              WHERE id = {};
-            """.format(
-                quote_nullable(cur_image_url)
-                , quote_string(json.dumps(cur_titles_by_languages))
-                , quote_string(cur_id)
-            )
-            DbExecuteNonQuery.execute('parse_language:update_details', query)
-            item_counter += 1
-
-        except:  # Ошибки базы могут разных видов. Ловим вообще все
-            err_message = "Stage parse_language error:\n" + traceback.format_exc()
-            Logger.print('Ошибка:\n', err_message)
-            DbExecuteNonQuery.execute('parse_language:update_details', "ROLLBACK;")
-            query = """
-              UPDATE public.list
-              SET last_error_message = {}
-              WHERE id = {};
-            """.format(
-                quote_string(err_message)
-                , quote_string(str(list_item[0]))
-            )
-            DbExecuteNonQuery.execute('parse_language:update_details', query)
-            errors += 1
-
-        time.sleep(Config.NEXT_DETAILS_PAGE_DELAY)
-    Logger.print("\n")
-    Logger.print("ПАРСИНГ ЯЗЫКА ЗАДАННЫХ ВИДОВ ОКОНЧЕН!")
-    Logger.print("Добавлены переводы для " + str(item_counter) + " элементов.")
-    Logger.print("Добавлены картинки для " + str(added_images) + " элементов.")
-    Logger.print("Ошибки для " + str(errors) + " элементов.")
 
 
 def correct_parents(where: str = None):

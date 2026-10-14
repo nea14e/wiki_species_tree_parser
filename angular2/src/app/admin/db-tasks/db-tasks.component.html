@@ -57,9 +57,6 @@
               @case ('4') {
                 <span>4 - update leaves count</span>
               }
-              @case ('parse_language') {
-                <span>parse_language</span>
-              }
               @case ('test_task') {
                 <span>test_task</span>
               }
@@ -81,9 +78,6 @@
               }
               @case ('4') {
                 <span>-</span>
-              }
-              @case ('parse_language') {
-                <span>"{{ task.args.lang_key }}", {{ task.args.skip_parsed_interval }}, "{{ task.args.where }}"</span>
               }
               @case ('test_task') {
                 <span>will_success: {{ task.args.will_success }} in {{ task.args.timeout }} sec</span>
@@ -195,9 +189,6 @@
             <option value="3" [selected]="editingTask()!.stage==='3'">3 - correct parents (items from stage 2)</option>
             <option value="4" [selected]="editingTask()!.stage==='4'">4 - update leaves count (items from stage 3)
             </option>
-            <option value="parse_language" [selected]="editingTask()!.stage==='parse_language'">parse_language - parse
-              translations (items from stage 2)
-            </option>
             <option value="test_task" [selected]="editingTask()!.stage==='test_task'">test_task - to simply test tasks
               engine
               (no DB)
@@ -213,24 +204,6 @@
           </div>
           <div class="col-9">
             <input type="text" [(ngModel)]="editingTask()!.python_exe" style="width: 100%;">
-          </div>
-        </div>
-      }
-
-      @if (editingTask()!.stage === 'parse_language') {
-        <div class="row mt-4">
-          <div class="col-3">
-            lang_key<span class="text-danger">*</span>:
-          </div>
-          <div class="col-9">
-            <select [(ngModel)]="editingTask()!.args.lang_key">
-              @for (lang of knownLanguagesAll(); track lang.lang_key) {
-                <option [value]="lang.lang_key"
-                        [selected]="editingTask()!.args.lang_key === lang.lang_key">
-                  {{ lang.lang_key }} - {{ lang.comment }}
-                </option>
-              }
-            </select>
           </div>
         </div>
       }
@@ -253,7 +226,7 @@
         </div>
       }
 
-      @if (editingTask()!.stage === '2' || editingTask()!.stage === 'parse_language') {
+      @if (editingTask()!.stage === '2') {
         <div class="row mt-4">
           <div class="col-3">
             skip_parsed_interval<span class="text-danger">*</span>:
@@ -271,7 +244,7 @@
         </div>
       }
 
-      @if (editingTask()!.stage === '2' || editingTask()!.stage === '3' || editingTask()!.stage === 'parse_language') {
+      @if (editingTask()!.stage === '2' || editingTask()!.stage === '3') {
         <div class="row mt-4">
           <div class="col-3">
             where<span class="text-danger">*</span>:
@@ -287,7 +260,7 @@
         </div>
       }
 
-      @if (editingTask()!.stage === '1' || editingTask()!.stage === '2' || editingTask()!.stage === 'parse_language') {
+      @if (editingTask()!.stage === '1' || editingTask()!.stage === '2') {
         <div class="row mt-4">
           <div class="col-3">
             proxy:
