@@ -1,0 +1,5 @@
+docker exec wiki-species-tree pg_dumpall -U postgres > wiki-species-tree-animals-stage1.sql
+
+docker run --hostname=3bc145b648a1 --env=POSTGRES_PASSWORD=12345 --env=POSTGRES_USER=postgres --env=POSTGRES_DB=lifetree_test --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/18/bin --env=GOSU_VERSION=1.19 --env=LANG=en_US.utf8 --env=PG_MAJOR=18 --env=PG_VERSION=18.4-1.pgdg13+1 --env=PGDATA=/var/lib/postgresql/18/docker --volume=/var/lib/postgresql --network=bridge -p 5432:5432 --restart=no --runtime=runc --name=wiki-species-tree-animals-stage1 -d postgres:latest
+
+docker exec -i wiki-species-tree-animals-stage1 psql -U postgres < wiki-species-tree-animals-stage1.sql
