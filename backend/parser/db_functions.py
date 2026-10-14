@@ -143,30 +143,6 @@ class DbFunctions:
 
 
     @staticmethod
-    def add_details_to_item(title, page_id, _type, image_url, wikipedias_by_languages, titles_by_languages, parent_title):
-        # Добавляем новый элемент в список или обновляем уже существующий
-        sql = """
-                UPDATE public.list
-                SET
-                  title = '{}'
-                  , type = '{}'
-                  , image_url = '{}'
-                  , wikipedias_by_languages = '{}'
-                  , titles_by_languages = '{}'
-                  , parent_title = '{}'
-                WHERE page_id = '{}';
-            """.format(
-                str(title)
-                , str(_type)
-                , str(image_url)
-                , json.dumps(wikipedias_by_languages)
-                , json.dumps(titles_by_languages)
-                , str(parent_title)
-                , str(page_id)
-            )
-        DbExecuteNonQuery.execute(DbFunctions.default_conn_tag, sql)
-
-    @staticmethod
     def update_leaves_count():
         # Обновление количества видов в каждом узле дерева
         sql = """
