@@ -70,6 +70,7 @@ class DbFunctions:
         run_script("tables", "list_MIGRATE_synonyms")
         run_script("tables", "list_MIGRATE_parent_type")
         run_script("tables", "list_MIGRATE_drop_wikipedias_by_languages")
+        run_script("tables", "list_MIGRATE_latin")
 
         # Таблица с рангами
         create_table("ranks", "Таблица с рангами")

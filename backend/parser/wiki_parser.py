@@ -14,6 +14,7 @@ import time
 from parser.exceptions.code_must_be_fixed_exception import CodeMustBeFixedException
 from parser.exceptions.must_be_skipped_exception import MustBeSkippedException
 from parser.exceptions.wiki_api_exception import WikiApiException
+from parser.list_helper import find_index_by_condition
 from .db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
 
 from config import Config
@@ -304,7 +305,8 @@ def parse_details(skip_parsed_interval, where=""):
         if not list_item:
             break
         try:
-            details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2], synonyms=list_item[3])
+            details = ListItemDetails(id=48563, title="Аардоникс", page_id='2361954', synonyms=None)  # TODO for debug
+            # details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2], synonyms=list_item[3])
             if details.synonyms is None:
                 details.synonyms = []
             Logger.print('===========================================')
@@ -367,9 +369,13 @@ def parse_details(skip_parsed_interval, where=""):
             html = parse["text"]["*"]
             soup = BeautifulSoup(html, "html.parser")
 
-            details = parse_levels(soup, details)
-            details = parse_image(soup, details)
-            details = parse_wikipedias_hrefs(soup, details)
+            infobox = soup.select_one(".infobox")
+
+            details = parse_levels(infobox, details)
+            details = parse_latin(infobox, details)
+            details = parse_synonyms_from_infobox(infobox, details)
+            details = parse_image(infobox, details)
+            details = parse_wikipedias_hrefs(details)
 
             query = """
               UPDATE public.list
@@ -378,6 +384,7 @@ def parse_details(skip_parsed_interval, where=""):
                 , image_url = {}
                 , parent_title = {}
                 , parent_type = {}
+                , latin = {}
                 , titles_by_languages = {}
                 , last_error_message = NULL
               WHERE id = {};
@@ -387,6 +394,7 @@ def parse_details(skip_parsed_interval, where=""):
                 , quote_nullable(details.image_url)
                 , quote_nullable(details.parent_title)
                 , quote_nullable(details.parent_type)
+                , quote_nullable(details.latin)
                 , quote_string(json.dumps(details.titles_by_languages))
                 , quote_string(details.id)
             )
@@ -454,14 +462,12 @@ class ListItemDetails:
         self.image_url = None
         self.parent_title = None
         self.parent_type = None
+        self.latin = None
         self.titles_by_languages = {}
         self.synonyms = synonyms
 
 
-def parse_levels(soup, details: ListItemDetails):
-    # Side panel
-    infobox = soup.select_one(".infobox")
-
+def parse_levels(infobox, details: ListItemDetails):
     if "Устаревшее таксономическое" in infobox.text:
         raise MustBeSkippedException("Таксон устарел и должен быть пропущен")
 
@@ -530,8 +536,82 @@ def parse_levels(soup, details: ListItemDetails):
     return details
 
 
-def parse_image(soup, details: ListItemDetails):
-    images = soup.select(".infobox .infobox-image img")
+def parse_latin(infobox, details: ListItemDetails):
+    infobox_rows = list(infobox.select("tbody > tr"))
+    latin_header_index = find_index_by_condition(lambda row: row.text is not None
+                                                    and ("МЕЖДУНАРОДНОЕ НАУЧНОЕ НАЗВАНИЕ" in row.text.upper()
+                                                             or "ЛАТИНСКОЕ НАЗВАНИЕ" in row.text.upper()),
+                                                 infobox_rows)
+    if latin_header_index == -1:
+        Logger.print("Латинское название НЕ НАЙДЕНО")
+        return details
+
+    latin_content_index = latin_header_index + 1
+    if latin_content_index >= len(infobox_rows):
+        raise CodeMustBeFixedException("Заголовок латинского названия найден, а само название - нет.")
+
+    latin_content_tr = infobox_rows[latin_content_index]
+    latin_content_td = latin_content_tr.select_one("td")
+
+    was_found = False
+    other_spans_text = ""
+    for child in latin_content_td.children:
+        if (child.name is None or child.name == "i" or child.name == "b" or child.get("lang", None) == "la") \
+                and child.text is not None:
+            stripped_text = child.text \
+                .replace("\n", "") \
+                .strip()
+            if stripped_text:
+                details.latin = stripped_text
+                was_found = True
+                break
+        else:
+            other_spans_text += child.text
+    if not was_found:
+        details.latin = str(latin_content_td.text)[:-len(other_spans_text)] \
+            .replace("\n", "") \
+            .strip()
+
+    Logger.print(f"Латинское название: {details.latin if details.latin else "НЕ НАЙДЕНО"}")
+    return details
+
+
+def parse_synonyms_from_infobox(infobox, details: ListItemDetails):
+    infobox_rows = list(infobox.select("tbody > tr"))
+    synonyms_header_index = find_index_by_condition(lambda row: row.text is not None
+                                                                and ("СИНОНИМ" in row.text.upper()
+                                                                     or "СИНОНИМЫ" in row.text.upper()),
+                                                    infobox_rows)
+    if synonyms_header_index == -1:
+        Logger.print("Синонимы из infobox не найдены")
+        return details
+
+    synonyms_content_index = synonyms_header_index + 1
+    if synonyms_content_index >= len(infobox_rows):
+        raise CodeMustBeFixedException("Заголовок синонимов из infobox найден, а сами синонимы - нет.")
+
+    synonyms_content_tr = infobox_rows[synonyms_content_index]
+    synonyms_content_td = synonyms_content_tr.select_one("td")
+    synonyms_li_s = list(synonyms_content_td.select("li"))
+    for li in synonyms_li_s:
+        for child in li.children:
+            if child.text is not None and "," not in child.text and ((child.name is None and "::" not in child.text)
+                                                                     or child.name is not None):
+                stripped_text = str(child.text) \
+                    .replace("::marker", "") \
+                    .replace("\n", "") \
+                    .strip()
+                if len(stripped_text) > 0 and stripped_text not in details.synonyms:
+                    details.synonyms.append(stripped_text)
+                break
+
+    Logger.print(f"Синонимы ({len(details.synonyms)} штук): {", ".join(details.synonyms)}")
+    return details
+
+
+
+def parse_image(infobox, details: ListItemDetails):
+    images = infobox.select(".infobox-image img")
     for img in images:
         if img is not None:
             if img.get("alt", None) != "edit":  # не картинка карандаша
@@ -545,7 +625,7 @@ def parse_image(soup, details: ListItemDetails):
     return details
 
 
-def parse_wikipedias_hrefs(soup, details: ListItemDetails):
+def parse_wikipedias_hrefs(details: ListItemDetails):
     params = {
         "action": "query",
         "format": "json",
