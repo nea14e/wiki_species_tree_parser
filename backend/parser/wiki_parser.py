@@ -5,6 +5,7 @@ import sys
 import traceback
 
 from multiprocessing.queues import Queue
+from typing import Any
 
 from requests import Session
 from requests.utils import requote_uri
@@ -131,31 +132,41 @@ def print_usage():
     Logger.print("Где proxy_string = \"протокол://адрес:порт@логин:пароль\" или \"протокол://адрес:порт\"")
 
 
+def _request_api(query_params: dict[str, str], description: str) -> Any:
+    response = MyRequests.get_session().post(Config.API_URL, data=query_params)
+    while response.status_code == 429:
+        Logger.print("Лимит запросов превышен!")
+        retry_after = int(response.headers.get("Retry-After"))
+        Logger.print(f"Ждать: {retry_after} сек")
+        time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
+        response = MyRequests.get_session().post(Config.API_URL, data=query_params)
+    response.raise_for_status()
+    data = response.json()
+    if "error" in data:
+        raise WikiApiException("Ошибка API: " + description, data['error'])
+    return data
+
+
 def init_session():
     Logger.print("ИНИЦИАЛИЗАЦИЯ СЕССИИ...")
 
     # 1. Получаем логин-токен
     # 403 - Forbidden
-    # response = MyRequests.get_session().get(
-    #     Config.API_URL,
-    #     params={
+    # data = _request_api(
+    #     {
     #         "action": "query",
     #         "meta": "tokens",
     #         "type": "login",
     #         "format": "json"
-    #     }
+    #     },
+    #     "Получаем логин-токен"
     # )
-    # response.raise_for_status()
-    # data = response.json()
-    # if "error" in data:
-    #     raise WikiApiException("Ошибка API при получении токена", data['error'])
     # login_token = data["query"]["tokens"]["logintoken"]
     # print("Логин-токен получен:", login_token)
 
     # 2. Логинимся (используя логин и пароль от аккаунта бота)
-    response = MyRequests.get_session().post(
-        Config.API_URL,
-        data={
+    _ = _request_api(
+        {
             "action": "query",
             "meta": "tokens",
             "type": "login",
@@ -163,27 +174,20 @@ def init_session():
             "lgpassword": Config.WIKI_USER_PASSWORD,
             # "lgtoken": login_token,
             "format": "json"
-        }
+        },
+        "Залогинивание"
     )
-    response.raise_for_status()
-    data = response.json()
-    if "error" in data:
-        raise WikiApiException("Ошибка API при залогинивании", data['error'])
 
     # 3. Узнаём текущие лимиты запросов API
-    response = MyRequests.get_session().post(
-        Config.API_URL,
-        data={
+    data = _request_api(
+        {
             "action": "query",
             "meta": "userinfo",
             "uiprop": "ratelimits",
             "format": "json",
-        }
+        },
+        "Узнаём текущие лимиты запросов API"
     )
-    response.raise_for_status()
-    data = response.json()
-    if "error" in data:
-        raise WikiApiException("Ошибка API при залогинивании", data['error'])
     user_info = json.dumps(data["query"]["userinfo"])
     Logger.print("Действующие лимиты API:\n", user_info)
 
@@ -211,16 +215,7 @@ def populate_list(list_page_title: str):
     while True:  # Цикл перехода на след. страницу
         if cmcontinue is not None:
             query_params["cmcontinue"] = cmcontinue
-        response = MyRequests.get_session().post(Config.API_URL, data=query_params)
-        if response.status_code == 429:
-            print("Лимит запросов превышен!")
-            retry_after = int(response.headers.get("Retry-After"))
-            print(f"Ждать: {retry_after} сек")
-            time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
-        data = response.json()
-        if "error" in data:
-            raise WikiApiException("Ошибка API на этапе 1:\n" + json.dumps(data['error']))
-        response.raise_for_status()
+        data = _request_api(query_params, "Загрузка списка на этапе 1")
         cmcontinue = data["continue"]["cmcontinue"] if "continue" in data and "cmcontinue" in data["continue"] else None
         list_data = data["query"]["categorymembers"]
 
@@ -305,8 +300,10 @@ def parse_details(skip_parsed_interval, where=""):
         if not list_item:
             break
         try:
-            details = ListItemDetails(id=48563, title="Аардоникс", page_id='2361954', synonyms=None)  # TODO for debug
-            # details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2], synonyms=list_item[3])
+            # details = ListItemDetails(id=70522, title="Aaaaba", page_id='2584924', synonyms=None)  # for debug
+            # details = ListItemDetails(id=70539, title="Abbemyia", page_id='4693839', synonyms=None)  # for debug
+            # details = ListItemDetails(id=48563, title="Аардоникс", page_id='2361954', synonyms=None)  # for debug
+            details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2], synonyms=list_item[3])
             if details.synonyms is None:
                 details.synonyms = []
             Logger.print('===========================================')
@@ -344,23 +341,16 @@ def parse_details(skip_parsed_interval, where=""):
 
 
             # Получение html по title
-            query_params = {
-                "action": "parse",
-                "format": "json",
-                "prop": "text",
-                "page": details.title,
-                "redirects": 1
-            }
-            response = MyRequests.get_session().get(Config.API_URL, params=query_params)
-            if response.status_code == 429:
-                print("Лимит запросов превышен!")
-                retry_after = int(response.headers.get("Retry-After"))
-                print(f"Ждать: {retry_after} сек")
-                time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
-            response.raise_for_status()
-            data = response.json()
-            if "error" in data:
-                raise WikiApiException("Ошибка API на стадии 2", data['error'])
+            data = _request_api(
+                {
+                    "action": "parse",
+                    "format": "json",
+                    "prop": "text",
+                    "page": details.title,
+                    "redirects": 1
+                },
+                "Получение html по title на этапе 2"
+            )
             parse = data["parse"]
             if details.title not in details.synonyms:
                 details.synonyms.append(details.title)
@@ -626,24 +616,16 @@ def parse_image(infobox, details: ListItemDetails):
 
 
 def parse_wikipedias_hrefs(details: ListItemDetails):
-    params = {
-        "action": "query",
-        "format": "json",
-        "titles": details.title,
-        "prop": "langlinks",
-        "lllimit": "500"  # максимум ссылок в одном ответе
-    }
-    response = MyRequests.get_session().get(Config.API_URL, params=params)
-    if response.status_code == 429:
-        print("Лимит запросов превышен!")
-        retry_after = int(response.headers.get("Retry-After"))
-        print(f"Ждать: {retry_after} сек")
-        time.sleep(retry_after + Config.TOO_MANY_REQUESTS_ADDITIONAL_DELAY)
-    response.raise_for_status()
-    data = response.json()
-    if "error" in data:
-        raise WikiApiException("Ошибка API на стадии 2 Языки:\n", data['error'])
-
+    data = _request_api(
+        {
+            "action": "query",
+            "format": "json",
+            "titles": details.title,
+            "prop": "langlinks",
+            "lllimit": "500"  # максимум ссылок в одном ответе
+        },
+        "Стадия 2 получение переводов"
+    )
     pages = data["query"]["pages"]
     # В pages один ключ — id страницы; если страница не найдена, там будет ключ "-1"
     page_id = next(iter(pages))
