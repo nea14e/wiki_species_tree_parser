@@ -21,34 +21,27 @@ export class TipOfTheDayComponent implements OnInit {
 
   ngOnInit(): void {
     this._activatedRoute.queryParams.subscribe(params => {
-      this.rootData.lastTipParams = params;
-      const id: number | null = +params['id'] || null;
-      this.loadTip(id);
+      const tipId: number | null = +params['tipId'] || null;
+      if (!!tipId) {
+        this.rootData.lastTipId = tipId;
+        this.loadTip(tipId);
+      }
     });
   }
 
-  loadTip(id: number | null): void {
-    if (!!id) {
-      this._networkService.getTipOfTheDayById(id).subscribe({
+  loadTip(id: number): void {
+    let observable = id >= 0
+      ? this._networkService.getTipOfTheDayById(id)
+      : this._networkService.getTipOfTheDay();
+    observable.subscribe({
         next: data => {
           const isFirstTip = (!this.tip());
           this.tip.set(data);
-          this._router.navigate(['tip'], {queryParams: {id: data.id}, replaceUrl: isFirstTip});
+          this._router.navigate(['tree'], {queryParams: {tipId: data.id}, queryParamsHandling: "merge"});
         }, error: () => {
           alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
         }
       });
-    } else {
-      this._networkService.getTipOfTheDay().subscribe({
-        next: data => {
-          const isFirstTip = (!this.tip);
-          this.tip.set(data);
-          this._router.navigate(['tip'], {queryParams: {id: data.id}, replaceUrl: isFirstTip});
-        }, error: () => {
-          alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
-        }
-      });
-    }
   }
 
   isShowInTreeDisabled = computed(() => {
@@ -61,7 +54,7 @@ export class TipOfTheDayComponent implements OnInit {
   }
 
   onNextTipClick(): void {
-    this.loadTip(null);
+    this.loadTip(-1);
   }
 
   // noinspection JSMethodCanBeStatic

@@ -5,6 +5,5 @@ export enum PagesEnum {
   TipTranslation = '/admin/tip-translation',
   Authors = '/authors',
   Search = '/search',
-  TipOfTheDay = '/tip',
   Tree = '/tree'
 }

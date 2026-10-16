@@ -13,7 +13,7 @@ export class RootDataKeeperService {
   public translationRoot = signal<TranslationRoot | null>(null);
   public isTranslateFromYourLang = false;
   public mainAdminLanguage: AdminMainLanguage | null = null;
-  public lastTipParams: Params = {};
+  public lastTipId: number | null = null;
   public lastTreeParams: Params = {};
   public lastSearchParams: Params = {};
 

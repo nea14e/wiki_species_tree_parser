@@ -32,7 +32,7 @@ export class App implements OnInit {
   isAdminMode = signal(false);  // активируется по URL "/admin" и его продолжениям
   adminLoginResult = signal<string | null>(null);
   JSON = JSON;
-  currentPage = PagesEnum.TipOfTheDay;
+  currentPage = PagesEnum.Tree;
   PagesEnum = PagesEnum;
 
   ngOnInit(): void {
@@ -58,11 +58,13 @@ export class App implements OnInit {
   }
 
   onTipClick(): void {
-    if (!!this.rootData.lastTipParams) {
-      this.router.navigate(['tip'], {queryParams: this.rootData.lastTipParams});
-    } else {
-      this.router.navigate(['tip']);
-    }
+    this.router.navigate(
+      ['tree'],
+      {
+        queryParams: {tipId: this.rootData.lastTipId || -1},
+        queryParamsHandling: "merge"
+      }
+    );
   }
 
   onToTreeClick(): void {
@@ -112,7 +114,7 @@ export class App implements OnInit {
   adminLogout(): void {
     this.isAdminMode.set(false);
     this.rootData.adminPassword = null;
-    this.router.navigate(['tip']);
+    this.router.navigate(['tree']);
   }
 
   onAdminPasswordChange(): void {
