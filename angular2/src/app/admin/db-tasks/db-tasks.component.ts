@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {DbTask} from '../models/db-task';
 import {AdminLanguage} from '../models/admin-language';
 import {RootDataKeeperService} from '../../common/root-data-keeper.service';
@@ -15,7 +15,7 @@ import {NgClass} from '@angular/common';
   templateUrl: './db-tasks.component.html',
   styleUrl: './db-tasks.component.css',
 })
-export class DbTasksComponent implements OnInit {
+export class DbTasksComponent implements OnInit, OnDestroy {
 
   LIST_AUTORELOAD_INTERVAL = 2000;
   autoReloadTimeoutId: number | null = null;
@@ -257,5 +257,11 @@ export class DbTasksComponent implements OnInit {
 
   onLogBackClick(): void {
     this.logShowingTaskId.set(null);
+  }
+
+  ngOnDestroy(): void {
+    if (!!this.autoReloadTimeoutId) {
+      clearTimeout(this.autoReloadTimeoutId);
+    }
   }
 }
