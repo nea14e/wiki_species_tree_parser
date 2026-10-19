@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {NETWORK_ERROR_DEFAULT_MESSAGE, NetworkService} from '../network.service';
@@ -11,10 +11,7 @@ import {Router} from '@angular/router';
   templateUrl: './tip-of-the-day.component.html',
   styleUrl: './tip-of-the-day.component.css'
 })
-export class TipOfTheDayDialogComponent implements OnInit {
-  public data = input<any>(null);
-  public tipId = input<number | null>(null);
-
+export class TipOfTheDayDialogComponent {
   public rootData = inject(RootDataKeeperService);
   private _networkService = inject(NetworkService);
   private _router = inject(Router);
@@ -27,12 +24,6 @@ export class TipOfTheDayDialogComponent implements OnInit {
     const tip = this.tip();
     return !tip || !tip.species_id;
   });
-
-  ngOnInit(): void {
-    const data = this.data();
-    console.log("TipOfTheDay: ngOnInit(): data:", data);  // TODO
-    this.loadTip(data?.tipId);
-  }
 
   loadTip(tipId: number | null): void {
     let observable = tipId != null

@@ -31,7 +31,6 @@ export class TreeComponent implements OnInit, OnDestroy {
   public favoritesService = inject(FavoritesService);
   private _dialog = inject(MatDialog);
   private _queryParamMapIdSubscription: Subscription | null = null;
-  private _queryParamMapTipIdSubscription: Subscription | null = null;
 
   tree = signal<Tree | null>(null);
   latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
@@ -39,7 +38,7 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._subscribeQueryParamMapId();
-    this._subscribeQueryParamMapTipId()
+    this.openTipDialog();
   }
 
   private _subscribeQueryParamMapId() {
@@ -67,32 +66,6 @@ export class TreeComponent implements OnInit, OnDestroy {
           this.tree.set(data);
         }, error: () => {
           alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
-        }
-      });
-  }
-
-  private _subscribeQueryParamMapTipId() {
-    this._queryParamMapTipIdSubscription = this._activatedRoute.queryParamMap
-      .pipe(
-        map(
-          paramMap => paramMap.has("tipId") && paramMap.get("tipId") != null
-            ? +(paramMap.get("tipId")!)
-            : null
-        ),
-        distinctUntilChanged(),
-        tap({
-          next: tipId => {
-            this.rootData.lastTipId = tipId;
-            console.log("queryParamMap changed: tipId:", tipId);  // TODO
-          }
-        })
-      )
-      .subscribe({
-        next: tipId => {
-          this._dialog.closeAll();
-          this._dialog.open(TipOfTheDayDialogComponent, {
-            data: {tipId: tipId}
-          });
         }
       });
   }
@@ -174,17 +147,16 @@ export class TreeComponent implements OnInit, OnDestroy {
     this.favoritesService.deleteItem(item.id);
   }
 
-  onTipClick(): void {
-    const tipId = this._activatedRoute.snapshot.queryParamMap.get("tipId");
-    console.log("onTipClick(): tipId:", tipId);  // TODO
+  openTipDialog(): void {
+    const tipIdString = this._activatedRoute.snapshot.queryParamMap.get("tipId");
+    const tipId = !!tipIdString ? +tipIdString : null;
+    console.log("openTipDialog(): tipId:", tipId);  // TODO
     this._dialog.closeAll();
-    this._dialog.open(TipOfTheDayDialogComponent, {
-      data: {tipId: tipId}
-    });
+    const matDialogRef = this._dialog.open(TipOfTheDayDialogComponent);
+    matDialogRef.componentInstance.loadTip(tipId);
   }
 
   ngOnDestroy() {
     this._queryParamMapIdSubscription?.unsubscribe();
-    this._queryParamMapTipIdSubscription?.unsubscribe();
   }
 }
