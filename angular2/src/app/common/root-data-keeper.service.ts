@@ -14,7 +14,7 @@ export class RootDataKeeperService {
   public isTranslateFromYourLang = false;
   public mainAdminLanguage: AdminMainLanguage | null = null;
   public lastTipId: number | null = null;
-  public lastTreeParams: Params = {};
+  public lastTreeId: number | null = null;
   public lastSearchParams: Params = {};
 
   checkRight(r: string): boolean {

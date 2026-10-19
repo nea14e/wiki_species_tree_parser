@@ -2,6 +2,14 @@
 
 <div class="row ml-0 mb-3">
   <div class="btn col-auto mr-5"
+       (click)="onTipClick()"
+       [title]="rootData.translationRoot()?.translations?.tip_of_the_day_word"
+  >
+    <img src="/from-bootstrap/patch-question-fill.svg" alt="" class="btn-img"/>
+    {{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}
+  </div>
+
+  <div class="btn col-auto mr-5"
        (click)="onToTreeRootClick()"
        [title]="rootData.translationRoot()?.translations?.to_tree_root"
   >

@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {Tree} from '../models/tree';
 import {LatinModeEnum} from '../models/latin-mode-enum';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
@@ -9,6 +9,9 @@ import {FavoritesService} from '../common/favorites.service';
 import {Item} from '../models/item';
 import {Level} from '../models/level';
 import {FormsModule} from '@angular/forms';
+import {MatDialog} from '@angular/material/dialog';
+import {TipOfTheDayDialogComponent} from '../tip-of-the-day/tip-of-the-day.component';
+import {distinctUntilChanged, map, Subscription, switchMap, tap} from 'rxjs';
 
 @Component({
   selector: 'app-tree.component',
@@ -18,7 +21,7 @@ import {FormsModule} from '@angular/forms';
   templateUrl: './tree.component.html',
   styleUrl: './tree.component.css',
 })
-export class TreeComponent implements OnInit {
+export class TreeComponent implements OnInit, OnDestroy {
 
   public rootData = inject(RootDataKeeperService);
   private _networkService = inject(NetworkService);
@@ -26,34 +29,72 @@ export class TreeComponent implements OnInit {
   private _router = inject(Router);
   private _copyToClipboardService = inject(CopyToClipboardService);
   public favoritesService = inject(FavoritesService);
+  private _dialog = inject(MatDialog);
+  private _queryParamMapIdSubscription: Subscription | null = null;
+  private _queryParamMapTipIdSubscription: Subscription | null = null;
 
   tree = signal<Tree | null>(null);
   latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
   LATIN_MODE_ENUM = LatinModeEnum;
 
   ngOnInit(): void {
-    this._activatedRoute.queryParams.subscribe(params => {
-      console.log(params);
-      this.rootData.lastTreeParams = params;
-      const id = +params['id'] || null;
-      if (!id) {
-        this._networkService.getTreeDefault().subscribe({
-          next: (data) => {
-            this.tree.set(data);
-          }, error: () => {
-            alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
+    this._subscribeQueryParamMapId();
+    this._subscribeQueryParamMapTipId()
+  }
+
+  private _subscribeQueryParamMapId() {
+    this._queryParamMapIdSubscription = this._activatedRoute.queryParamMap
+      .pipe(
+        map(
+          paramMap => paramMap.has("id") && paramMap.get("id") != null
+            ? +(paramMap.get("id")!)
+            : null
+        ),
+        distinctUntilChanged(),
+        tap({
+          next: id => {
+            this.rootData.lastTreeId = id;
+            console.log("queryParamMap changed: id:", id);  // TODO
           }
-        });
-      } else {
-        this._networkService.getTreeById(id).subscribe({
-          next: (data) => {
-            this.tree.set(data);
-          }, error: () => {
-            alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
+        }),
+        switchMap(id => !!id
+          ? this._networkService.getTreeById(id)
+          : this._networkService.getTreeDefault()
+        )
+      )
+      .subscribe({
+        next: (data) => {
+          this.tree.set(data);
+        }, error: () => {
+          alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
+        }
+      });
+  }
+
+  private _subscribeQueryParamMapTipId() {
+    this._queryParamMapTipIdSubscription = this._activatedRoute.queryParamMap
+      .pipe(
+        map(
+          paramMap => paramMap.has("tipId") && paramMap.get("tipId") != null
+            ? +(paramMap.get("tipId")!)
+            : null
+        ),
+        distinctUntilChanged(),
+        tap({
+          next: tipId => {
+            this.rootData.lastTipId = tipId;
+            console.log("queryParamMap changed: tipId:", tipId);  // TODO
           }
-        });
-      }
-    });
+        })
+      )
+      .subscribe({
+        next: tipId => {
+          this._dialog.closeAll();
+          this._dialog.open(TipOfTheDayDialogComponent, {
+            data: {tipId: tipId}
+          });
+        }
+      });
   }
 
   // noinspection JSMethodCanBeStatic
@@ -67,16 +108,19 @@ export class TreeComponent implements OnInit {
   }
 
   onItemClick(item: Item): void {
-    let id: number | null;
-    if (item.is_selected) {
-      id = item.parent_id;
-    } else {
-      id = item.id;
-    }
+    const id = item.is_selected
+      ? item.parent_id
+      : item.id;
     if (!id) {
       this._router.navigate(['tree']);
     } else {
-      this._router.navigate(['tree'], {queryParams: {id}});
+      this._router.navigate(
+        ['tree'],
+        {
+          queryParams: {id},
+          queryParamsHandling: "merge"
+        }
+      );
     }
   }
 
@@ -128,5 +172,19 @@ export class TreeComponent implements OnInit {
 
   onUnFavoritesItemClick(item: Item): void {
     this.favoritesService.deleteItem(item.id);
+  }
+
+  onTipClick(): void {
+    const tipId = this._activatedRoute.snapshot.queryParamMap.get("tipId");
+    console.log("onTipClick(): tipId:", tipId);  // TODO
+    this._dialog.closeAll();
+    this._dialog.open(TipOfTheDayDialogComponent, {
+      data: {tipId: tipId}
+    });
+  }
+
+  ngOnDestroy() {
+    this._queryParamMapIdSubscription?.unsubscribe();
+    this._queryParamMapTipIdSubscription?.unsubscribe();
   }
 }

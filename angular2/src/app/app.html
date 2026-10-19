@@ -7,13 +7,6 @@
 
       <div class="row ml-0 mr-0 mb-2">
         <div class="btn col-auto mr-2 mt-2"
-             (click)="onTipClick()">
-          <img src="/from-bootstrap/patch-question-fill.svg"
-               [alt]="translationRoot()?.translations?.tip_of_the_day_word"
-               class="btn-img"/>
-          {{ translationRoot()?.translations?.tip_of_the_day_word }}
-        </div>
-        <div class="btn col-auto mr-2 mt-2"
              (click)="onToTreeClick()"
              [ngClass]="currentPage === PagesEnum.Tree ? 'btn-selected' : '' ">
           <img src="/from-bootstrap/diagram-3.svg"

@@ -1,4 +1,5 @@
 export interface Translations {
+  close: string;
   favorites: string;
   favorites_is_empty: string;
   next_fact: string;

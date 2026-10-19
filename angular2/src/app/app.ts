@@ -1,5 +1,5 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
-import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
+import {Router, RouterOutlet} from '@angular/router';
 import {TranslationRoot} from './models/translation-root';
 import {PagesEnum} from './pages-enum';
 import {RootDataKeeperService} from './common/root-data-keeper.service';
@@ -23,7 +23,6 @@ export class App implements OnInit {
   public favoritesService = inject(FavoritesService);
   private networkService = inject(NetworkService);
   private networkAdminService = inject(BaseNetworkAdminService);
-  private activatedRoute = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
   private titleService = inject(Title);
@@ -61,15 +60,20 @@ export class App implements OnInit {
     this.router.navigate(
       ['tree'],
       {
-        queryParams: {tipId: this.rootData.lastTipId || -1},
+        queryParams: {tipId: this.rootData.lastTipId},
         queryParamsHandling: "merge"
       }
     );
   }
 
   onToTreeClick(): void {
-    if (!!this.rootData.lastTreeParams) {
-      this.router.navigate(['tree'], {queryParams: this.rootData.lastTreeParams});
+    if (!!this.rootData.lastTreeId) {
+      this.router.navigate(
+        ['tree'],
+        {
+          queryParams: {id: this.rootData.lastTreeId},
+          queryParamsHandling: "merge"
+        });
     } else {
       this.router.navigate(['tree']);
     }

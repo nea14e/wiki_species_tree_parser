@@ -1,74 +1,87 @@
-import {Component, computed, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, input, OnInit, signal} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {NETWORK_ERROR_DEFAULT_MESSAGE, NetworkService} from '../network.service';
-import {ActivatedRoute, Router} from '@angular/router';
 import {CopyToClipboardService} from '../common/copy-to-clipboard.service';
 import {TipOfTheDay} from '../models/tip-of-the-day';
+import {Router} from '@angular/router';
 
 @Component({
-  selector: 'app-tip-of-the-day',
+  selector: 'app-tip-of-the-day-dialog',
   templateUrl: './tip-of-the-day.component.html',
   styleUrl: './tip-of-the-day.component.css'
 })
-export class TipOfTheDayComponent implements OnInit {
+export class TipOfTheDayDialogComponent implements OnInit {
+  public data = input<any>(null);
+  public tipId = input<number | null>(null);
+
   public rootData = inject(RootDataKeeperService);
   private _networkService = inject(NetworkService);
-  private _activatedRoute = inject(ActivatedRoute);
   private _router = inject(Router);
   private _copyToClipboardService = inject(CopyToClipboardService);
+  private _dialogRef = inject(MatDialogRef<TipOfTheDayDialogComponent>);
 
   tip = signal<TipOfTheDay | null>(null);
-
-  ngOnInit(): void {
-    this._activatedRoute.queryParams.subscribe(params => {
-      const tipId: number | null = +params['tipId'] || null;
-      if (!!tipId) {
-        this.rootData.lastTipId = tipId;
-        this.loadTip(tipId);
-      }
-    });
-  }
-
-  loadTip(id: number): void {
-    let observable = id >= 0
-      ? this._networkService.getTipOfTheDayById(id)
-      : this._networkService.getTipOfTheDay();
-    observable.subscribe({
-        next: data => {
-          const isFirstTip = (!this.tip());
-          this.tip.set(data);
-          this._router.navigate(['tree'], {queryParams: {tipId: data.id}, queryParamsHandling: "merge"});
-        }, error: () => {
-          alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
-        }
-      });
-  }
 
   isShowInTreeDisabled = computed(() => {
     const tip = this.tip();
     return !tip || !tip.species_id;
   });
 
+  ngOnInit(): void {
+    const data = this.data();
+    console.log("TipOfTheDay: ngOnInit(): data:", data);  // TODO
+    this.loadTip(data?.tipId);
+  }
+
+  loadTip(tipId: number | null): void {
+    let observable = tipId != null
+      ? this._networkService.getTipOfTheDayById(tipId)
+      : this._networkService.getTipOfTheDay();
+    observable.subscribe({
+        next: data => {
+          this.tip.set(data);
+          this.rootData.lastTipId = data.id;
+          console.log("TipOfTheDay: loadTip(): id:", data.id);  // TODO
+          this._router.navigate(
+            ['tree'],
+            {
+              queryParams: {tipId: data.id},
+              queryParamsHandling: "merge"
+            }
+          );
+        }, error: () => {
+          alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
+        }
+      });
+  }
+
   onShowInTreeClick(): void {
-    this._router.navigate(['tree'], {queryParams: {id: this.tip()!.species_id}});
+    if (this.isShowInTreeDisabled()) {
+      return;
+    }
+    this._router.navigate(
+      ['tree'],
+      {
+        queryParams: {id: this.tip()!.species_id},
+        queryParamsHandling: "merge"
+      }
+    );
+    this._dialogRef.close();
   }
 
   onNextTipClick(): void {
-    this.loadTip(-1);
+    console.log("TipOfTheDay: onNextTipClick()");  // TODO
+    this.loadTip(null);
   }
 
-  // noinspection JSMethodCanBeStatic
   onShareClick(): void {
     const val = window.location.href;
     this._copyToClipboardService.copy(val);
     alert(this.rootData.translationRoot()?.translations.link_copied);
   }
 
-  onToTreeClick(): void {
-    if (!!this.rootData.lastTreeParams) {
-      this._router.navigate(['tree'], {queryParams: this.rootData.lastTreeParams});
-    } else {
-      this._router.navigate(['tree']);
-    }
+  onCloseClick(): void {
+    this._dialogRef.close();
   }
 }
