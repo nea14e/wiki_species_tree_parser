@@ -38,22 +38,6 @@
                class="btn-img"/>
           {{ translationRoot()?.translations?.authors_word }}
         </div>
-        <div class="btn col-auto ml-auto mr-2 mt-2"
-             (click)="onBackClick()"
-        >
-          <img src="/from-bootstrap/arrow-left.svg"
-               [alt]="translationRoot()?.translations?.go_back"
-               class="btn-img"/>
-          {{ translationRoot()?.translations?.go_back }}
-        </div>
-        <div class="btn col-auto mr-2 mt-2"
-             (click)="onForwardClick()"
-        >
-          <img src="/from-bootstrap/arrow-right.svg"
-               [alt]="translationRoot()?.translations?.go_forward"
-               class="btn-img"/>
-          {{ translationRoot()?.translations?.go_forward }}
-        </div>
       </div>
 
       @if (isAdminMode() === true) {

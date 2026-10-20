@@ -91,14 +91,6 @@ export class App implements OnInit {
     this.router.navigate(['authors']);
   }
 
-  onBackClick(): void {
-    this.location.back();
-  }
-
-  onForwardClick(): void {
-    this.location.forward();
-  }
-
   onToDbTasksClick(): void {
     this.router.navigate(['admin/db-tasks']);
   }

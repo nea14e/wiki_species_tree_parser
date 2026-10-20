@@ -147,3 +147,15 @@
   flex-wrap: wrap;
   align-content: space-evenly;
 }
+
+.back-history-dropdown {
+  position: absolute;
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: var(--item-color-0);
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  padding: 4px;
+  margin-top: 4px;
+}

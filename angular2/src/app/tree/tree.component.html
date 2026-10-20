@@ -1,19 +1,118 @@
 <div class="row router-hr"></div>
 
-<div class="row ml-0 mb-3">
-  <div class="btn col-auto mr-5"
+<div class="d-flex justify-content-start ml-0 mb-3">
+  <div class="btn me-2"
        (click)="openTipDialog()"
-       [title]="rootData.translationRoot()?.translations?.tip_of_the_day_word"
-  >
+       [title]="rootData.translationRoot()?.translations?.tip_of_the_day_word">
     <img src="/from-bootstrap/patch-question-fill.svg" alt="" class="btn-img"/>
     {{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}
   </div>
 
-  <div class="btn col-auto mr-5"
+  <div class="position-relative">
+    <div class="btn col-auto ml-auto mr-2 mt-2"
+         (click)="isBackEnabled() ? onBackButtonClick() : $event.stopPropagation()"
+         [ngClass]="isBackEnabled() ? '' : 'disabled'">
+      <img src="/from-bootstrap/arrow-left.svg"
+           [alt]="rootData.translationRoot()?.translations?.go_back"
+           class="btn-img"/>
+    </div>
+
+    @if (isShowBackMenu()) {
+      <div class="back-history-dropdown">
+        @for (historyItem of _backTreeReversedHistory(); track historyItem.random_id) {
+          <div class="plain-list-item pointer"
+               (click)="onBackHistoryItemClick(historyItem)">
+
+            <div class="plain-list-item-img-container">
+              @if (!!historyItem.item && !!historyItem.item.image_url) {
+                <img [src]="historyItem.item.image_url"
+                     [title]="historyItem.item.title_for_language"
+                     alt=""
+                     class="favorites-item-img-content">
+              } @else if (!historyItem.item) {
+                <img src="/from-bootstrap/house-door.svg"
+                     class="favorites-item-img-content"
+                     [alt]="rootData.translationRoot()?.translations?.to_tree_root"/>
+              }
+            </div>
+
+            <div class="plain-list-item-title">
+              <div class="align-self-center d-flex flex-column">
+                @if (!!historyItem.item) {
+                  <b class="plain-list-item-title-title"
+                     [title]="historyItem.item.title_for_language">
+                    {{ historyItem.item.title_for_language }}
+                  </b>
+                } @else {
+                  <b class="plain-list-item-title-title"
+                     [title]="rootData.translationRoot()?.translations?.to_tree_root">
+                    {{ rootData.translationRoot()?.translations?.to_tree_root }}
+                  </b>
+                }
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="btn me-2"
        (click)="onToTreeRootClick()"
-       [title]="rootData.translationRoot()?.translations?.to_tree_root"
-  >
-    <img src="/from-bootstrap/house-door.svg" class="btn-img" alt="К корню дерева"/>
+       [title]="rootData.translationRoot()?.translations?.to_tree_root">
+    <img src="/from-bootstrap/house-door.svg"
+         class="btn-img"
+         [alt]="rootData.translationRoot()?.translations?.to_tree_root"/>
+  </div>
+
+  <div class="position-relative">
+    <div class="btn col-auto mr-2 mt-2"
+         (click)="isForwardEnabled() ? onForwardButtonClick() : $event.stopPropagation()"
+         [ngClass]="isForwardEnabled() ? '' : 'disabled'">
+      <img src="/from-bootstrap/arrow-right.svg"
+           [alt]="rootData.translationRoot()?.translations?.go_forward"
+           class="btn-img"/>
+    </div>
+    @if (isShowForwardMenu()) {
+      <div class="back-history-dropdown">
+        @for (historyItem of _forwardTreeHistory(); track historyItem.random_id) {
+          <div class="plain-list-item pointer"
+               (click)="onForwardHistoryItemClick(historyItem)">
+
+            <div class="plain-list-item-img-container">
+              @if (!!historyItem.item && !!historyItem.item.image_url) {
+                <img [src]="historyItem.item.image_url"
+                     [title]="historyItem.item.title_for_language"
+                     alt=""
+                     class="favorites-item-img-content">
+              } @else if (!historyItem.item) {
+                <img src="/from-bootstrap/house-door.svg"
+                     class="favorites-item-img-content"
+                     [alt]="rootData.translationRoot()?.translations?.to_tree_root"/>
+              }
+            </div>
+
+            <div class="plain-list-item-title">
+              <div class="align-self-center d-flex flex-column">
+                @if (!!historyItem.item) {
+                  <b class="plain-list-item-title-title"
+                     [title]="historyItem.item.title_for_language">
+                    {{ historyItem.item.title_for_language }}
+                  </b>
+                } @else {
+                  <b class="plain-list-item-title-title"
+                     [title]="rootData.translationRoot()?.translations?.to_tree_root">
+                    {{ rootData.translationRoot()?.translations?.to_tree_root }}
+                  </b>
+                }
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
   </div>
 
   <label class="align-self-center mr-4">

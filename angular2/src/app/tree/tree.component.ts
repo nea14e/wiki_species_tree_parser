@@ -1,4 +1,4 @@
-import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
+import {Component, computed, HostListener, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {Tree} from '../models/tree';
 import {LatinModeEnum} from '../models/latin-mode-enum';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
@@ -12,11 +12,14 @@ import {FormsModule} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {TipOfTheDayDialogComponent} from '../tip-of-the-day/tip-of-the-day.component';
 import {distinctUntilChanged, map, Subscription, switchMap, tap} from 'rxjs';
+import {NgClass} from '@angular/common';
+import {TreeHistoryItem} from '../models/tree-history-item';
 
 @Component({
   selector: 'app-tree.component',
   imports: [
-    FormsModule
+    FormsModule,
+    NgClass
   ],
   templateUrl: './tree.component.html',
   styleUrl: './tree.component.css',
@@ -35,6 +38,21 @@ export class TreeComponent implements OnInit, OnDestroy {
   tree = signal<Tree | null>(null);
   latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
   LATIN_MODE_ENUM = LatinModeEnum;
+
+  _backTreeHistory = signal<TreeHistoryItem[]>([]);
+  _backTreeReversedHistory = computed(() => {
+    const result = [];
+    for (let i = this._backTreeHistory().length - 1; i >= 0; i--) {
+      const item = this._backTreeHistory()[i];
+      result.push(item);
+    }
+    return result;
+  });
+  _forwardTreeHistory = signal<TreeHistoryItem[]>([]);
+  isBackEnabled = computed(() => this._backTreeHistory().length > 0);
+  isForwardEnabled = computed(() => this._forwardTreeHistory().length > 0);
+  isShowBackMenu = signal(false);
+  isShowForwardMenu = signal(false);
 
   ngOnInit(): void {
     this._subscribeQueryParamMapId();
@@ -81,9 +99,25 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onItemClick(item: Item): void {
+    if (!this.tree()) {
+      return;
+    }
+
+    const oldSelectedItem = this.tree()!.levels
+      .flatMap(level => level.items)
+      .find(item => item.is_selected);
+    this._backTreeHistory.update(prevHistory => {
+      return [...prevHistory, new TreeHistoryItem(!!oldSelectedItem ? oldSelectedItem : null)];
+    });
+    this._forwardTreeHistory.set([]);
+
     const id = item.is_selected
       ? item.parent_id
       : item.id;
+    this._selectItemById(id);
+  }
+
+  _selectItemById(id: number | null): void {
     if (!id) {
       this._router.navigate(['tree']);
     } else {
@@ -131,7 +165,7 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onToTreeRootClick(): void {
-    this._router.navigate(['tree']);
+    this._selectItemById(null);
   }
 
   onFavoritesItemClick(item: Item): void {
@@ -160,5 +194,68 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this._queryParamMapIdSubscription?.unsubscribe();
+  }
+
+  onBackButtonClick() {
+    this.isShowBackMenu.update(value => !value);
+  }
+
+  onForwardButtonClick() {
+    this.isShowForwardMenu.update(value => !value);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.position-relative')) {
+      this.isShowBackMenu.set(false);
+      this.isShowForwardMenu.set(false);
+    }
+  }
+
+  onBackHistoryItemClick(selectedItem: TreeHistoryItem): void {
+    this.isShowBackMenu.set(false);
+
+    const indexToMove = this._backTreeHistory()
+      .findIndex(item => item.random_id === selectedItem.random_id);
+    const backHistory = [...this._backTreeHistory()];
+    const itemsToMove = backHistory.splice(indexToMove);
+    this._backTreeHistory.set(backHistory);
+    itemsToMove.splice(0, 1);
+
+    const oldSelectedItem = this.tree()!.levels
+      .flatMap(level => level.items)
+      .find(item => item.is_selected);
+
+    this._forwardTreeHistory.set([
+      ...itemsToMove,
+      new TreeHistoryItem(!!oldSelectedItem ? oldSelectedItem : null),
+      ...this._forwardTreeHistory()
+    ])
+
+    this._selectItemById(selectedItem.item?.id ?? null);
+  }
+
+  onForwardHistoryItemClick(selectedItem: TreeHistoryItem) {
+    this.isShowForwardMenu.set(false);
+
+    const indexToMove = this._forwardTreeHistory()
+      .findIndex(item => item.random_id === selectedItem.random_id);
+    const forwardHistory = [...this._forwardTreeHistory()];
+    const itemsToMove = forwardHistory.splice(0, indexToMove + 1);
+    this._forwardTreeHistory.set(forwardHistory);
+    itemsToMove.splice(indexToMove, 1);
+
+    const oldSelectedItem = this.tree()!.levels
+      .flatMap(level => level.items)
+      .find(item => item.is_selected);
+
+    this._backTreeHistory.set([
+      ...this._backTreeHistory(),
+      new TreeHistoryItem(!!oldSelectedItem ? oldSelectedItem : null),
+      ...itemsToMove
+    ]);
+
+    this._selectItemById(selectedItem.item?.id ?? null);
   }
 }
