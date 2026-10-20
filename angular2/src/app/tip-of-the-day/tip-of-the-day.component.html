@@ -1,11 +1,10 @@
-<div class="container-fluid">
-  <div class="row">
-    <h3>{{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}</h3>
-    <div class="btn col-auto mr-2 mt-2" (click)="onCloseClick()">
-      <img src="/from-bootstrap/x.svg"
-           [alt]="rootData.translationRoot()?.translations?.close"
-           class="btn-img"/>
-    </div>
+<div class="customized-panel-dialog-content container-fluid">
+  <div class="d-flex justify-content-between align-items-center">
+    <h3 class="m-0">{{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}</h3>
+    <img src="/from-bootstrap/x.svg"
+         (click)="onCloseClick()"
+         [alt]="rootData.translationRoot()?.translations?.close"
+         class="btn-img cursor-pointer"/>
   </div>
 
   <div class="row">
@@ -19,28 +18,31 @@
     </div>
   </div>
 
-  <div class="row ml-0 mr-0">
-    <div class="btn col-auto mr-2 mt-2"
+  <div class="d-flex justify-content-evenly my-2">
+    <div class="btn me-2"
          [title]="rootData.translationRoot()?.translations?.show_in_tree"
          (click)="isShowInTreeDisabled() ? $event.stopPropagation() : onShowInTreeClick()"
          [class]="isShowInTreeDisabled() ? 'disabled' : ''">
       <img src="/from-bootstrap/eye.svg"
            [alt]="rootData.translationRoot()?.translations?.show_in_tree"
            class="btn-img"/>
+      {{ rootData.translationRoot()?.translations?.show_in_tree }}
     </div>
-    <div class="btn col-auto mr-2 mt-2"
+    <div class="btn me-2"
          [title]="rootData.translationRoot()?.translations?.copy_link_to_share"
          (click)="onShareClick()">
       <img src="/from-bootstrap/share.svg"
            [alt]="rootData.translationRoot()?.translations?.copy_link_to_share"
            class="btn-img"/>
+      {{ rootData.translationRoot()?.translations?.copy_link_to_share }}
     </div>
-    <div class="btn col-auto mr-2 mt-2"
+    <div class="btn me-2"
          [title]="rootData.translationRoot()?.translations?.next_fact"
          (click)="onNextTipClick()">
       <img src="/from-bootstrap/chevron-double-right.svg"
            [alt]="rootData.translationRoot()?.translations?.next_fact"
            class="btn-img"/>
+      {{ rootData.translationRoot()?.translations?.next_fact }}
     </div>
   </div>
 </div>

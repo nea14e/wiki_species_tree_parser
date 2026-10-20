@@ -152,7 +152,9 @@ export class TreeComponent implements OnInit, OnDestroy {
     const tipId = !!tipIdString ? +tipIdString : null;
     console.log("openTipDialog(): tipId:", tipId);  // TODO
     this._dialog.closeAll();
-    const matDialogRef = this._dialog.open(TipOfTheDayDialogComponent);
+    const matDialogRef = this._dialog.open(TipOfTheDayDialogComponent, {
+      panelClass: 'customized-panel-dialog'
+    });
     matDialogRef.componentInstance.loadTip(tipId);
   }
 

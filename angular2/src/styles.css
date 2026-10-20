@@ -15,6 +15,10 @@
   --item-selected-borders: #6b3991;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .btn {
   background-color: var(--item-color-0);
   border: 2px solid black;
@@ -24,6 +28,15 @@
 
 .btn.btn-selected {
   background-color: var(--item-color-1);
+}
+
+.customized-panel-dialog {
+  border: 2px solid black;
+  border-radius: 0.5rem;
+}
+
+.customized-panel-dialog-content {
+  background: #ffffb4;
 }
 
 .btn.active,
