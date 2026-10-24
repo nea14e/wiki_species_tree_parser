@@ -14,12 +14,14 @@ import {TipOfTheDayDialogComponent} from '../tip-of-the-day/tip-of-the-day.compo
 import {distinctUntilChanged, map, Subscription, switchMap, tap} from 'rxjs';
 import {NgClass} from '@angular/common';
 import {TreeHistoryItem} from '../models/tree-history-item';
+import {PlainListItemComponent} from '../common/plain-list-item/plain-list-item';
 
 @Component({
   selector: 'app-tree.component',
   imports: [
     FormsModule,
-    NgClass
+    NgClass,
+    PlainListItemComponent
   ],
   templateUrl: './tree.component.html',
   styleUrl: './tree.component.css',
@@ -36,6 +38,12 @@ export class TreeComponent implements OnInit, OnDestroy {
   private _queryParamMapIdSubscription: Subscription | null = null;
 
   tree = signal<Tree | null>(null);
+  selectedItemInfo = computed(() => this.tree()?.levels
+    .map(level => {
+      return {level, item: level.items.find(item => item.is_selected)}
+    })
+    .find(pair => !!pair.item)
+  );
   latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
   LATIN_MODE_ENUM = LatinModeEnum;
 
@@ -88,14 +96,6 @@ export class TreeComponent implements OnInit, OnDestroy {
       });
   }
 
-  private _getSelectedItemInfo() {
-    return this.tree()!.levels
-      .map(level => {
-        return {level, item: level.items.find(item => item.is_selected)}
-      })
-      .find(pair => !!pair.item);
-  }
-
   // noinspection JSMethodCanBeStatic
   getItemClass(item: Item): string {
     if (item.is_selected === true) {
@@ -111,13 +111,12 @@ export class TreeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const selectedItemInfo = this._getSelectedItemInfo();
     this._backTreeHistory.update(prevHistory => {
       return [
         ...prevHistory,
         new TreeHistoryItem(
-          selectedItemInfo?.level ?? null,
-          selectedItemInfo?.item ?? null
+          this.selectedItemInfo()?.level ?? null,
+          this.selectedItemInfo()?.item ?? null
         )
       ];
     });
@@ -227,6 +226,7 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   onBackHistoryItemClick(selectedItem: TreeHistoryItem): void {
     this.isShowBackMenu.set(false);
+    this.isShowForwardMenu.set(false);
 
     const indexToMove = this._backTreeHistory()
       .findIndex(item => item.random_id === selectedItem.random_id);
@@ -235,13 +235,11 @@ export class TreeComponent implements OnInit, OnDestroy {
     this._backTreeHistory.set(backHistory);
     itemsToMove.splice(0, 1);
 
-    const selectedItemInfo = this._getSelectedItemInfo();
-
     this._forwardTreeHistory.set([
       ...itemsToMove,
       new TreeHistoryItem(
-        selectedItemInfo?.level ?? null,
-        selectedItemInfo?.item ?? null
+        this.selectedItemInfo()?.level ?? null,
+        this.selectedItemInfo()?.item ?? null
       ),
       ...this._forwardTreeHistory()
     ])
@@ -250,6 +248,7 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onForwardHistoryItemClick(selectedItem: TreeHistoryItem) {
+    this.isShowBackMenu.set(false);
     this.isShowForwardMenu.set(false);
 
     const indexToMove = this._forwardTreeHistory()
@@ -259,17 +258,19 @@ export class TreeComponent implements OnInit, OnDestroy {
     this._forwardTreeHistory.set(forwardHistory);
     itemsToMove.splice(indexToMove, 1);
 
-    const selectedItemInfo = this._getSelectedItemInfo();
-
     this._backTreeHistory.set([
       ...this._backTreeHistory(),
       new TreeHistoryItem(
-        selectedItemInfo?.level ?? null,
-        selectedItemInfo?.item ?? null
+        this.selectedItemInfo()?.level ?? null,
+        this.selectedItemInfo()?.item ?? null
       ),
       ...itemsToMove
     ]);
 
     this._selectItemById(selectedItem.item?.id ?? null);
+  }
+
+  onToSelectedItemClick() {
+    // TODO
   }
 }

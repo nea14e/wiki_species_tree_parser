@@ -1,0 +1,49 @@
+<div class="plain-list-item pointer"
+     (click)="click.emit()">
+
+  <div class="plain-list-item-img-container">
+    @if (item()?.image_url) {
+      <img [src]="item()?.image_url"
+           [title]="item()?.title_for_language"
+           alt=""
+           class="favorites-item-img-content">
+    } @else if (isShowTreeRootIcon()) {
+      <img src="/from-bootstrap/house-door.svg"
+           class="favorites-item-img-content"
+           [alt]="rootData.translationRoot()?.translations?.to_tree_root"/>
+    }
+  </div>
+
+  <div class="plain-list-item-title">
+    <div class="align-self-center d-flex flex-column">
+      @if (!!item()) {
+        @if (!!level()?.title_on_language) {
+          <small class="plain-list-item-title-rank"
+                 [title]="level()?.title_on_language">
+            {{ level()?.title_on_language }}
+          </small>
+        }
+        <b class="plain-list-item-title-title"
+           [title]="item()?.title_for_language">
+          {{ item()?.title_for_language }}
+        </b>
+      } @else {
+        <b class="plain-list-item-title-title"
+           [title]="rootData.translationRoot()?.translations?.to_tree_root">
+          {{ rootData.translationRoot()?.translations?.to_tree_root }}
+        </b>
+      }
+    </div>
+  </div>
+
+  @if (isShowDeleteButton()) {
+    <div class="plain-list-item-delete-btn d-flex justify-content-end">
+      <img (click)="delete.emit(); $event.stopPropagation();"
+           src="/from-bootstrap/x.svg"
+           [title]="deleteButtonDescription()"
+           [alt]=""
+           class="list-item-btn-img mt-2 btn-favorites-item-x">
+    </div>
+  }
+
+</div>
