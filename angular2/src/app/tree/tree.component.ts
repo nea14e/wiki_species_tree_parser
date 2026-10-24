@@ -88,6 +88,14 @@ export class TreeComponent implements OnInit, OnDestroy {
       });
   }
 
+  private _getSelectedItemInfo() {
+    return this.tree()!.levels
+      .map(level => {
+        return {level, item: level.items.find(item => item.is_selected)}
+      })
+      .find(pair => !!pair.item);
+  }
+
   // noinspection JSMethodCanBeStatic
   getItemClass(item: Item): string {
     if (item.is_selected === true) {
@@ -103,11 +111,15 @@ export class TreeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const oldSelectedItem = this.tree()!.levels
-      .flatMap(level => level.items)
-      .find(item => item.is_selected);
+    const selectedItemInfo = this._getSelectedItemInfo();
     this._backTreeHistory.update(prevHistory => {
-      return [...prevHistory, new TreeHistoryItem(!!oldSelectedItem ? oldSelectedItem : null)];
+      return [
+        ...prevHistory,
+        new TreeHistoryItem(
+          selectedItemInfo?.level ?? null,
+          selectedItemInfo?.item ?? null
+        )
+      ];
     });
     this._forwardTreeHistory.set([]);
 
@@ -223,13 +235,14 @@ export class TreeComponent implements OnInit, OnDestroy {
     this._backTreeHistory.set(backHistory);
     itemsToMove.splice(0, 1);
 
-    const oldSelectedItem = this.tree()!.levels
-      .flatMap(level => level.items)
-      .find(item => item.is_selected);
+    const selectedItemInfo = this._getSelectedItemInfo();
 
     this._forwardTreeHistory.set([
       ...itemsToMove,
-      new TreeHistoryItem(!!oldSelectedItem ? oldSelectedItem : null),
+      new TreeHistoryItem(
+        selectedItemInfo?.level ?? null,
+        selectedItemInfo?.item ?? null
+      ),
       ...this._forwardTreeHistory()
     ])
 
@@ -246,13 +259,14 @@ export class TreeComponent implements OnInit, OnDestroy {
     this._forwardTreeHistory.set(forwardHistory);
     itemsToMove.splice(indexToMove, 1);
 
-    const oldSelectedItem = this.tree()!.levels
-      .flatMap(level => level.items)
-      .find(item => item.is_selected);
+    const selectedItemInfo = this._getSelectedItemInfo();
 
     this._backTreeHistory.set([
       ...this._backTreeHistory(),
-      new TreeHistoryItem(!!oldSelectedItem ? oldSelectedItem : null),
+      new TreeHistoryItem(
+        selectedItemInfo?.level ?? null,
+        selectedItemInfo?.item ?? null
+      ),
       ...itemsToMove
     ]);
 
