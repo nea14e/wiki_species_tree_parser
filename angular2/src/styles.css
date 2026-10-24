@@ -105,6 +105,11 @@
   overflow: hidden;
 }
 
+.plain-list-item:hover {
+  border: 1px solid var(--item-selected-borders);
+  background-color: var(--item-expanded-0);
+}
+
 .plain-list-item.invisible-list-item {
   border: unset;
   background-color: unset;
