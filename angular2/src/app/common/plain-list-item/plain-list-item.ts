@@ -18,6 +18,6 @@ export class PlainListItemComponent {
   isShowDeleteButton = input(false);
   deleteButtonDescription = input<string | null>(null);
 
-  click = output<void>();
-  delete = output<void>();
+  onClick = output<void>();
+  onDelete = output<void>();
 }

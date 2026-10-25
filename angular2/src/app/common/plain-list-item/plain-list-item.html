@@ -1,5 +1,5 @@
 <div class="plain-list-item pointer"
-     (click)="click.emit()">
+     (click)="onClick.emit()">
 
   <div class="plain-list-item-img-container">
     @if (item()?.image_url) {
@@ -38,7 +38,7 @@
 
   @if (isShowDeleteButton()) {
     <div class="plain-list-item-delete-btn d-flex justify-content-end">
-      <img (click)="delete.emit(); $event.stopPropagation();"
+      <img (click)="onDelete.emit(); $event.stopPropagation();"
            src="/from-bootstrap/x.svg"
            [title]="deleteButtonDescription()"
            [alt]=""

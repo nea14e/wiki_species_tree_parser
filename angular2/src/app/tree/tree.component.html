@@ -34,7 +34,7 @@
             [level]="historyItem.level"
             [item]="historyItem.item"
             [isShowTreeRootIcon]="!historyItem.item"
-            (click)="onBackHistoryItemClick(historyItem)">
+            (onClick)="onBackHistoryItemClick(historyItem)">
           </app-plain-list-item>
         }
       </div>
@@ -46,7 +46,7 @@
       [level]="selectedItemInfo()?.level ?? null"
       [item]="selectedItemInfo()?.item ?? null"
       [isShowTreeRootIcon]="!selectedItemInfo()"
-      (click)="onGoToSelectedItemClick()">
+      (onClick)="onGoToSelectedItemClick()">
     </app-plain-list-item>
   </div>
 
@@ -65,7 +65,7 @@
             [level]="historyItem.level"
             [item]="historyItem.item"
             [isShowTreeRootIcon]="!historyItem.item"
-            (click)="onForwardHistoryItemClick(historyItem)">
+            (onClick)="onForwardHistoryItemClick(historyItem)">
           </app-plain-list-item>
         }
       </div>
