@@ -90,6 +90,7 @@ export class TreeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.tree.set(data);
+          this._goToSelectedItem();
         }, error: () => {
           alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
         }
@@ -270,7 +271,16 @@ export class TreeComponent implements OnInit, OnDestroy {
     this._selectItemById(selectedItem.item?.id ?? null);
   }
 
-  onToSelectedItemClick() {
-    // TODO
+  onGoToSelectedItemClick() {
+    this._goToSelectedItem();
+  }
+
+  private _goToSelectedItem(): void {
+    requestAnimationFrame(() => {
+      const element = document.querySelector('.item.selected');
+      if (element) {
+        element.scrollIntoView({behavior: 'smooth', block: 'center'});
+      }
+    });
   }
 }
