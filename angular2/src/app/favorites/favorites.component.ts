@@ -1,4 +1,4 @@
-import {Component, computed, inject, signal} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, OnDestroy, signal, ViewChild} from '@angular/core';
 import {FavoritesItem} from '../models/favorites-item';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {FavoritesService} from '../common/favorites.service';
@@ -14,12 +14,21 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
   templateUrl: './favorites.component.html',
   styleUrl: './favorites.component.css',
 })
-export class FavoritesComponent {
+export class FavoritesComponent implements OnDestroy {
 
   rootData = inject(RootDataKeeperService);
   favoritesService = inject(FavoritesService);
-  private _router = inject(Router)
+  private _router = inject(Router);
 
+  @ViewChild('filterInput')
+  filterInput!: ElementRef<HTMLInputElement>;
+  private _focusOnFilterInputEffect = effect(() => {
+    if (this.favoritesService.isFavoritesOpen()) {
+      setTimeout(() => {
+        this.filterInput?.nativeElement?.focus();
+      }, 0);
+    }
+  });
   filterText = signal("");
   filteredItems = computed(
     () => !!this.filterText()
@@ -44,5 +53,9 @@ export class FavoritesComponent {
   toTree(id: number): void {
     this.favoritesService.isFavoritesOpen.set(false);
     this._router.navigate(['tree'], {queryParams: {id}});
+  }
+
+  ngOnDestroy() {
+    this._focusOnFilterInputEffect.destroy();
   }
 }

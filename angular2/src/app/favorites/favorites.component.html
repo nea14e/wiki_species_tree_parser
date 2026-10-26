@@ -5,7 +5,7 @@
         {{ rootData.translationRoot()?.translations?.favorites_is_empty }}
       </div>
     } @else {
-      <input class="input-text" type="text"
+      <input #filterInput class="input-text" type="text"
              [ngModel]="filterText()"
              (ngModelChange)="onFilterTextChanged($event)"
              [placeholder]="rootData.translationRoot()?.translations?.plain_search_tooltip"
