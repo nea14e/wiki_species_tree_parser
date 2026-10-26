@@ -207,6 +207,9 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onUnFavoritesItemClick(item: Item): void {
+    if (!confirm(this.rootData.translationRoot()?.translations.delete_favorite_question)) {
+      return;
+    }
     this.favoritesService.deleteItem(item.id);
   }
 

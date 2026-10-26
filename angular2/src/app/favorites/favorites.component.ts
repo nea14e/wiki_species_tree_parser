@@ -21,6 +21,9 @@ export class FavoritesComponent {
   );
 
   onDeleteItemClick(item: FavoritesItem): void {
+    if (!confirm(this.rootData.translationRoot()?.translations.delete_favorite_question)) {
+      return;
+    }
     this.favoritesService.deleteItem(item.id);
   }
 
