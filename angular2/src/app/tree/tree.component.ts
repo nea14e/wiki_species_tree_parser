@@ -15,13 +15,15 @@ import {distinctUntilChanged, map, Subscription, switchMap, tap} from 'rxjs';
 import {NgClass} from '@angular/common';
 import {TreeHistoryItem} from '../models/tree-history-item';
 import {PlainListItemComponent} from '../common/plain-list-item/plain-list-item';
+import {FavoritesComponent} from '../favorites/favorites.component';
 
 @Component({
   selector: 'app-tree.component',
   imports: [
     FormsModule,
     NgClass,
-    PlainListItemComponent
+    PlainListItemComponent,
+    FavoritesComponent
   ],
   templateUrl: './tree.component.html',
   styleUrl: './tree.component.css',
@@ -226,11 +228,13 @@ export class TreeComponent implements OnInit, OnDestroy {
   onBackButtonClick() {
     this.isShowBackMenu.update(value => !value);
     this.isShowForwardMenu.set(false);
+    this.favoritesService.isFavoritesOpen.set(false);
   }
 
   onForwardButtonClick() {
     this.isShowBackMenu.set(false);
     this.isShowForwardMenu.update(value => !value);
+    this.favoritesService.isFavoritesOpen.set(false);
   }
 
   @HostListener('document:click', ['$event'])
@@ -239,6 +243,7 @@ export class TreeComponent implements OnInit, OnDestroy {
     if (!target.closest('.position-relative')) {
       this.isShowBackMenu.set(false);
       this.isShowForwardMenu.set(false);
+      this.favoritesService.isFavoritesOpen.set(false);
     }
   }
 
@@ -299,5 +304,11 @@ export class TreeComponent implements OnInit, OnDestroy {
         element.scrollIntoView({behavior: 'smooth', block: 'center'});
       }
     });
+  }
+
+  onFavoritesToggleClick() {
+    this.favoritesService.isFavoritesOpen.update(value => !value);
+    this.isShowBackMenu.set(false);
+    this.isShowForwardMenu.set(false);
   }
 }

@@ -54,10 +54,6 @@ export class FavoritesService {
     this.loadData();
   }
 
-  toggleTab(): void {
-    this.isFavoritesOpen.update(prevValue => !prevValue);
-  }
-
   isItemInFavorites(item: Item): boolean {
     return this._ids.includes(item.id);
   }

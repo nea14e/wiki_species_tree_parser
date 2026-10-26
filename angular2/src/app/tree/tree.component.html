@@ -72,6 +72,22 @@
     }
   </div>
 
+  <div class="position-relative me-2">
+    <div class="btn"
+         (click)="onFavoritesToggleClick()"
+         [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
+      <img src="/from-bootstrap/bookmarks.svg"
+           [alt]="rootData.translationRoot()?.translations?.favorites"
+           class="btn-img"/>
+      {{ rootData.translationRoot()?.translations?.favorites }}
+    </div>
+    @if (favoritesService.isFavoritesOpen()) {
+      <div class="dropdown-container">
+        <app-favorites></app-favorites>
+      </div>
+    }
+  </div>
+
   <label class="align-self-center mr-4">
     <input type="radio" name="latin"
            [title]="rootData.translationRoot()?.translations?.translated_only"

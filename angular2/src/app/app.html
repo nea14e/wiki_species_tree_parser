@@ -23,14 +23,6 @@
           {{ translationRoot()?.translations?.search_word }}
         </div>
         <div class="btn col-auto mr-2 mt-2"
-             (click)="onFavoritesToggleClick()"
-             [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
-          <img src="/from-bootstrap/bookmarks.svg"
-               [alt]="translationRoot()?.translations?.favorites"
-               class="btn-img"/>
-          {{ translationRoot()?.translations?.favorites }}
-        </div>
-        <div class="btn col-auto mr-2 mt-2"
              (click)="onAuthorsClick()"
              [ngClass]="currentPage === PagesEnum.Authors ? 'btn-selected' : '' ">
           <img src="/from-bootstrap/vector-pen.svg"
@@ -127,11 +119,6 @@
 
     </div>
   </div>
-  @if (favoritesService.isFavoritesOpen()) {
-    <div class="right-tab pl-0 pt-3">
-      <app-favorites (close)="onFavoritesClose()"></app-favorites>
-    </div>
-  }
 </div>
 
 </body>

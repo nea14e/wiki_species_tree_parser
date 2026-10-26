@@ -3,24 +3,21 @@ import {Router, RouterOutlet} from '@angular/router';
 import {TranslationRoot} from './models/translation-root';
 import {PagesEnum} from './pages-enum';
 import {RootDataKeeperService} from './common/root-data-keeper.service';
-import {FavoritesService} from './common/favorites.service';
 import {NETWORK_ERROR_DEFAULT_MESSAGE, NetworkService} from './network.service';
 import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
 import {Location, NgClass} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {FavoritesComponent} from './favorites/favorites.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgClass, FormsModule, FavoritesComponent],
+  imports: [RouterOutlet, NgClass, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit {
 
   public rootData = inject(RootDataKeeperService);
-  public favoritesService = inject(FavoritesService);
   private networkService = inject(NetworkService);
   private networkAdminService = inject(BaseNetworkAdminService);
   private router = inject(Router);
@@ -142,13 +139,5 @@ export class App implements OnInit {
         .then(() => this.router.navigate(['tip-translation']));
       return;
     }
-  }
-
-  onFavoritesToggleClick(): void {
-    this.favoritesService.toggleTab();
-  }
-
-  onFavoritesClose() {
-    this.favoritesService.isFavoritesOpen.set(false);
   }
 }
