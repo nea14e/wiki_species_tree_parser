@@ -1,15 +1,15 @@
 <div class="row router-hr"></div>
 
 <div class="d-flex justify-content-start align-items-center ml-0 mb-3">
-  <div class="btn me-2"
+  <div class="btn me-4"
        (click)="openTipDialog()"
        [title]="rootData.translationRoot()?.translations?.tip_of_the_day_word">
     <img src="/from-bootstrap/patch-question-fill.svg" alt="" class="btn-img"/>
     {{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}
   </div>
 
-  <div class="position-relative">
-    <div class="btn me-2"
+  <div class="position-relative me-small">
+    <div class="btn"
          (click)="onToTreeRootClick()"
          [title]="rootData.translationRoot()?.translations?.to_tree_root">
       <img src="/from-bootstrap/house-door.svg"
@@ -19,7 +19,7 @@
   </div>
 
   <div class="position-relative">
-    <div class="btn col-auto ml-auto mr-2 mt-2"
+    <div class="btn"
          (click)="isBackEnabled() ? onBackButtonClick() : $event.stopPropagation()"
          [ngClass]="isBackEnabled() ? '' : 'disabled'">
       <img src="/from-bootstrap/arrow-left.svg"
@@ -28,7 +28,7 @@
     </div>
 
     @if (isShowBackMenu()) {
-      <div class="back-history-dropdown">
+      <div class="dropdown-container">
         @for (historyItem of _backTreeReversedHistory(); track historyItem.random_id) {
           <app-plain-list-item
             [level]="historyItem.level"
@@ -50,8 +50,8 @@
     </app-plain-list-item>
   </div>
 
-  <div class="position-relative">
-    <div class="btn col-auto mr-2 mt-2"
+  <div class="position-relative me-4">
+    <div class="btn"
          (click)="isForwardEnabled() ? onForwardButtonClick() : $event.stopPropagation()"
          [ngClass]="isForwardEnabled() ? '' : 'disabled'">
       <img src="/from-bootstrap/arrow-right.svg"
@@ -59,7 +59,7 @@
            class="btn-img"/>
     </div>
     @if (isShowForwardMenu()) {
-      <div class="back-history-dropdown">
+      <div class="dropdown-container">
         @for (historyItem of _forwardTreeHistory(); track historyItem.random_id) {
           <app-plain-list-item
             [level]="historyItem.level"

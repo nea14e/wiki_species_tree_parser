@@ -148,14 +148,17 @@
   align-content: space-evenly;
 }
 
-.back-history-dropdown {
+.dropdown-container {
   position: absolute;
   z-index: 1000;
-  max-height: 400px;
+  max-height: 600px;
   overflow-y: auto;
   background-color: var(--item-color-0);
   border: 2px solid black;
   border-radius: 0.5rem;
   padding: 4px;
-  margin-top: 4px;
+}
+
+.me-small {
+  margin-right: var(--small-margin);
 }

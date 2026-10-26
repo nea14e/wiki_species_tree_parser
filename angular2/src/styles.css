@@ -78,6 +78,7 @@
 
 :root {
   --search-item-size: 5rem;
+  --small-margin: 4px;
 }
 
 .resize-horizontal {
@@ -98,7 +99,7 @@
   display: flex;
   align-items: center;
   height: var(--search-item-size);
-  margin: 4px;
+  margin: var(--small-margin);
   border: 1px solid var(--item-accent);
   background-color: var(--item-color-0);
   border-radius: 0.5rem;
