@@ -207,7 +207,7 @@
                 </div>
               } @else {
                 <div class="item-btn btn mr-1"
-                     (click)="onFavoritesItemClick(item); $event.stopPropagation();"
+                     (click)="onFavoritesItemClick(level, item); $event.stopPropagation();"
                      [title]="rootData.translationRoot()?.translations?.add_to_favorites"
                 >
                   <img src="/from-bootstrap/bookmarks.svg"

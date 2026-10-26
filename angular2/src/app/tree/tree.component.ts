@@ -197,13 +197,13 @@ export class TreeComponent implements OnInit, OnDestroy {
     this._selectItemById(null);
   }
 
-  onFavoritesItemClick(item: Item): void {
+  onFavoritesItemClick(level: Level, item: Item): void {
     if (!this.favoritesService.hasCookie()) {
       if (!confirm(this.rootData.translationRoot()?.translations.favorites_use_cookies_question)) {
         return;
       }
     }
-    this.favoritesService.addItem(item);
+    this.favoritesService.addItem(level, item);
   }
 
   onUnFavoritesItemClick(item: Item): void {

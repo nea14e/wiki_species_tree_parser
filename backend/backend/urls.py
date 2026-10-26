@@ -19,7 +19,7 @@ Including another URLconf
 from django.urls import path
 
 from species_tree_backend.views import get_translations, get_childes_by_id, get_tree_by_id, get_tree_default, \
-        get_favorites, search_by_words, get_tip_of_the_day, get_tip_of_the_day_by_id, check, \
+        search_by_words, get_tip_of_the_day, get_tip_of_the_day_by_id, check, \
         admin_try_login, admin_get_known_languages_all, admin_get_main_admin_language, \
         admin_get_tasks, admin_add_task, admin_edit_task, admin_delete_task, \
         admin_start_one_task, admin_stop_one_task, \
@@ -38,7 +38,6 @@ urlpatterns = [
     path('api/get_childes_by_id/<int:_id>', get_childes_by_id),
     path('api/get_tree_by_id/<int:_id>', get_tree_by_id),
     path('api/get_tree_default', get_tree_default),
-    path('api/get_favorites', get_favorites),
     path('api/search_by_words', search_by_words),
     path('api/get_tip_of_the_day', get_tip_of_the_day),
     path('api/get_tip_of_the_day_by_id/<int:_id>', get_tip_of_the_day_by_id),

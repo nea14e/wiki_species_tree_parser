@@ -5,7 +5,6 @@ import {environment} from '../environments/environment';
 import {TranslationRoot} from './models/translation-root';
 import {TipOfTheDay} from './models/tip-of-the-day';
 import {Tree} from './models/tree';
-import {FavoritesItem} from './models/favorites-item';
 import {SearchItem} from './models/search-item';
 
 export const NETWORK_ERROR_DEFAULT_MESSAGE = 'Ошибка сети. Проверьте интернет-соединение.';
@@ -33,10 +32,6 @@ export class NetworkService {
 
   public getTreeById(id: number): Observable<Tree> {
     return this._http.get<Tree>(environment.BACKEND_API_URL + 'get_tree_by_id/' + id);
-  }
-
-  public getFavorites(ids: number[]): Observable<FavoritesItem[]> {
-    return this._http.post<FavoritesItem[]>(environment.BACKEND_API_URL + 'get_favorites', {ids});
   }
 
   public search(query: string, limit: number, offset: number = 0): Observable<SearchItem[]> {

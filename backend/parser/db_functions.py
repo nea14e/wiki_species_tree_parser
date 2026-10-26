@@ -122,7 +122,6 @@ class DbFunctions:
         run_script("functions", "get_tree_default", "Хранимка для выдачи дерева по умолчанию: перенакатываем...")
         run_script("functions", "get_tree_by_id", "Хранимка для выдачи дерева по id: перенакатываем...")
         run_script("functions", "get_childes_by_id", "Хранимка для подгрузки потомков дерева по id: перенакатываем...")
-        run_script("functions", "get_favorites", "Хранимка по выдаче избранного: перенакатываем...")
         run_script("functions", "search_by_words", "Хранимка по поиску: перенакатываем...")
         run_script("functions", "get_tip_of_the_day", "Хранимка по выдаче совета дня...")
         run_script("functions", "get_tip_of_the_day_by_id", "Хранимка по выдаче совета дня по id...")
