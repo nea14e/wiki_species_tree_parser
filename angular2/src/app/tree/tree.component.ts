@@ -177,6 +177,10 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onToTreeRootClick(): void {
+    if (!this.selectedItemInfo()) {
+      return;
+    }
+
     this._backTreeHistory.update(prevHistory => {
       return [
         ...prevHistory,
