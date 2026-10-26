@@ -210,9 +210,11 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   onBackButtonClick() {
     this.isShowBackMenu.update(value => !value);
+    this.isShowForwardMenu.set(false);
   }
 
   onForwardButtonClick() {
+    this.isShowBackMenu.set(false);
     this.isShowForwardMenu.update(value => !value);
   }
 
