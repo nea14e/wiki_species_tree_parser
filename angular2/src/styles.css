@@ -148,6 +148,15 @@
   object-fit: contain;
 }
 
+.input-text {
+  border: 1px solid var(--item-accent);
+  border-radius: 0.5rem;
+  background-color: var(--item-color-1);
+  padding: var(--small-margin);
+  box-sizing: border-box;
+  width: 100%;
+}
+
 .favorites-item-img-content {
   margin: auto;
   width: 100%;

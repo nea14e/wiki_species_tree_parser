@@ -4,8 +4,14 @@
       <div class="centered-text">
         {{ rootData.translationRoot()?.translations?.favorites_is_empty }}
       </div>
+    } @else {
+      <input class="input-text" type="text"
+             [ngModel]="filterText()"
+             (ngModelChange)="onFilterTextChanged($event)"
+             [placeholder]="rootData.translationRoot()?.translations?.plain_search_tooltip"
+             [title]="rootData.translationRoot()?.translations?.plain_search_tooltip">
     }
-    @for (item of favoritesService.items(); track item.id) {
+    @for (item of filteredItems(); track item.id) {
       <div class="plain-list-item pointer"
            (click)="toTree(item.id)">
 

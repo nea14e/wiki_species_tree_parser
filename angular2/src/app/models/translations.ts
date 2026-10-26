@@ -11,6 +11,7 @@ export interface Translations {
   link_copied: string;
   parent_word: string;
   search_word: string;
+  plain_search_tooltip: string;
   search_tooltip: string;
   authors_word: string;
   read_on_wiki: string;
