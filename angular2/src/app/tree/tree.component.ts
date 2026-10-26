@@ -177,6 +177,17 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onToTreeRootClick(): void {
+    this._backTreeHistory.update(prevHistory => {
+      return [
+        ...prevHistory,
+        new TreeHistoryItem(
+          this.selectedItemInfo()?.level ?? null,
+          this.selectedItemInfo()?.item ?? null
+        )
+      ];
+    });
+    this._forwardTreeHistory.set([]);
+
     this._selectItemById(null);
   }
 
