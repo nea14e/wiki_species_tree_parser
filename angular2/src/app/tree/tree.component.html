@@ -119,24 +119,19 @@
     <div class="level-hr col-12 mb-2" [class]="getLevelClass(level)"></div>
 
     <div class="level-title col-2 ml-0 mr-0" [class]="getLevelClass(level)">
+      {{ rootData.translationRoot()?.translations?.parent_word }}:
+      <br/><b class="level-parent-title">{{ level.level_parent_title }}</b>
+      <br/>
+      <br/>
       {{ rootData.translationRoot()?.translations?.rank_word }}:
-      <br/><b>{{ level.title_on_language }}</b>
-      @if (!!level.level_parent_title) {
-        <small>
-          <br/>
-          <br/>{{ rootData.translationRoot()?.translations?.parent_word }}:
-          <br/><i class="level-parent-title">{{ level.level_parent_title }}</i>
-        </small>
-      }
+      <br/><b><i>{{ level.title_on_language }}</i></b>
+      <br/>
 
       @if (!!level.is_level_has_selected_item) {
-        <div>
-          <br/>
-          <div style="margin-left: -12px;">
-            <img src="/from-bootstrap/caret-down-fill-darkpurple.svg"
-                 alt=""
-                 class="item-down-arrow"/>
-          </div>
+        <div style="margin-left: -12px;">
+          <img src="/from-bootstrap/caret-right-fill-accent.svg"
+               alt=""
+               class="level-selected-arrow"/>
         </div>
       }
     </div>

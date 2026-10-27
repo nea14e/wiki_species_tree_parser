@@ -2,7 +2,7 @@
 }
 
 .level-title.has-selected {
-  color: var(--item-selected-borders);
+  color: var(--item-accent);
 }
 
 .level-parent-title {
@@ -18,7 +18,12 @@
 .level-hr.has-selected {
   width: 100%;
   height: 5px;
-  background-color: var(--item-selected-borders);
+  background-color: var(--item-selected-1);
+}
+
+.level-selected-arrow {
+  width: 5em;
+  height: auto;
 }
 
 .item {
