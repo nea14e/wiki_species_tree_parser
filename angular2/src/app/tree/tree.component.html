@@ -147,7 +147,7 @@
 
           <div class="item-img-container" [class]="getItemClass(item)">
             @if (!!item.image_url) {
-              <img [src]="item.image_url"
+              <img [src]="'https:' + item.image_url"
                    [title]="item.title_for_language"
                    alt=""
                    class="item-img-content">
