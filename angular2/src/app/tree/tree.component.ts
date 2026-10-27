@@ -1,4 +1,14 @@
-import {Component, computed, HostListener, inject, OnDestroy, OnInit, signal} from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  ViewChild
+} from '@angular/core';
 import {Tree} from '../models/tree';
 import {LatinModeEnum} from '../models/latin-mode-enum';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
@@ -46,6 +56,7 @@ export class TreeComponent implements OnInit, OnDestroy {
     })
     .find(pair => !!pair.item)
   );
+  @ViewChild("treeRoot") treeRootElement!: ElementRef;
   latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
   LATIN_MODE_ENUM = LatinModeEnum;
 
@@ -302,9 +313,11 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   private _goToSelectedItem(): void {
     requestAnimationFrame(() => {
-      const element = document.querySelector('.item.selected');
-      if (element) {
-        element.scrollIntoView({behavior: 'smooth', block: 'center'});
+      const selectedElement = document.querySelector('.item.selected');
+      if (!!selectedElement) {
+        selectedElement.scrollIntoView({behavior: 'smooth', block: 'center'});
+      } else {
+        this.treeRootElement.nativeElement.scrollIntoView({behavior: 'smooth', block: 'center'});
       }
     });
   }
