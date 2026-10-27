@@ -13,6 +13,7 @@
   --item-selected-2: #997b07;
   --item-accent: #123097;
   --item-selected-borders: #6b3991;
+  --panel-background-color: #ebebba;
 }
 
 .cursor-pointer {
@@ -36,7 +37,17 @@
 }
 
 .customized-panel-dialog-content {
-  background: #ffffb4;
+  background-color: var(--panel-background-color);
+}
+
+.sticky-panel {
+  position: sticky;
+  top: 0.5em;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid black;
+  border-radius: 0.5rem;
+  background-color: var(--panel-background-color);
 }
 
 .btn.active,
