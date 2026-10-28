@@ -27,7 +27,9 @@ export interface Translations {
   site_description: string;
   copy_link_to_share: string;
   search_result_empty: string;
+  search_query_too_short: string;
   load_more: string;
+  loading_please_wait: string;
   leaves_count: string;
   expanded_tooltip: string;
   selected_tooltip: string;
@@ -53,6 +55,7 @@ export interface Translations {
   admin_edit_tip: string;
   attach_to_tree: string;
   detach_from_tree: string;
+  cancel_attaching_to_tip_id: string;
   admin_edit_translation: string;
   admin_users: string;
   admin_translate_from_your_current_language: string;

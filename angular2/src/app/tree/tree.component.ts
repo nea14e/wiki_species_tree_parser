@@ -21,11 +21,13 @@ import {Level} from '../models/level';
 import {FormsModule} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {TipOfTheDayDialogComponent} from '../tip-of-the-day/tip-of-the-day.component';
-import {distinctUntilChanged, map, Subscription, switchMap, tap} from 'rxjs';
+import {distinctUntilChanged, filter, map, Subscription, switchMap, tap} from 'rxjs';
 import {NgClass} from '@angular/common';
 import {TreeHistoryItem} from '../models/tree-history-item';
 import {PlainListItemComponent} from '../common/plain-list-item/plain-list-item';
 import {FavoritesComponent} from '../favorites/favorites.component';
+import {SearchMediatorService} from '../search/search-mediator.service';
+import {SearchComponent} from '../search/search.component';
 
 @Component({
   selector: 'app-tree.component',
@@ -33,7 +35,8 @@ import {FavoritesComponent} from '../favorites/favorites.component';
     FormsModule,
     NgClass,
     PlainListItemComponent,
-    FavoritesComponent
+    FavoritesComponent,
+    SearchComponent
   ],
   templateUrl: './tree.component.html',
   styleUrl: './tree.component.css',
@@ -59,6 +62,12 @@ export class TreeComponent implements OnInit, OnDestroy {
   @ViewChild("treeRoot") treeRootElement!: ElementRef;
   latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
   LATIN_MODE_ENUM = LatinModeEnum;
+
+  isShowSearch = signal(false);
+  @ViewChild("searchQueryInput") searchQueryInput!: ElementRef;
+  searchMediatorService = inject(SearchMediatorService);
+  attachToTipId = signal<number | null>(null);
+  private _attachToTipIdSubscription: Subscription | null = null;
 
   _backTreeHistory = signal<TreeHistoryItem[]>([]);
   _backTreeReversedHistory = computed(() => {
@@ -107,6 +116,20 @@ export class TreeComponent implements OnInit, OnDestroy {
         }, error: () => {
           alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
         }
+      });
+
+    this._attachToTipIdSubscription = this._activatedRoute.queryParamMap
+      .pipe(
+        map(
+          paramMap => paramMap.has("attachToTipId") && paramMap.get("attachToTipId") != null
+            ? +(paramMap.get("attachToTipId")!)
+            : null
+        ),
+        filter(attachToTipId => !!attachToTipId),
+        distinctUntilChanged()
+      )
+      .subscribe(attachToTipId => {
+        this.attachToTipId.set(attachToTipId);
       });
   }
 
@@ -237,15 +260,36 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this._queryParamMapIdSubscription?.unsubscribe();
+    this._attachToTipIdSubscription?.unsubscribe();
+  }
+
+  cancelAttachingToTipId() {
+    this._router.navigate(
+      ['tree'],
+      {
+        queryParams: {attachToTipId: null},
+        queryParamsHandling: "merge"
+      }
+    );
+  }
+
+  onSearchQueryChanged(value: string) {
+    this.isShowSearch.set(true);
+    this.isShowBackMenu.set(false);
+    this.isShowForwardMenu.set(false);
+    this.favoritesService.isFavoritesOpen.set(false);
+    this.searchMediatorService.searchQuery.next(value);
   }
 
   onBackButtonClick() {
+    this.isShowSearch.set(false);
     this.isShowBackMenu.update(value => !value);
     this.isShowForwardMenu.set(false);
     this.favoritesService.isFavoritesOpen.set(false);
   }
 
   onForwardButtonClick() {
+    this.isShowSearch.set(false);
     this.isShowBackMenu.set(false);
     this.isShowForwardMenu.update(value => !value);
     this.favoritesService.isFavoritesOpen.set(false);
@@ -258,12 +302,14 @@ export class TreeComponent implements OnInit, OnDestroy {
       this.isShowBackMenu.set(false);
       this.isShowForwardMenu.set(false);
       this.favoritesService.isFavoritesOpen.set(false);
+      this.isShowSearch.set(false);
     }
   }
 
   onBackHistoryItemClick(selectedItem: TreeHistoryItem): void {
     this.isShowBackMenu.set(false);
     this.isShowForwardMenu.set(false);
+    this.isShowSearch.set(false);
 
     const indexToMove = this._backTreeHistory()
       .findIndex(item => item.random_id === selectedItem.random_id);
@@ -287,6 +333,7 @@ export class TreeComponent implements OnInit, OnDestroy {
   onForwardHistoryItemClick(selectedItem: TreeHistoryItem) {
     this.isShowBackMenu.set(false);
     this.isShowForwardMenu.set(false);
+    this.isShowSearch.set(false);
 
     const indexToMove = this._forwardTreeHistory()
       .findIndex(item => item.random_id === selectedItem.random_id);
@@ -326,5 +373,34 @@ export class TreeComponent implements OnInit, OnDestroy {
     this.favoritesService.isFavoritesOpen.update(value => !value);
     this.isShowBackMenu.set(false);
     this.isShowForwardMenu.set(false);
+    this.isShowSearch.set(false);
+  }
+
+  onSearchQueryInputFocus() {
+    this.favoritesService.isFavoritesOpen.set(false);
+    this.isShowBackMenu.set(false);
+    this.isShowForwardMenu.set(false);
+    this.isShowSearch.set(true);
+    setTimeout(() => {
+      this.searchQueryInput.nativeElement.select();
+    }, 0);
+  }
+
+  onSearchItemClick(itemId: number) {
+    this.isShowSearch.set(false);
+    this.searchQueryInput.nativeElement.blur();
+
+    this._backTreeHistory.update(prevHistory => {
+      return [
+        ...prevHistory,
+        new TreeHistoryItem(
+          this.selectedItemInfo()?.level ?? null,
+          this.selectedItemInfo()?.item ?? null
+        )
+      ];
+    });
+    this._forwardTreeHistory.set([]);
+
+    this._selectItemById(itemId);
   }
 }
