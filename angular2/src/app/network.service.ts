@@ -6,6 +6,8 @@ import {TranslationRoot} from './models/translation-root';
 import {TipOfTheDay} from './models/tip-of-the-day';
 import {Tree} from './models/tree';
 import {SearchItem} from './models/search-item';
+import {LanguageListItem} from './models/language-list-item';
+import {SelectedLanguageKey1} from './common/models/selected-language-key1';
 
 export const NETWORK_ERROR_DEFAULT_MESSAGE = 'Ошибка сети. Проверьте интернет-соединение.';
 
@@ -14,8 +16,12 @@ export class NetworkService {
 
   private _http = inject(HttpClient);
 
-  public getTranslations(): Observable<TranslationRoot> {
-    return this._http.get<TranslationRoot>(environment.BACKEND_API_URL + 'get_translations');
+  public getLanguagesList(): Observable<LanguageListItem[]> {
+    return this._http.get<LanguageListItem[]>(environment.BACKEND_API_URL + 'get_languages_list');
+  }
+
+  public getTranslations(lang_key: SelectedLanguageKey1): Observable<TranslationRoot> {
+    return this._http.get<TranslationRoot>(environment.BACKEND_API_URL + 'get_translations/' + lang_key);
   }
 
   public getTipOfTheDay(): Observable<TipOfTheDay> {

@@ -17,14 +17,25 @@ from config_EXAMPLE import Config as ConfigExample
 # Собственно для работы приложения
 # ====================================
 
-def get_translations(request):  # выдаёт переводы интерфейса пользователя
-    accept_language = request.headers['Accept-Language']
-    language_key = get_language_key(accept_language)
+def get_languages_list(_):  # выдаёт список языков
+    conn = connections["default"]
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT public.get_languages_list();
+    """)
+    db_response = cur.fetchone()[0]
+    return JsonResponse(db_response, safe=False)
+
+
+def get_translations(request, _language_key: str):  # выдаёт переводы интерфейса пользователя
+    if not _language_key or _language_key == "auto":
+        accept_language = request.headers['Accept-Language']
+        _language_key = get_language_key(accept_language)
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
         SELECT public.get_translations(_language_key := %s);
-    """, (language_key,))
+    """, (_language_key,))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)
 

@@ -131,6 +131,7 @@ class DbFunctions:
         run_script("functions", "percent_of_to_color", "Хранимка по расчёту цвета от двух чисел (служебная): перенакатываем...")
         run_script("functions", "get_filling_stats", "Хранимка по выдаче статистики заполнения таблицы животных парсером: перенакатываем...")
         run_script("functions", "get_all_tips_translations", "Хранимка по выдаче советов для перевода: перенакатываем...")
+        run_script("functions", "get_languages_list", "Хранимка по выдаче списка языков: перенакатываем...")
 
         # Просто так
         Logger.print("\n\n===================================================")

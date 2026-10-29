@@ -2,7 +2,50 @@
 <div class="d-flex">
   <div class="main-content">
     <div class="container-fluid mb-2">
-      <h1>{{ translationRoot()?.translations?.site_title }}</h1>
+      <div class="d-flex align-items-center">
+        <div class="flex-grow-1">
+          <h1>{{ translationRoot()?.translations?.site_title }}</h1>
+        </div>
+        <img src="/from-bootstrap/translate.svg"
+             [alt]="translationRoot()?.translations?.language"
+             class="btn-img me-1"/>
+        <select [ngModel]="rootData.selectedLanguageKey1()"
+                (ngModelChange)="rootData.selectLanguageKey1($event)"
+                class="me-1">
+          <option [value]="'auto'"
+                  [selected]="rootData.selectedLanguageKey1()==='auto'">
+            (Auto)
+          </option>
+          <option [value]="'latin'"
+                  [selected]="rootData.selectedLanguageKey1()==='latin'">
+            Latin
+          </option>
+          @for (languageItem of languagesList(); track languageItem.lang_key) {
+            <option [value]="languageItem.lang_key"
+                    [selected]="rootData.selectedLanguageKey1()===languageItem.lang_key">
+              {{ languageItem.lang_key + " - " + languageItem.comment }}
+            </option>
+          }
+        </select>
+        <select [ngModel]="rootData.selectedLanguageKey2()"
+                (ngModelChange)="rootData.selectLanguageKey2($event)"
+                class="me-1">
+          <option [value]="null"
+                  [selected]="rootData.selectedLanguageKey2()===null">
+            &mdash;
+          </option>
+          <option [value]="'latin'"
+                  [selected]="rootData.selectedLanguageKey2()==='latin'">
+            Latin
+          </option>
+          @for (languageItem of languagesList(); track languageItem.lang_key) {
+            <option [value]="languageItem.lang_key"
+                    [selected]="rootData.selectedLanguageKey2()===languageItem.lang_key">
+              {{ languageItem.lang_key + " - " + languageItem.comment }}
+            </option>
+          }
+        </select>
+      </div>
       <h4 style="font-size: 1.3rem">{{ translationRoot()?.translations?.site_description }}</h4>
 
       <div class="row ml-0 mr-0 mb-2">

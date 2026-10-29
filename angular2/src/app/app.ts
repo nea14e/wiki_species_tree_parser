@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {TranslationRoot} from './models/translation-root';
 import {PagesEnum} from './pages-enum';
@@ -8,6 +8,8 @@ import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
 import {Location, NgClass} from '@angular/common';
 import {FormsModule} from '@angular/forms';
+import {LanguageListItem} from './models/language-list-item';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +17,7 @@ import {FormsModule} from '@angular/forms';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
 
   public rootData = inject(RootDataKeeperService);
   private networkService = inject(NetworkService);
@@ -24,7 +26,9 @@ export class App implements OnInit {
   private location = inject(Location);
   private titleService = inject(Title);
 
+  languagesList = signal<LanguageListItem[] | []>([]);
   translationRoot = signal<TranslationRoot | null>(null);
+  private _languagesChangedSubscription: Subscription | null = null;
   isAdminMode = signal(false);  // активируется по URL "/admin" и его продолжениям
   adminLoginResult = signal<string | null>(null);
   JSON = JSON;
@@ -32,15 +36,12 @@ export class App implements OnInit {
   PagesEnum = PagesEnum;
 
   ngOnInit(): void {
-    this.networkService.getTranslations().subscribe({
-      next: data => {
-        this.translationRoot.set(data);
-        this.rootData.translationRoot.set(data);
-        this.titleService.setTitle(data.translations.site_title);
-      }, error: () => {
-        alert(NETWORK_ERROR_DEFAULT_MESSAGE);  // Здесь переводы ещё не загружены, поэтому не переведённое.
-        // В остальных местах используйте
-        // alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
+    this._getLanguagesList();
+    this._getTranslations();
+
+    this._languagesChangedSubscription = this.rootData.languagesChangedSubject.subscribe({
+      next: _ => {
+        this._getTranslations();
       }
     });
 
@@ -50,6 +51,32 @@ export class App implements OnInit {
       }
       const urlWithoutParams = url.split('?')[0];
       this.currentPage = urlWithoutParams as PagesEnum;
+    });
+  }
+
+  private _getLanguagesList() {
+    this.networkService.getLanguagesList().subscribe({
+      next: data => {
+        this.languagesList.set(data);
+      }, error: () => {
+        alert(this.rootData.translationRoot()?.translations.network_error ?? NETWORK_ERROR_DEFAULT_MESSAGE);
+      }
+    });
+  }
+
+  private _getTranslations() {
+    const langKey = this.rootData.selectedLanguageKey1();
+    this.networkService.getTranslations(langKey).subscribe({
+      next: data => {
+        this.translationRoot.set(data);
+        this.rootData.translationRoot.set(data);
+        this.rootData.selectLanguageKey1(data.lang_key);
+        this.titleService.setTitle(data.translations.site_title);
+      }, error: () => {
+        alert(NETWORK_ERROR_DEFAULT_MESSAGE);  // Здесь переводы ещё не загружены, поэтому не переведённое.
+        // В остальных местах используйте
+        // alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
+      }
     });
   }
 
@@ -139,5 +166,9 @@ export class App implements OnInit {
         .then(() => this.router.navigate(['tip-translation']));
       return;
     }
+  }
+
+  ngOnDestroy() {
+    this._languagesChangedSubscription?.unsubscribe();
   }
 }

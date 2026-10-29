@@ -18,7 +18,8 @@ Including another URLconf
 #  from django.contrib import admin
 from django.urls import path
 
-from species_tree_backend.views import get_translations, get_childes_by_id, get_tree_by_id, get_tree_default, \
+from species_tree_backend.views import get_languages_list, get_translations, \
+        get_childes_by_id, get_tree_by_id, get_tree_default, \
         search_by_words, get_tip_of_the_day, get_tip_of_the_day_by_id, check, \
         admin_try_login, admin_get_known_languages_all, admin_get_main_admin_language, \
         admin_get_tasks, admin_add_task, admin_edit_task, admin_delete_task, \
@@ -34,7 +35,8 @@ from config import Config
 
 urlpatterns = [
     # path('admin/', admin.site.urls),  # Стандартная админ-панель Django - просто не нужна
-    path('api/get_translations', get_translations),
+    path('api/get_languages_list', get_languages_list),
+    path('api/get_translations/<str:_language_key>', get_translations),
     path('api/get_childes_by_id/<int:_id>', get_childes_by_id),
     path('api/get_tree_by_id/<int:_id>', get_tree_by_id),
     path('api/get_tree_default', get_tree_default),
