@@ -1,4 +1,4 @@
-import {Component, computed, effect, ElementRef, inject, OnDestroy, signal, ViewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, OnDestroy, output, signal, ViewChild} from '@angular/core';
 import {FavoritesItem} from '../models/favorites-item';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {FavoritesService} from '../common/favorites.service';
@@ -15,6 +15,8 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
   styleUrl: './favorites.component.css',
 })
 export class FavoritesComponent implements OnDestroy {
+
+  onFavoritesItemClick = output<number>();
 
   rootData = inject(RootDataKeeperService);
   favoritesService = inject(FavoritesService);
@@ -51,11 +53,6 @@ export class FavoritesComponent implements OnDestroy {
       return;
     }
     this.favoritesService.deleteItem(item.id);
-  }
-
-  toTree(id: number): void {
-    this.favoritesService.isFavoritesOpen.set(false);
-    this._router.navigate(['tree'], {queryParams: {id}});
   }
 
   ngOnDestroy() {

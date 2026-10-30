@@ -84,7 +84,7 @@
       </div>
       @if (favoritesService.isFavoritesOpen()) {
         <div class="dropdown-container">
-          <app-favorites></app-favorites>
+          <app-favorites (onFavoritesItemClick)="onMenuItemClick($event)"/>
         </div>
       }
     </div>
@@ -116,7 +116,7 @@
              [title]="rootData.translationRoot()?.translations?.search_tooltip">
       <div class="dropdown-container"
            [ngClass]="!isShowSearch() ? 'invisible-element' : ''">
-        <app-search (onSearchItemClick)="onSearchItemClick($event)"/>
+        <app-search (onSearchItemClick)="onMenuItemClick($event)"/>
       </div>
     </div>
   </div>

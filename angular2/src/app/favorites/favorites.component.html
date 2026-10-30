@@ -13,7 +13,7 @@
     }
     @for (item of filteredItems(); track item.id) {
       <div class="plain-list-item pointer"
-           (click)="toTree(item.id)">
+           (click)="onFavoritesItemClick.emit(item.id)">
 
         <div class="plain-list-item-img-container">
           @if (!!item.image_url) {

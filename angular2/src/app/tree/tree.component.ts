@@ -403,9 +403,15 @@ export class TreeComponent implements OnInit, OnDestroy {
     }, 0);
   }
 
-  onSearchItemClick(itemId: number) {
+  onMenuItemClick(itemId: number) {
     this.isShowSearch.set(false);
     this.searchQueryInput.nativeElement.blur();
+    this.favoritesService.isFavoritesOpen.set(false);
+
+    if (this.selectedItemInfo()?.item?.id === itemId) {
+      this._goToSelectedItem();
+      return;
+    }
 
     this._backTreeHistory.update(prevHistory => {
       return [
