@@ -27,11 +27,18 @@ FROM (
        FROM translated_cte t
           CROSS JOIN english_cte e
        UNION ALL
+       SELECT 'latin',
+              'Latin',
+              e.translations AS translations
+       FROM english_cte e
+       WHERE _language_key = 'latin'
+       UNION ALL
        SELECT e.lang_key,
               e.comment,
               e.translations AS translations
        FROM english_cte e
-       WHERE NOT EXISTS(SELECT 1
+       WHERE _language_key != 'latin'
+         AND NOT EXISTS(SELECT 1
                         FROM translated_cte)
      ) t;
 $$;
