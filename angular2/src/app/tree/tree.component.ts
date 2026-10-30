@@ -20,7 +20,7 @@ import {Level} from '../models/level';
 import {FormsModule} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {TipOfTheDayDialogComponent} from '../tip-of-the-day/tip-of-the-day.component';
-import {distinctUntilChanged, filter, map, Subscription, switchMap, tap} from 'rxjs';
+import {combineLatest, distinctUntilChanged, filter, map, Subscription, switchMap, tap} from 'rxjs';
 import {NgClass} from '@angular/common';
 import {TreeHistoryItem} from '../models/tree-history-item';
 import {PlainListItemComponent} from '../common/plain-list-item/plain-list-item';
@@ -83,22 +83,32 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._subscribeQueryParamMapId();
+    this._subscribeQueryParamsMapAttachToTipId();
     this.openTipDialog();
   }
 
   private _subscribeQueryParamMapId() {
-    this._queryParamMapIdSubscription = this._activatedRoute.queryParamMap
+    const queryParamMapChanged$ = this._activatedRoute.queryParamMap
       .pipe(
-        map(
-          paramMap => paramMap.has("id") && paramMap.get("id") != null
-            ? +(paramMap.get("id")!)
-            : null
+        map(paramMap => paramMap.has("id") && paramMap.get("id") != null
+          ? +(paramMap.get("id")!)
+          : null
         ),
-        distinctUntilChanged(),
+        distinctUntilChanged()
+      );
+
+    const selectedLanguageChanged$ = this.rootData.languagesChangedSubject
+      .pipe(
+        map(selectedLanguagesInfo => JSON.stringify(selectedLanguagesInfo)),
+        distinctUntilChanged()
+      )
+
+    this._queryParamMapIdSubscription = combineLatest([queryParamMapChanged$, selectedLanguageChanged$])
+      .pipe(
+        map(params => params[0]),
         tap({
           next: id => {
             this.rootData.lastTreeId = id;
-            console.log("queryParamMap changed: id:", id);  // TODO
           }
         }),
         switchMap(id => !!id
@@ -123,7 +133,9 @@ export class TreeComponent implements OnInit, OnDestroy {
           alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
         }
       });
+  }
 
+  private _subscribeQueryParamsMapAttachToTipId() {
     this._attachToTipIdSubscription = this._activatedRoute.queryParamMap
       .pipe(
         map(
