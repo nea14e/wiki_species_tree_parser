@@ -41,7 +41,6 @@ BEGIN
                     latin AS title_latin,
                     page_id,
                     image_url,
-                    titles_by_languages,
                     parent_id,
                     leaves_count,
                     FALSE                                                  AS is_expanded,

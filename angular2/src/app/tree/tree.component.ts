@@ -194,16 +194,15 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   canReadWiki(item: Item): boolean {
-    const langKey = this.tree()?._language_key;
-    return !!langKey && langKey in item.titles_by_languages;
+    return !!item.title_for_language1;
   }
 
   onReadWikiClick(item: Item): void {
-    const langKey = this.tree()?._language_key;
-    if (!langKey || !(langKey in item.titles_by_languages)) {
+    const langKey = this.tree()?._language_key1;
+    if (!langKey) {
       return;
     }
-    const url = 'https://' + langKey + '.ruwiki.ru/wiki/' + item.titles_by_languages[langKey];  // TODO ruwiki
+    const url = 'https://' + langKey + '.ruwiki.ru/wiki/' + item.title_for_language1;  // TODO ruwiki
     window.open(url, '_blank');
   }
 
