@@ -3,7 +3,7 @@ import {SearchItem} from '../models/search-item';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {NetworkService} from '../network.service';
 import {Router} from '@angular/router';
-import {debounceTime, distinctUntilChanged, Subscription, tap} from 'rxjs';
+import {combineLatest, debounceTime, distinctUntilChanged, map, Subscription, tap} from 'rxjs';
 import {FormsModule} from "@angular/forms";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {SearchMediatorService} from './search-mediator.service';
@@ -45,7 +45,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   private router = inject(Router);
 
   ngOnInit(): void {
-    this._searchQuerySubscription = this._searchMediatorService.searchQuery  // see https://stackoverflow.com/a/52977862/7573844
+    const searchQueryChanged$ = this._searchMediatorService.searchQuery  // see https://stackoverflow.com/a/52977862/7573844
       .pipe(
         tap({
           next: value => {
@@ -54,7 +54,15 @@ export class SearchComponent implements OnInit, OnDestroy {
         }),
         debounceTime(1000), // wait 1 sec after the last event before emitting last event
         distinctUntilChanged() // only emit if value is different from previous value
-      )
+      );
+
+    const selectedLanguageChanged$ = this.rootData.languagesChangedSubject
+      .pipe(
+        map(selectedLanguageInfo => JSON.stringify(selectedLanguageInfo)),
+        distinctUntilChanged()
+      );
+
+    this._searchQuerySubscription = combineLatest([searchQueryChanged$, selectedLanguageChanged$])
       .subscribe(data => {
         console.log('search:', data);
         this.runSearch(0);
