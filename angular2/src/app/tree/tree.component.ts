@@ -202,7 +202,7 @@ export class TreeComponent implements OnInit, OnDestroy {
     if (!langKey) {
       return;
     }
-    const url = 'https://' + langKey + '.ruwiki.ru/wiki/' + item.title_for_language1;  // TODO ruwiki
+    const url = 'https://' + langKey + '.wikipedia.org/wiki/' + item.title_for_language1;
     window.open(url, '_blank');
   }
 
