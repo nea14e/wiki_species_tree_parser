@@ -71,7 +71,11 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     this.isLoading.set(true);
     this.isLoadingMore.set(offset > 0);
-    this.networkService.search(this.searchQuery(), this.ITEMS_COUNT_BY_QUERY, offset)
+    this.networkService.search
+    (
+      this.searchQuery(), this.ITEMS_COUNT_BY_QUERY, offset,
+      this.rootData.selectedLanguageKey1(), this.rootData.selectedLanguageKey2()
+    )
       .subscribe({
         next: result => {
           console.log('result:', result);

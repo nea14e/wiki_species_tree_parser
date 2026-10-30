@@ -4,7 +4,7 @@
   <div class="plain-list-item-img-container">
     @if (item()?.image_url) {
       <img [src]="'https:' + item()!.image_url"
-           [title]="item()?.title_for_language"
+           [title]="item()?.title_for_language1 || item()?.title_latin"
            alt=""
            class="favorites-item-img-content">
     } @else if (isShowTreeRootIcon()) {
@@ -17,19 +17,29 @@
   <div class="plain-list-item-title">
     <div class="align-self-center d-flex flex-column">
       @if (!!item()) {
-        @if (!!level()?.title_on_language) {
+        @if (!!level()?.rank_for_language1 || !!level()?.rank_latin) {
           <small class="plain-list-item-title-rank"
-                 [title]="level()?.title_on_language">
-            {{ level()?.title_on_language }}
+                 [title]="level()?.rank_for_language1 || level()?.rank_latin">
+            {{ level()?.rank_for_language1 || level()?.rank_latin }}
           </small>
         }
-        <b class="plain-list-item-title-title"
-           [title]="item()?.title_for_language">
-          {{ item()?.title_for_language }}
-        </b>
+        @if (!!item()?.title_for_language1) {
+          <b [title]="item()?.title_for_language1">
+            {{ item()?.title_for_language1 }}
+          </b>
+        }
+        @if (!!item()?.title_for_language2) {
+          <i [title]="item()?.title_for_language2">
+            {{ item()?.title_for_language2 }}
+          </i>
+        }
+        @if (!item()?.title_for_language1 && !item()?.title_for_language2) {
+          <span [title]="item()?.title_latin">
+            {{ item()?.title_latin }}
+          </span>
+        }
       } @else {
-        <b class="plain-list-item-title-title"
-           [title]="rootData.translationRoot()?.translations?.to_tree_root">
+        <b [title]="rootData.translationRoot()?.translations?.to_tree_root">
           {{ rootData.translationRoot()?.translations?.to_tree_root }}
         </b>
       }

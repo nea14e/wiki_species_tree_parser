@@ -9,14 +9,28 @@
           @if (!!item.image_url) {
             <img [src]="item.image_url"
                  alt=""
-                 [title]="item.title_for_language"
+                 [title]="item.title_for_language1 || item.title_latin"
                  class="plain-list-item-img-content">
           }
         </div>
 
-        <div>
-          <small>{{ item.rank_for_language }}</small>
-          <br/><b>{{ item.title_for_language }}</b>
+        <div class="d-flex flex-column">
+          <small>{{ item.rank_for_language1 || item.rank_latin }}</small>
+          @if (!!item.title_for_language1) {
+            <b [title]="item.title_for_language1">
+              {{ item.title_for_language1 }}
+            </b>
+          }
+          @if (!!item.title_for_language2) {
+            <i [title]="item.title_for_language2">
+              {{ item.title_for_language2 }}
+            </i>
+          }
+          @if (!item.title_for_language1 && !item.title_for_language2) {
+            <span [title]="item.title_latin">
+              {{ item.title_latin }}
+            </span>
+          }
         </div>
 
         <div class="flex-grow-1 d-flex justify-content-end align-items-center">

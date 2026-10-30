@@ -32,8 +32,11 @@ export class FavoritesService {
     const itemsClone = [...this.items()];
     itemsClone.push({
       id: item.id,
-      rank_for_language: level.title_on_language,
-      title_for_language: item.title_for_language,
+      rank_for_language1: level.rank_for_language1,
+      rank_latin: level.rank_latin,
+      title_for_language1: item.title_for_language1,
+      title_for_language2: item.title_for_language2,
+      title_latin: item.title_latin,
       image_url: item.image_url,
       leaves_count: item.leaves_count
     } as FavoritesItem)

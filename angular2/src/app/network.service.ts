@@ -8,6 +8,7 @@ import {Tree} from './models/tree';
 import {SearchItem} from './models/search-item';
 import {LanguageListItem} from './models/language-list-item';
 import {SelectedLanguageKey1} from './common/models/selected-language-key1';
+import {SelectedLanguageKey2} from './common/models/selected-language-key2';
 
 export const NETWORK_ERROR_DEFAULT_MESSAGE = 'Ошибка сети. Проверьте интернет-соединение.';
 
@@ -32,20 +33,43 @@ export class NetworkService {
     return this._http.get<TipOfTheDay>(environment.BACKEND_API_URL + 'get_tip_of_the_day_by_id/' + id);
   }
 
-  public getTreeDefault(): Observable<Tree> {
-    return this._http.get<Tree>(environment.BACKEND_API_URL + 'get_tree_default');
+  public getTreeDefault(language_key1: SelectedLanguageKey1, language_key2: SelectedLanguageKey2): Observable<Tree> {
+    if (language_key2 === null) {
+      language_key2 = "null"
+    }
+    return this._http.get<Tree>(
+      environment.BACKEND_API_URL + 'get_tree_default',
+      {
+        params: {language_key1, language_key2}
+      }
+    );
   }
 
-  public getTreeById(id: number): Observable<Tree> {
-    return this._http.get<Tree>(environment.BACKEND_API_URL + 'get_tree_by_id/' + id);
+  public getTreeById(id: number, language_key1: SelectedLanguageKey1,
+                     language_key2: SelectedLanguageKey2): Observable<Tree> {
+    if (language_key2 === null) {
+      language_key2 = "null"
+    }
+    return this._http.get<Tree>(
+      environment.BACKEND_API_URL + 'get_tree_by_id/' + id,
+      {
+        params: {language_key1, language_key2}
+      }
+    );
   }
 
-  public search(query: string, limit: number, offset: number = 0): Observable<SearchItem[]> {
+  public search(query: string, limit: number, offset: number = 0,
+                language_key1: SelectedLanguageKey1, language_key2: SelectedLanguageKey2): Observable<SearchItem[]> {
+    if (language_key2 === null) {
+      language_key2 = "null"
+    }
     return this._http.get<SearchItem[]>(environment.BACKEND_API_URL + 'search_by_words', {
       params: {
         query,
         limit: limit.toString(),
-        offset: offset.toString()
+        offset: offset.toString(),
+        language_key1,
+        language_key2
       }
     });
   }

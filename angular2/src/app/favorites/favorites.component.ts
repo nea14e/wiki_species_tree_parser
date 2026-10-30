@@ -32,7 +32,10 @@ export class FavoritesComponent implements OnDestroy {
   filterText = signal("");
   filteredItems = computed(
     () => !!this.filterText()
-      ? this.favoritesService.items().filter(item => item.title_for_language.toUpperCase().includes(this.filterText().toUpperCase()))
+      ? this.favoritesService.items().filter(item =>
+        item.title_for_language1.toUpperCase().includes(this.filterText().toUpperCase())
+        || item.title_for_language2.toUpperCase().includes(this.filterText().toUpperCase())
+        || item.title_latin.toUpperCase().includes(this.filterText().toUpperCase()))
       : this.favoritesService.items()
   );
   isFavoritesEmpty = computed(

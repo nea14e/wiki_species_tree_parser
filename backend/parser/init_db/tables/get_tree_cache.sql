@@ -1,4 +1,4 @@
-CREATE TABLE public.get_tree_cache
+CREATE TABLE IF NOT EXISTS public.get_tree_cache
 (
   id                  bigint PRIMARY KEY
     REFERENCES public.list(id),

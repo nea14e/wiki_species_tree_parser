@@ -27,10 +27,10 @@ INSERT INTO public.list (id, title, page_id, type, image_url, titles_by_language
 VALUES (22, 'Bb_without_languages', 'Bb_url', '2nd', '//thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Acanthacorydalis_asiatica.jpg/330px-Acanthacorydalis_asiatica.jpg?utm_source=ru.wikipedia.org&utm_campaign=parser&utm_content=thumbnail', '{}', 'B_url', 2, 9, null, 'Bb_without_languages_latin');
 
 INSERT INTO public.list (id, title, page_id, type, image_url, titles_by_languages, parent_title, parent_id, leaves_count, last_error_message, latin)
-VALUES (23, 'Bc_not_translated', 'Bc_url', '2nd', '//thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Garden_locust_%28Acanthacris_ruficornis%29.jpg/330px-Garden_locust_%28Acanthacris_ruficornis%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=parser&utm_content=thumbnail', '{}', 'B_url', 2, 0, null, 'Bc_not_translated_latin');
+VALUES (23, 'Bc_en_only', 'Bc_en_only_url', '2nd', '//thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Garden_locust_%28Acanthacris_ruficornis%29.jpg/330px-Garden_locust_%28Acanthacris_ruficornis%29.jpg?utm_source=ru.wikipedia.org&utm_campaign=parser&utm_content=thumbnail', '{"en": "Bc_en"}', 'B_url', 2, 0, null, 'Bc_en_only_latin');
 
 INSERT INTO public.list (id, title, page_id, type, image_url, titles_by_languages, parent_title, parent_id, leaves_count, last_error_message, latin)
-VALUES (24, 'Bd', 'Bd_url', '2nd', '//thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/UplandSandpiperOntarioCropped.jpg/330px-UplandSandpiperOntarioCropped.jpg?utm_source=ru.wikipedia.org&utm_campaign=parser&utm_content=thumbnail', '{"en": "Bd_en", "ru": "Bd_ru"}', 'B_url', 2, 0, null, 'Bd_latin');
+VALUES (24, 'Bd_ru_only', 'Bd_ru_only_url', '2nd', '//thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/UplandSandpiperOntarioCropped.jpg/330px-UplandSandpiperOntarioCropped.jpg?utm_source=ru.wikipedia.org&utm_campaign=parser&utm_content=thumbnail', '{"ru": "Bd_ru"}', 'B_url', 2, 0, null, 'Bd_ru_only_latin');
 
 INSERT INTO public.list (id, title, page_id, type, image_url, titles_by_languages, parent_title, parent_id, leaves_count, last_error_message, latin)
 VALUES (31, 'xc1', 'xc1_url', '3rd', '//thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Marmotte-bobak.png/330px-Marmotte-bobak.png?utm_source=ru.wikipedia.org&utm_campaign=parser&utm_content=thumbnail', '{"en": "xc1_en", "ru": "xc1_ru"}', 'xc_url', 3, 0, null, 'xc1_latin');

@@ -8,7 +8,8 @@ export interface Item {
   is_expanded: boolean;
   is_selected: boolean;
   leaves_count: number;
+  title_for_language1: string;
+  title_for_language2: string;
   title_latin: string;
-  title_for_language: string;
   titles_by_languages: DynamicMap<string>;
 }

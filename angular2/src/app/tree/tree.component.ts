@@ -10,7 +10,6 @@ import {
   ViewChild
 } from '@angular/core';
 import {Tree} from '../models/tree';
-import {LatinModeEnum} from '../models/latin-mode-enum';
 import {RootDataKeeperService} from '../common/root-data-keeper.service';
 import {NETWORK_ERROR_DEFAULT_MESSAGE, NetworkService} from '../network.service';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -60,8 +59,6 @@ export class TreeComponent implements OnInit, OnDestroy {
     .find(pair => !!pair.item)
   );
   @ViewChild("treeRoot") treeRootElement!: ElementRef;
-  latinMode: LatinModeEnum = LatinModeEnum.TranslatedOnly;
-  LATIN_MODE_ENUM = LatinModeEnum;
 
   isShowSearch = signal(false);
   @ViewChild("searchQueryInput") searchQueryInput!: ElementRef;
@@ -105,8 +102,17 @@ export class TreeComponent implements OnInit, OnDestroy {
           }
         }),
         switchMap(id => !!id
-          ? this._networkService.getTreeById(id)
-          : this._networkService.getTreeDefault()
+          ? this._networkService.getTreeById
+          (
+            id,
+            this.rootData.selectedLanguageKey1(),
+            this.rootData.selectedLanguageKey2()
+          )
+          : this._networkService.getTreeDefault
+          (
+            this.rootData.selectedLanguageKey1(),
+            this.rootData.selectedLanguageKey2()
+          )
         )
       )
       .subscribe({
@@ -202,7 +208,7 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onYandexItemClick(item: Item): void {
-    const url = 'https://yandex.ru/search/?text=' + encodeURIComponent(item.title_for_language);
+    const url = 'https://yandex.ru/search/?text=' + encodeURIComponent(item.title_for_language1);
     window.open(url, '_blank');
   }
 

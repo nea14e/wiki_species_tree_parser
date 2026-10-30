@@ -88,31 +88,6 @@
         </div>
       }
     </div>
-
-    <label class="align-self-center mr-4">
-      <input type="radio" name="latin"
-             [title]="rootData.translationRoot()?.translations?.translated_only"
-             [value]="LATIN_MODE_ENUM.TranslatedOnly"
-             [(ngModel)]="latinMode"
-      >
-      {{ rootData.translationRoot()?.translations?.translated_only }}
-    </label>
-    <label class="align-self-center mr-4">
-      <input type="radio" name="latin"
-             [title]="rootData.translationRoot()?.translations?.both_languages"
-             [value]="LATIN_MODE_ENUM.BothLanguages"
-             [(ngModel)]="latinMode"
-      >
-      {{ rootData.translationRoot()?.translations?.both_languages }}
-    </label>
-    <label class="align-self-center mr-4">
-      <input type="radio" name="latin"
-             [title]="rootData.translationRoot()?.translations?.latin_only"
-             [value]="LATIN_MODE_ENUM.LatinOnly"
-             [(ngModel)]="latinMode"
-      >
-      {{ rootData.translationRoot()?.translations?.latin_only }}
-    </label>
   </div>
 
   <div class="d-flex justify-content-center align-items-center p-1">
@@ -157,7 +132,7 @@
       <br/>
       <br/>
       {{ rootData.translationRoot()?.translations?.rank_word }}:
-      <br/><b><i>{{ level.title_on_language }}</i></b>
+      <br/><b><i>{{ level.rank_for_language1 || level.rank_latin }}</i></b>
       <br/>
 
       @if (!!level.is_level_has_selected_item) {
@@ -176,25 +151,20 @@
           <div class="item-img-container" [class]="getItemClass(item)">
             @if (!!item.image_url) {
               <img [src]="'https:' + item.image_url"
-                   [title]="item.title_for_language"
+                   [title]="item.title_for_language1 || item.title_latin"
                    alt=""
                    class="item-img-content">
             }
           </div>
-          <div class="item-title d-flex justify-content-center" [class]="getItemClass(item)">
-            @if (latinMode === LATIN_MODE_ENUM.TranslatedOnly || latinMode === LATIN_MODE_ENUM.BothLanguages) {
-              {{ item.title_for_language }}
+          <div class="item-title d-flex flex-column align-items-center" [class]="getItemClass(item)">
+            <b>{{ item.title_for_language1 }}</b>
+            @if (!!item.title_for_language2) {
+              <i>{{ item.title_for_language2 }}</i>
             }
-            @if (latinMode === LATIN_MODE_ENUM.LatinOnly) {
-              {{ item.title_latin }}
+            @if (!item.title_for_language1 && !item.title_for_language2) {
+              <span>{{ item.title_latin }}</span>
             }
           </div>
-          @if (latinMode === LATIN_MODE_ENUM.BothLanguages) {
-            <div class="item-title-second d-flex justify-content-center"
-                 [class]="getItemClass(item)">
-              {{ item.title_latin }}
-            </div>
-          }
 
           @if (!!item.is_selected) {
             <div class="item-btn-container">

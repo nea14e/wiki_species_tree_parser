@@ -132,6 +132,7 @@ class DbFunctions:
         run_script("functions", "get_filling_stats", "Хранимка по выдаче статистики заполнения таблицы животных парсером: перенакатываем...")
         run_script("functions", "get_all_tips_translations", "Хранимка по выдаче советов для перевода: перенакатываем...")
         run_script("functions", "get_languages_list", "Хранимка по выдаче списка языков: перенакатываем...")
+        run_script("functions", "get_key_for_tree_cache", "Хранимка по составлению ключа для tree_cache: перенакатываем...")
 
         # Просто так
         Logger.print("\n\n===================================================")

@@ -17,6 +17,27 @@ from config_EXAMPLE import Config as ConfigExample
 # Собственно для работы приложения
 # ====================================
 
+def get_language_decorator():
+    def decorator(func):  # декоратор должен вернуть функцию, которая сама принимает на вход декорируемую функцию func()
+        def wrapped(*args, **kw):  # вызов декорируемой функции func() будет заменён на вызов этой функции wrapped() с такими же аргументами
+            request = args[0]
+
+            language_key1 = request.GET.get('language_key1', 'auto')
+            if language_key1 == "auto":
+                accept_language = request.headers['Accept-Language']
+                language_key1 = get_language_key(accept_language)
+
+            language_key2 = request.GET.get('language_key2')
+            if language_key2 == "null":
+                language_key2 = None
+
+            kw["language_key1"] = language_key1
+            kw["language_key2"] = language_key2
+            return func(*args, **kw)
+        return wrapped
+    return decorator
+
+
 def get_languages_list(_):  # выдаёт список языков
     conn = connections["default"]
     cur = conn.cursor()
@@ -53,32 +74,32 @@ def get_childes_by_id(request,
     return JsonResponse(db_response, safe=False)
 
 
-def get_tree_by_id(request,
-                   _id: int):  # выдаёт дерево, раскрытое на записи с нужным id (уровни до него и все его прямые потомки на разных уровнях)
-    accept_language = request.headers['Accept-Language']
-    language_key = get_language_key(accept_language)
+# Выдаёт дерево, раскрытое на записи с нужным id (уровни до него и все его прямые потомки на разных уровнях)
+@get_language_decorator()
+def get_tree_by_id(_, _id: int, language_key1: str, language_key2: str):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.get_tree_by_id(_id := %s, _language_key := %s);
-    """, (_id, language_key,))
+        SELECT public.get_tree_by_id(_id := %s, _language_key1 := %s, _language_key2 := %s);
+    """, (_id, language_key1, language_key2))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)
 
 
-def get_tree_default(request):  # выдаёт дерево с видом по умолчанию (первые три уровня целиком)
-    accept_language = request.headers['Accept-Language']
-    language_key = get_language_key(accept_language)
+# Выдаёт дерево с видом по умолчанию (первые три уровня целиком)
+@get_language_decorator()
+def get_tree_default(_, language_key1: str, language_key2: str):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.get_tree_default(_language_key := %s);
-    """, (language_key,))
+        SELECT public.get_tree_default(_language_key1 := %s, _language_key2 := %s);
+    """, (language_key1, language_key2))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)
 
 
-def search_by_words(request):
+@get_language_decorator()
+def search_by_words(request, language_key1: str, language_key2: str):
     query = request.GET['query']
     limit = int(request.GET['limit'])
     offset = int(request.GET['offset'])
@@ -86,13 +107,11 @@ def search_by_words(request):
         return JsonResponse({
             "Error": "Query for text-search must have at least 3 characters."
         })
-    accept_language = request.headers['Accept-Language']
-    language_key = get_language_key(accept_language)
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.search_by_words(_query := %s, _limit := %s, _offset := %s, _language_key := %s);
-    """, (query, limit, offset, language_key,))
+        SELECT public.search_by_words(_query := %s, _limit := %s, _offset := %s, _language_key1 := %s, _language_key2 := %s);
+    """, (query, limit, offset, language_key1, language_key2))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
 

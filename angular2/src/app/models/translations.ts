@@ -5,9 +5,6 @@ export interface Translations {
   next_fact: string;
   rank_word: string;
   site_title: string;
-  translated_only: string;
-  latin_only: string;
-  both_languages: string;
   link_copied: string;
   parent_word: string;
   search_word: string;

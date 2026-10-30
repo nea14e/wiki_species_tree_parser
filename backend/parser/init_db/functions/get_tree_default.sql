@@ -1,4 +1,7 @@
-CREATE OR REPLACE FUNCTION public.get_tree_default(_language_key text DEFAULT NULL::text) RETURNS json
+DROP FUNCTION IF EXISTS public.get_tree_default(_language_key text);
+
+CREATE OR REPLACE FUNCTION public.get_tree_default(_language_key1 text, _language_key2 text DEFAULT NULL::text)
+    RETURNS json
   STABLE
   LANGUAGE plpgsql
 AS
@@ -14,7 +17,8 @@ BEGIN
   -- Cycle by _cur_level_type:
   FOR _cur_rank IN
     SELECT "type"                                                  AS "type",
-           COALESCE(titles_by_languages ->> _language_key, "type") AS title_for_language -- Latin type if not present
+           titles_by_languages ->> _language_key1 AS rank_for_language1,
+           "type" AS rank_latin
     FROM public.ranks
     ORDER BY "order" DESC -- we are going from top level to bottom
     LIMIT 3 -- show 3 highest levels
@@ -22,11 +26,19 @@ BEGIN
 
       -- RAISE NOTICE 'NEXT _cur_level_type: ''%''.', _cur_level_type;
 
-      SELECT jsonb_agg(t ORDER BY title_for_language) INTO _level_items_json
+      SELECT jsonb_agg(t ORDER BY title_for_language1) INTO _level_items_json
       FROM (
              SELECT id,
-                    title AS title_latin,
-                    COALESCE(titles_by_languages ->> _language_key, title) AS title_for_language,    -- Latin name if not present
+                    CASE
+                        WHEN _language_key1 != 'latin' THEN titles_by_languages ->> _language_key1
+                        ELSE latin
+                    END AS title_for_language1,
+                    CASE
+                        WHEN _language_key2 = 'latin' THEN latin
+                        WHEN _language_key2 IS NOT NULL THEN titles_by_languages ->> _language_key2
+                        WHEN _language_key2 IS NULL THEN NULL
+                    END AS title_for_language2,
+                    latin AS title_latin,
                     page_id,
                     image_url,
                     titles_by_languages,
@@ -44,7 +56,8 @@ BEGIN
 
       _level_object_json = jsonb_build_object(
           'type', _cur_rank."type",
-          'title_on_language', _cur_rank.title_for_language,
+          'rank_for_language1', _cur_rank.rank_for_language1,
+          'rank_latin', _cur_rank.rank_latin,
           'items', _level_items_json,
           'level_parent_id', NULL,
           'level_parent_title', NULL,
@@ -64,7 +77,8 @@ BEGIN
 
   RETURN jsonb_build_object(
       '_id', NULL,
-      '_language_key', _language_key,
+      '_language_key1', _language_key1,
+      '_language_key2', _language_key2,
       'levels', _levels_json
     )::json;
 END;
