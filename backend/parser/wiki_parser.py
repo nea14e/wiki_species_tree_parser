@@ -635,6 +635,7 @@ def parse_wikipedias_hrefs(details: ListItemDetails):
     lang_links = pages[page_id].get("langlinks", [])
     details.titles_by_languages = {ll["lang"]: ll["*"] for ll in lang_links}
     Logger.print(f"Найдено {len(lang_links)} языков")
+    details.titles_by_languages["ru"] = details.title
     return details
 
 
