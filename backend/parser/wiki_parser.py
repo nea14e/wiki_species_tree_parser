@@ -519,6 +519,7 @@ def parse_levels(infobox, details: ListItemDetails):
             parent_level = levels[1]
             details.parent_type, details.parent_title, _ = get_level_info(parent_level)
     else:
+        details.type = "?"
         details.parent_type = level_0_type
         details.parent_title = level_0_title
 
