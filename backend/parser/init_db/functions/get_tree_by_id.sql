@@ -1,8 +1,15 @@
 DROP FUNCTION IF EXISTS public.get_tree_by_id(_id bigint,
                                               _language_key text);
 
+DROP FUNCTION IF EXISTS public.get_tree_by_id(
+    _id bigint,
+    _language_key1 text,
+    _language_key2 text
+);
+
 CREATE OR REPLACE FUNCTION public.get_tree_by_id(
     _id bigint,
+    _parent_mode parent_mode,
     _language_key1 text,
     _language_key2 text DEFAULT NULL::text
 ) RETURNS json
@@ -51,7 +58,11 @@ BEGIN
     LOOP
 
       -- For cycle borders and future level up (select parent item of current level and set it's parent as next parent to find all items on it's level)
-      SELECT parent_id,
+      SELECT CASE _parent_mode
+                WHEN 'regular' THEN regular_ranks_only_parent_id
+                WHEN 'named_only' THEN named_ranks_only_parent_id
+                WHEN 'all' THEN parent_id
+             END,
              CASE WHEN _language_key1 != 'latin'
                 THEN COALESCE(list.titles_by_languages ->> _language_key1, list.latin)
                 ELSE list.latin
@@ -95,14 +106,22 @@ BEGIN
                         latin AS title_latin,
                         page_id,
                         image_url,
-                        parent_id,
+                        CASE _parent_mode
+                            WHEN 'regular' THEN regular_ranks_only_parent_id
+                            WHEN 'named_only' THEN named_ranks_only_parent_id
+                            WHEN 'all' THEN parent_id
+                        END AS parent_id,
                         leaves_count,
                         COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,
                                  FALSE)                                        AS is_expanded,
                         COALESCE((id = _id)::boolean,
                                  FALSE)                                        AS is_selected
                  FROM public.list
-                 WHERE parent_id = _cur_parent_id -- which parents are current parent (note: "=" does not work for level 1 since one has _parent_id = NULL)
+                 WHERE (CASE _parent_mode
+                            WHEN 'regular' THEN regular_ranks_only_parent_id
+                            WHEN 'named_only' THEN named_ranks_only_parent_id
+                            WHEN 'all' THEN parent_id
+                     END) = _cur_parent_id -- which parents are current parent (note: "=" does not work for level 1 since one has _parent_id = NULL)
                    AND "type" = _cur_rank."type" -- only childes on current level. One parent may have childes on multiple levels and we want to put them separately
                    AND is_deleted = FALSE
                ) t;
@@ -178,7 +197,11 @@ BEGIN
                       latin AS title_latin,
                       page_id,
                       image_url,
-                      parent_id,
+                      CASE _parent_mode
+                          WHEN 'regular' THEN regular_ranks_only_parent_id
+                          WHEN 'named_only' THEN named_ranks_only_parent_id
+                          WHEN 'all' THEN parent_id
+                      END AS parent_id,
                       leaves_count,
                       COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,
                                FALSE)                                        AS is_expanded,

@@ -80,8 +80,13 @@ def get_tree_by_id(_, _id: int, language_key1: str, language_key2: str):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.get_tree_by_id(_id := %s, _language_key1 := %s, _language_key2 := %s);
-    """, (_id, language_key1, language_key2))
+        SELECT public.get_tree_by_id(
+            _id := %s,
+            _parent_mode := %s,
+            _language_key1 := %s, 
+            _language_key2 := %s
+        );
+    """, (_id, 'regular', language_key1, language_key2))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)
 
@@ -92,8 +97,12 @@ def get_tree_default(_, language_key1: str, language_key2: str):
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.get_tree_default(_language_key1 := %s, _language_key2 := %s);
-    """, (language_key1, language_key2))
+        SELECT public.get_tree_default(
+            _parent_mode := %s,
+            _language_key1 := %s,
+            _language_key2 := %s
+        );
+    """, ('regular', language_key1, language_key2))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)
 

@@ -63,6 +63,9 @@ class DbFunctions:
                 os.path.join("init_db", script_directory, "{}.sql".format(script_name))
             )
 
+        # Типы данных
+        run_script("types", "parent_mode")
+
         # Таблица со списком
         create_table("list", "Таблица со списком")
         run_script("tables", "list_MIGRATE")
@@ -71,9 +74,11 @@ class DbFunctions:
         run_script("tables", "list_MIGRATE_parent_type")
         run_script("tables", "list_MIGRATE_drop_wikipedias_by_languages")
         run_script("tables", "list_MIGRATE_latin")
+        run_script("tables", "list_MIGRATE_parent_mode")
 
         # Таблица с рангами
         create_table("ranks", "Таблица с рангами")
+        run_script("tables", "ranks_MIGRATE_parent_mode")
 
         # Таблица с языками
         create_table("known_languages", "Таблица с языками")
@@ -106,6 +111,9 @@ class DbFunctions:
         if is_test:
             run_script("fill_tables", "list_TEST", "Таблица public.list (для теста)")
             run_script("fill_tables", "ranks_TEST", "Таблица public.ranks (для теста)")
+        else:
+            run_script("fill_tables", "list_PROD_roots", "Таблица public.list (корни дерева для прода)")
+            run_script("fill_tables", "ranks_PROD", "Таблица public.ranks (для прода)")
 
         run_script("fill_tables", "known_languages_ANY", "Таблица public.known_languages (для прода/теста)")
         run_script("fill_tables", "known_languages_ANY_set_main", "Таблица public.known_languages (для прода/теста) - выбор основного языка для администрирования")

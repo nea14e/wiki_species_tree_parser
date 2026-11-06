@@ -1,6 +1,15 @@
 DROP FUNCTION IF EXISTS public.get_tree_default(_language_key text);
 
-CREATE OR REPLACE FUNCTION public.get_tree_default(_language_key1 text, _language_key2 text DEFAULT NULL::text)
+DROP FUNCTION IF EXISTS public.get_tree_default(
+    _language_key1 text,
+    _language_key2 text
+);
+
+CREATE OR REPLACE FUNCTION public.get_tree_default(
+    _parent_mode parent_mode,
+    _language_key1 text, 
+    _language_key2 text DEFAULT NULL::text
+)
     RETURNS json
   STABLE
   LANGUAGE plpgsql
@@ -41,7 +50,11 @@ BEGIN
                     latin AS title_latin,
                     page_id,
                     image_url,
-                    parent_id,
+                    CASE _parent_mode
+                        WHEN 'regular' THEN regular_ranks_only_parent_id
+                        WHEN 'named_only' THEN named_ranks_only_parent_id
+                        WHEN 'all' THEN parent_id
+                    END AS parent_id,
                     leaves_count,
                     FALSE                                                  AS is_expanded,
                     FALSE                                                  AS is_selected

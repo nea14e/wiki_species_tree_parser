@@ -257,6 +257,25 @@ def populate_list(list_page_title: str):
 def parse_details(skip_parsed_interval, where=""):
     lang_key = "ru"
 
+    sql = """
+        SELECT array_agg(r.titles_by_languages->>{})
+        FROM public.ranks r;
+    """.format(
+        quote_string(lang_key)
+    )
+    result = DbListItemsIterator("parse_details:ranks", sql)
+    named_ranks = list(result.fetchone()[0])
+
+    sql = """
+        SELECT array_agg(r.titles_by_languages->>{})
+        FROM public.ranks r
+        WHERE is_regular = TRUE;
+    """.format(
+        quote_string(lang_key)
+    )
+    result = DbListItemsIterator("parse_details:ranks", sql)
+    regular_ranks = list(result.fetchone()[0])
+
     query = """
       SELECT l.id,
              l.title,
@@ -361,7 +380,7 @@ def parse_details(skip_parsed_interval, where=""):
 
             infobox = soup.select_one(".infobox")
 
-            details = parse_levels(infobox, details)
+            details = parse_levels(infobox, details, named_ranks, regular_ranks)
             details = parse_latin(infobox, details)
             details = parse_synonyms_from_infobox(infobox, details)
             details = parse_image(infobox, details)
@@ -372,8 +391,15 @@ def parse_details(skip_parsed_interval, where=""):
               SET title = {}
                 , type = {}
                 , image_url = {}
+                , parent_id = {}
                 , parent_title = {}
                 , parent_type = {}
+                , named_ranks_only_parent_id = {}
+                , named_ranks_only_parent_title = {}
+                , named_ranks_only_parent_type = {}
+                , regular_ranks_only_parent_id = {}
+                , regular_ranks_only_parent_title = {}
+                , regular_ranks_only_parent_type = {}
                 , latin = {}
                 , titles_by_languages = {}
                 , last_error_message = NULL
@@ -382,8 +408,15 @@ def parse_details(skip_parsed_interval, where=""):
                 quote_string(details.title)
                 , quote_string(details.type)
                 , quote_nullable(details.image_url)
+                , details.parent_id
                 , quote_nullable(details.parent_title)
                 , quote_nullable(details.parent_type)
+                , details.named_ranks_only_parent_id
+                , quote_nullable(details.named_ranks_only_parent_title)
+                , quote_nullable(details.named_ranks_only_parent_type)
+                , details.regular_ranks_only_parent_id
+                , quote_nullable(details.regular_ranks_only_parent_title)
+                , quote_nullable(details.regular_ranks_only_parent_type)
                 , quote_nullable(details.latin)
                 , quote_string(json.dumps(details.titles_by_languages))
                 , quote_string(details.id)
@@ -450,14 +483,21 @@ class ListItemDetails:
         self.page_id = page_id
         self.type = None
         self.image_url = None
+        self.parent_id = None
         self.parent_title = None
         self.parent_type = None
+        self.named_ranks_only_parent_id = None
+        self.named_ranks_only_parent_title = None
+        self.named_ranks_only_parent_type = None
+        self.regular_ranks_only_parent_id = None
+        self.regular_ranks_only_parent_title = None
+        self.regular_ranks_only_parent_type = None
         self.latin = None
         self.titles_by_languages = {}
         self.synonyms = synonyms
 
 
-def parse_levels(infobox, details: ListItemDetails):
+def parse_levels(infobox, details: ListItemDetails, named_ranks: list, regular_ranks: list):
     if "Устаревшее таксономическое" in infobox.text:
         raise MustBeSkippedException("Таксон устарел и должен быть пропущен")
 
@@ -515,15 +555,57 @@ def parse_levels(infobox, details: ListItemDetails):
         details.type = level_0_type
         if level_0_title not in details.synonyms:
             details.synonyms.append(level_0_title)
-        if len(levels) > 1:
-            parent_level = levels[1]
-            details.parent_type, details.parent_title, _ = get_level_info(parent_level)
+        levels = levels[1:]
     else:
         details.type = "?"
-        details.parent_type = level_0_type
-        details.parent_title = level_0_title
 
-    Logger.print(f"Детали: {details.type} {details.title}, родитель: {details.parent_type} {details.parent_title}")
+    is_parent_found = False
+    is_named_ranks_parent_found = False
+    is_regular_ranks_parent_found = False
+    for level in levels:
+        level_type, level_title, _ = get_level_info(level)
+        sql = """
+            SELECT id
+            FROM public.list
+            WHERE title = {}
+        """.format(quote_string(level_title))
+        query_result = DbListItemsIterator("check_parent_id", sql)
+        if not query_result.rowcount():
+            continue
+        level_id = int(query_result.fetchone()[0])
+        if not is_parent_found:
+            details.parent_id = level_id
+            details.parent_type = level_type
+            details.parent_title = level_title
+            is_parent_found = True
+        if not is_named_ranks_parent_found and level_type in named_ranks:
+            details.named_ranks_only_parent_id = level_id
+            details.named_ranks_only_parent_type = level_type
+            details.named_ranks_only_parent_title = level_title
+            is_named_ranks_parent_found = True
+        if not is_regular_ranks_parent_found and level_type in regular_ranks:
+            details.regular_ranks_only_parent_id = level_id
+            details.regular_ranks_only_parent_type = level_type
+            details.regular_ranks_only_parent_title = level_title
+            is_regular_ranks_parent_found = True
+        if is_parent_found and is_named_ranks_parent_found and is_regular_ranks_parent_found:
+            break
+
+    Logger.print(f"Детали: {details.type} {details.title}")
+    if details.parent_id:
+        Logger.print(f"Прямой родитель: ({details.parent_id}) {details.parent_type}: {details.parent_title}")
+    else:
+        Logger.print("Прямой родитель НЕ НАЙДЕН!")
+    if details.named_ranks_only_parent_id:
+        Logger.print(f"Именованный родитель: ({details.named_ranks_only_parent_id}) "
+                     f"{details.named_ranks_only_parent_type}: {details.named_ranks_only_parent_title}")
+    else:
+        Logger.print("Именованный родитель НЕ НАЙДЕН!")
+    if details.regular_ranks_only_parent_id:
+        Logger.print(f"Основной родитель: ({details.regular_ranks_only_parent_id}) "
+                     f"{details.regular_ranks_only_parent_type}: {details.regular_ranks_only_parent_title}")
+    else:
+        Logger.print("Основной родитель НЕ НАЙДЕН!")
     return details
 
 
@@ -640,7 +722,7 @@ def parse_wikipedias_hrefs(details: ListItemDetails):
     return details
 
 
-def correct_parents(where: str = None):
+def correct_parents(where: str = None):  # TODO больше не нужно
     """
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
     """

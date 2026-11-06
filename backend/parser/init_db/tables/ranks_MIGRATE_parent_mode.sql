@@ -1,0 +1,2 @@
+ALTER TABLE public.ranks
+    ADD COLUMN IF NOT EXISTS is_regular bool NOT NULL DEFAULT (FALSE);
