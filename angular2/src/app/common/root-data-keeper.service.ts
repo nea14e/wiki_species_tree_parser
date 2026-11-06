@@ -4,7 +4,7 @@ import {AdminLoginInfo} from '../admin/models/admin-login-info';
 import {AdminMainLanguage} from '../admin/models/admin-main-language';
 import {TranslationRoot} from '../models/translation-root';
 import {RIGHTS} from '../admin/models/right';
-import {Subject} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {SelectedLanguagesInfo} from './models/selected-languages-info';
 import {SelectedLanguageKey1} from './models/selected-language-key1';
 import {SelectedLanguageKey2} from './models/selected-language-key2';
@@ -18,7 +18,10 @@ export class RootDataKeeperService {
   public selectedLanguageKey1 = this._selectedLanguageKey1.asReadonly();
   private _selectedLanguageKey2 = signal<SelectedLanguageKey2>("latin");
   public selectedLanguageKey2 = this._selectedLanguageKey2.asReadonly();
-  public languagesChangedSubject = new Subject<SelectedLanguagesInfo>();
+  public languagesChangedSubject = new BehaviorSubject<SelectedLanguagesInfo>({
+    selectedLanguageKey1: this._selectedLanguageKey1(),
+    selectedLanguageKey2: this._selectedLanguageKey2()
+  } as SelectedLanguagesInfo);
   public translationRoot = signal<TranslationRoot | null>(null);
   public isTranslateFromYourLang = false;
   public mainAdminLanguage: AdminMainLanguage | null = null;
