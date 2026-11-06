@@ -20,7 +20,7 @@ import {SearchMediatorService} from './search-mediator.service';
 export class SearchComponent implements OnInit, OnDestroy {
 
   readonly MIN_QUERY_LENGTH = 3;
-  readonly ITEMS_COUNT_BY_QUERY = 3;
+  readonly ITEMS_COUNT_BY_QUERY = 10;
 
   onSearchItemClick = output<number>();
 
