@@ -1,7 +1,7 @@
 TRUNCATE public.ranks;
 
 -- это вся Биота
-INSERT INTO public.ranks (type, "order", titles_by_languages, is_regular)
+/*INSERT INTO public.ranks (type, "order", titles_by_languages, is_regular)
 VALUES ('Imperium', -8290, '{
   "ru": "Наддомен"
 }', FALSE);
@@ -25,7 +25,7 @@ VALUES ('Realm', -8400, '{
 INSERT INTO public.ranks (type, "order", titles_by_languages, is_regular)
 VALUES ('Subrealm', -8410, '{
   "ru": "Субреалм"
-}', FALSE);
+}', FALSE);*/
 
 -- надцарство выше
 INSERT INTO public.ranks (type, "order", titles_by_languages, is_regular)
