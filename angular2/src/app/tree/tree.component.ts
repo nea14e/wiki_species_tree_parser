@@ -54,7 +54,7 @@ export class TreeComponent implements OnInit, OnDestroy {
   tree = signal<Tree | null>(null);
   selectedItemInfo = computed(() => this.tree()?.levels
     .map(level => {
-      return {level, item: level.items.find(item => item.is_selected)}
+      return {level, item: !!level.items ? level.items.find(item => item.is_selected) : undefined}
     })
     .find(pair => !!pair.item)
   );
