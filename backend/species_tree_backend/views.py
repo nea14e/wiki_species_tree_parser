@@ -6,7 +6,7 @@ from django.http import JsonResponse
 
 from species_tree_backend.http_headers_parser import get_language_key
 
-from species_tree_backend.db_task_manager import DbTaskManager
+from species_tree_backend.task_run_subsystem.db_task_manager import DbTaskManager
 
 from species_tree_backend.rights import RIGHTS
 from config import Config
