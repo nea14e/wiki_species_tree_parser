@@ -31,7 +31,7 @@ class DbTaskManager:
     def get_tasks_states(self, tasks: list) -> list:
         for task in tasks:
             task_run_info = self._get_or_create_task_run_info(task)
-            task_run_info.fulfill_task_state()
+            task_run_info.fulfill_task_state(task)
         return tasks
 
     # Проходится по списку задач и запускает все помеченные для автозапуска и не завершённые

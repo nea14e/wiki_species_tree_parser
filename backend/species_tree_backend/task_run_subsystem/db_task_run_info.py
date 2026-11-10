@@ -41,7 +41,8 @@ class DbTaskRunInfo:
     # Публичные методы класса:
     # =============================================
 
-    def fulfill_task_state(self):
+    def fulfill_task_state(self, task: dict):
+        self.task = task
         self.task["is_running_now"] = self._check_task_if_running()
         # При редактировании задачи выставлять галочку "Launch now" по умолчанию:
         self.task["is_launch_now"] = self.task["is_running_now"]
