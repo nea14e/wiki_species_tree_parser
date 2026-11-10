@@ -31,7 +31,7 @@ class DbTaskManager:
     def get_tasks_states(self, tasks: list) -> list:
         for task in tasks:
             task_run_info = self._get_or_create_task_run_info(task)
-            task_run_info.fulfill_task_state(task)
+            task_run_info.update_task_state(task)
         return tasks
 
     # Проходится по списку задач и запускает все помеченные для автозапуска и не завершённые
@@ -43,7 +43,7 @@ class DbTaskManager:
 
     def start_one_task(self, task: dict):
         task_run_info = self._get_or_create_task_run_info(task)
-        task_run_info.start_task()
+        task_run_info.start_task(task)
 
     def stop_one_task(self, task_id: int):
         task_run_info = self.__task_run_infos[task_id]
@@ -57,7 +57,7 @@ class DbTaskManager:
         task_id = int(task["id"])
         task_run_info = self.__task_run_infos.get(task_id, None)
         if not task_run_info:
-            task_run_info = DbTaskRunInfo(task)
+            task_run_info = DbTaskRunInfo(task_id)
             self.__task_run_infos[task_id] = task_run_info
         return task_run_info
 

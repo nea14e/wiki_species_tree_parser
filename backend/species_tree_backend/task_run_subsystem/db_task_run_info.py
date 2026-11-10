@@ -16,9 +16,10 @@ PARSER_PATH = os.path.join(PARSER_CWD, "wiki_parser.py")
 
 
 class DbTaskRunInfo:
-    def __init__(self, task: dict):
+    def __init__(self, task_id: int):
         # Сам объект задачи
-        self.task = task
+        self.task_id = task_id
+        self.task: Optional[dict] = None
         # Процесс под задачу
         self.process: Optional[Process] = None
         # Очередь process_manager.Queue() для получения сообщений от процесса
@@ -41,14 +42,15 @@ class DbTaskRunInfo:
     # Публичные методы класса:
     # =============================================
 
-    def fulfill_task_state(self, task: dict):
+    def update_task_state(self, task: dict):
         self.task = task
-        self.task["is_running_now"] = self._check_task_if_running()
+        task["is_running_now"] = self._check_task_if_running()
         # При редактировании задачи выставлять галочку "Launch now" по умолчанию:
-        self.task["is_launch_now"] = self.task["is_running_now"]
-        self.task["recent_stdout"], self.task["recent_stderr"] = self._get_task_recent_logs()
+        task["is_launch_now"] = task["is_running_now"]
+        task["recent_stdout"], task["recent_stderr"] = self._get_task_recent_logs()
 
-    def start_task(self):
+    def start_task(self, task: dict):
+        self.task = task
         # Останавливаем задачу, если надо:
         if self._check_task_if_running():
             self.stop_task()
@@ -58,13 +60,12 @@ class DbTaskRunInfo:
         # Сбрасываем флаги
         self.is_killed_by_user = False
         self.is_finished = False
-        if self.task["is_success"] is not None:
-            self.task["is_success"] = None
+        if task["is_success"] is not None:
             self._mark_task_as_uncompleted()
 
         process_manager = Manager()
 
-        args = self._get_args_from_task()
+        args = self._get_args_from_task(task)
         args = Config.PARSER_ARGS_DELIMITER.join(['"' + arg + '"' for arg in args])
 
         queue = process_manager.Queue()
@@ -74,15 +75,13 @@ class DbTaskRunInfo:
         self.process = process
         process.start()
 
-        task_id = int(self.task["id"])
-
         # Чтение логов из процесса по таймеру
-        thread = threading.Thread(target=self._check_one_finished_thread, args=(task_id,))
+        thread = threading.Thread(target=self._check_one_finished_thread, args=(self.task_id,))
         self.check_is_process_finished_thread = thread
         thread.start()
 
         # Чтение логов из процесса по таймеру
-        thread = threading.Thread(target=self._read_one_stdout_thread, args=(task_id,))
+        thread = threading.Thread(target=self._read_one_stdout_thread, args=(self.task_id,))
         self.read_process_logs_thread = thread
         thread.start()
 
@@ -121,29 +120,29 @@ class DbTaskRunInfo:
 
     # Составляет аргументов строки для процесса парсера
     # (т.к. он изначально был рассчитан на самостоятельный запуск из консоли)
-    def _get_args_from_task(self):
+    def _get_args_from_task(self, task: dict):
         # args = [str(task["python_exe"]), PARSER_PATH]
         args = [PARSER_PATH]
         if Config.BACKEND_IS_USE_TEST_DB:
             args.append("test")
         else:
             args.append("no_test")
-        stage = str(self.task["stage"])
+        stage = str(task["stage"])
         args.append(stage)
         if stage == "1":
-            args.append(self.task["args"]["list_page_title"])
-            if self.task["args"].get("proxy", None):
-                args.append(self.task["args"]["proxy"])
+            args.append(task["args"]["list_page_title"])
+            if task["args"].get("proxy", None):
+                args.append(task["args"]["proxy"])
         elif stage == "2":
-            args.append(str(bool(self.task["args"]["skip_parsed_interval"])))
-            args.append('"' + str(self.task["args"]["where"]) + '"')
-            if self.task["args"].get("proxy", None):
-                args.append(self.task["args"]["proxy"])
+            args.append(str(bool(task["args"]["skip_parsed_interval"])))
+            args.append('"' + str(task["args"]["where"]) + '"')
+            if task["args"].get("proxy", None):
+                args.append(task["args"]["proxy"])
         elif stage == "3":
-            args.append('"' + str(self.task["args"]["where"]) + '"')
+            args.append('"' + str(task["args"]["where"]) + '"')
         elif stage == "test_task":
-            args.append(str(bool(self.task["args"]["will_success"])))
-            args.append(str(float(self.task["args"]["timeout"])))
+            args.append(str(bool(task["args"]["will_success"])))
+            args.append(str(float(task["args"]["timeout"])))
         return args
 
     # Определяет, что задача завершилась.
@@ -196,27 +195,27 @@ class DbTaskRunInfo:
             # Успех = лог ошибок пустой:
             is_success = len(self.recent_stderr_logs) == 0
 
-        self.task["is_success"] = is_success  # У автосгенерированных задач при выдаче на фронт берётся отсюда
+        if self.task:
+            # У автосгенерированных задач при выдаче на фронт берётся отсюда
+            self.task["is_success"] = is_success
 
-        task_id = int(self.task["id"])
         conn = connections["default"]
         cur = conn.cursor()
         cur.execute("""
             UPDATE public.tasks
             SET is_success = %s
             WHERE id = %s;
-        """, (is_success, task_id,))
+        """, (is_success, self.task_id,))
         conn.commit()
 
     # Помечает в БД задачу как завершённую (нормально или с ошибкой).
     # Влияет на автозапуск задач при рестарте сервера.
     def _mark_task_as_uncompleted(self):
-        task_id = int(self.task["id"])
         conn = connections["default"]
         cur = conn.cursor()
         cur.execute("""
             UPDATE public.tasks
             SET is_success = NULL
             WHERE id = %s;
-        """, (task_id,))
+        """, (self.task_id,))
         conn.commit()
