@@ -175,3 +175,6 @@ def quote_nullable(val):
 
 def quote_string(val):
     return "'" + str(val).replace("'", "''") + "'"
+
+def non_quoted_nullable(val):
+    return str(val).replace("'", "''") if val is not None else "null"

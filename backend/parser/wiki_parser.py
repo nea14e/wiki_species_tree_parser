@@ -16,7 +16,8 @@ from parser.exceptions.code_must_be_fixed_exception import CodeMustBeFixedExcept
 from parser.exceptions.must_be_skipped_exception import MustBeSkippedException
 from parser.exceptions.wiki_api_exception import WikiApiException
 from parser.list_helper import find_index_by_condition
-from .db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string
+from .db_functions import DbFunctions, DbListItemsIterator, DbExecuteNonQuery, quote_nullable, quote_string, \
+    non_quoted_nullable
 
 from config import Config
 from .logger import Logger
@@ -408,13 +409,13 @@ def parse_details(skip_parsed_interval, where=""):
                 quote_string(details.title)
                 , quote_string(details.type)
                 , quote_nullable(details.image_url)
-                , details.parent_id
+                , non_quoted_nullable(details.parent_id)
                 , quote_nullable(details.parent_title)
                 , quote_nullable(details.parent_type)
-                , details.named_ranks_only_parent_id
+                , non_quoted_nullable(details.named_ranks_only_parent_id)
                 , quote_nullable(details.named_ranks_only_parent_title)
                 , quote_nullable(details.named_ranks_only_parent_type)
-                , details.regular_ranks_only_parent_id
+                , non_quoted_nullable(details.regular_ranks_only_parent_id)
                 , quote_nullable(details.regular_ranks_only_parent_title)
                 , quote_nullable(details.regular_ranks_only_parent_type)
                 , quote_nullable(details.latin)
