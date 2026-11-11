@@ -79,6 +79,7 @@ class DbFunctions:
         # Таблица с рангами
         create_table("ranks", "Таблица с рангами")
         run_script("tables", "ranks_MIGRATE_parent_mode")
+        run_script("tables", "ranks_MIGRATE_latin")
 
         # Таблица с языками
         create_table("known_languages", "Таблица с языками")
