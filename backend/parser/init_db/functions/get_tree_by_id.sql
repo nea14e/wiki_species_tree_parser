@@ -32,6 +32,9 @@ DECLARE
     _level_max_order         int;
     _level_min_order         int;
     _cur_rank                record;
+    _cur_rank_type           text;
+    _cur_rank_language1      text;
+    _cur_rank_latin          text;
     _cur_parent_type         text;
     _prev_parent_type        text;
 BEGIN
@@ -221,16 +224,24 @@ BEGIN
                     AND is_deleted = FALSE) t;
 
             IF _level_items_json IS NOT NULL THEN -- Если текущий уровень не имеет элементов, то будет NULL, что может испортить весь результат
+                
+                SELECT r."type" AS "type",
+                       r.titles_by_languages ->> _language_key1 AS rank_for_language1,
+                       r."type"                                 AS rank_latin
+                INTO _cur_rank_type, _cur_rank_language1, _cur_rank_latin
+                FROM public.list l
+                    LEFT JOIN public.ranks r ON l.type = r.type
+                WHERE l.id = _prev_parent_id;  -- Предыдущий родитель находится на текущем уровне
 
                 _level_object_json = JSONB_BUILD_OBJECT(
-                        'type', _cur_rank."type",
-                        'rank_for_language1', _cur_rank.rank_for_language1,
-                        'rank_latin', _cur_rank.rank_latin,
+                        'type', _cur_rank_type,
+                        'rank_for_language1', _cur_rank_language1,
+                        'rank_latin', _cur_rank_latin,
                         'items', _level_items_json,
                         'level_parent_id', _cur_parent_id,
                         'level_parent_title', _cur_parent_title,
                         'is_level_has_selected_item', _has_level_selected_item
-                                     );
+                );
 
                 RAISE NOTICE 'CURRENT PARENT _level_object_json: %', _level_object_json;
 
@@ -249,7 +260,7 @@ $$;
 
 /*
 SELECT public.get_tree_by_id(
-  _id := 68768,
+  _id := 69437,
   _parent_mode := 'regular',
   _language_key1 := 'ru',
   _language_key2 := 'latin'
