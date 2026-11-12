@@ -78,7 +78,7 @@ BEGIN
     FOR _cur_rank IN
         SELECT "type",
                titles_by_languages ->> _language_key1 AS rank_for_language1,
-               "type"                                 AS rank_latin
+               latin                                  AS rank_latin
         FROM public.ranks
         WHERE ("order" < _level_max_order OR _level_max_order IS NULL)
           AND "order" >= _level_min_order
