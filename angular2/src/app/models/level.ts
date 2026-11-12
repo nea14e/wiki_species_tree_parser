@@ -7,4 +7,5 @@ export interface Level {
   rank_latin: string;
   level_parent_title: string;
   is_level_has_selected_item: boolean;
+  is_level_has_expanded_item: boolean;
 }

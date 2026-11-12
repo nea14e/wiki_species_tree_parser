@@ -130,8 +130,9 @@ BEGIN
                         'items', _level_items_json,
                         'level_parent_id', _id,
                         'level_parent_title', _cur_parent_title,
-                        'is_level_has_selected_item', FALSE
-                                     );
+                        'is_level_has_selected_item', FALSE,
+                        'is_level_has_expanded_item', FALSE
+                );
 
                 RAISE NOTICE 'CHILD _level_object_json: %', _level_object_json;
 
@@ -240,7 +241,8 @@ BEGIN
                         'items', _level_items_json,
                         'level_parent_id', _cur_parent_id,
                         'level_parent_title', _cur_parent_title,
-                        'is_level_has_selected_item', _has_level_selected_item
+                        'is_level_has_selected_item', _has_level_selected_item,
+                        'is_level_has_expanded_item', TRUE
                 );
 
                 RAISE NOTICE 'CURRENT PARENT _level_object_json: %', _level_object_json;

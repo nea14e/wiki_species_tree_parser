@@ -21,6 +21,11 @@
   background-color: var(--item-selected-1);
 }
 
+.level-expanded-arrow {
+  width: auto;
+  height: 5em;
+}
+
 .level-selected-arrow {
   width: 5em;
   height: auto;

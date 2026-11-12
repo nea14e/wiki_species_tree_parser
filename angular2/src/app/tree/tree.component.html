@@ -136,10 +136,18 @@
       <br/>
 
       @if (!!level.is_level_has_selected_item) {
-        <div style="margin-left: -12px;">
+        <div style="margin-left: -12px;"
+             [title]="rootData.translationRoot()?.translations?.selected_tooltip">
           <img src="/from-bootstrap/caret-right-fill-accent.svg"
                alt=""
                class="level-selected-arrow"/>
+        </div>
+      } @else if (!!level.is_level_has_expanded_item) {
+        <div [title]="rootData.translationRoot()?.translations?.expanded_tooltip"
+             style="margin-left: -12px;">
+          <img src="/from-bootstrap/caret-down.svg"
+               alt=""
+               class="level-expanded-arrow"/>
         </div>
       }
     </div>
