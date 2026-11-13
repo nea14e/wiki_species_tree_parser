@@ -646,6 +646,9 @@ def parse_latin(infobox, details: ListItemDetails):
             .replace("\n", "") \
             .strip()
 
+    if details.latin:
+        details.synonyms.append(details.latin)
+
     Logger.print(f"Латинское название: {details.latin if details.latin else "НЕ НАЙДЕНО"}")
     return details
 
