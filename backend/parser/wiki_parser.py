@@ -366,7 +366,8 @@ def parse_details(skip_parsed_interval, where=""):
                     "action": "parse",
                     "format": "json",
                     "prop": "text",
-                    "page": details.title,
+                    # "page": details.title,
+                    "pageid": details.page_id,
                     "redirects": 1
                 },
                 "Получение html по title на этапе 2"
