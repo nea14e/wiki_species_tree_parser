@@ -431,6 +431,20 @@ def parse_details(skip_parsed_interval, where=""):
             )
             DbExecuteNonQuery.execute('parse_details:update_details', query)
 
+
+            query = """
+                INSERT INTO public.html_cache(id, infobox)
+                VALUES ({}, {})
+                ON CONFLICT ON CONSTRAINT pk_html_cache
+                    DO UPDATE
+                    SET infobox = excluded.infobox;
+            """.format(
+                int(details.id),
+                quote_string(str(infobox))
+            )
+            DbExecuteNonQuery.execute('parse_details:update_details', query)
+
+
             for synonym in details.synonyms:
                 query = """
                     INSERT INTO public.synonyms(lang_key, list_id, title)
