@@ -10,10 +10,18 @@ DO $$
 
         ALTER TABLE public.list
             ADD COLUMN synonyms text[];
-        
+
+    END IF;
+    
+    IF NOT EXISTS(
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'uq_list_page_id'
+    ) THEN
+
         ALTER TABLE public.list
             ADD CONSTRAINT uq_list_page_id UNIQUE (page_id);
-
+        
     END IF;
   END
 $$

@@ -1,4 +1,4 @@
-CREATE FUNCTION public.get_key_for_tree_cache(_language_key1 text, _language_key2 text)
+CREATE OR REPLACE FUNCTION public.get_key_for_tree_cache(_language_key1 text, _language_key2 text)
     RETURNS text
     IMMUTABLE
     COST 1
