@@ -36,8 +36,8 @@ class MyRequests:
         return cls.session
 
 
-def main_from_web(args: str, log_query: Queue):
-    Logger.log_query = log_query
+def main_from_web(args: str, log_queue: Queue):
+    Logger.log_queue = log_queue
     args = args.split(Config.PARSER_ARGS_DELIMITER)
     args = [arg.strip('"') for arg in args]
     Logger.print("PARSER PROCESS STARTED: args:", *args)
