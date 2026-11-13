@@ -267,25 +267,6 @@ def populate_list(list_page_title: str):
 def parse_details(skip_parsed_interval, where=""):
     lang_key = "ru"
 
-    sql = """
-        SELECT array_agg(r.titles_by_languages->>{})
-        FROM public.ranks r;
-    """.format(
-        quote_string(lang_key)
-    )
-    result = DbListItemsIterator("parse_details:ranks", sql)
-    named_ranks = list(result.fetchone()[0])
-
-    sql = """
-        SELECT array_agg(r.titles_by_languages->>{})
-        FROM public.ranks r
-        WHERE is_regular = TRUE;
-    """.format(
-        quote_string(lang_key)
-    )
-    result = DbListItemsIterator("parse_details:ranks", sql)
-    regular_ranks = list(result.fetchone()[0])
-
     query = """
       SELECT l.id,
              l.title,
@@ -397,7 +378,7 @@ def parse_details(skip_parsed_interval, where=""):
 
             infobox = soup.select_one(".infobox")
 
-            details = parse_levels(infobox, details, lang_key, named_ranks, regular_ranks)
+            details = parse_levels(False, infobox, details, lang_key, None, None)
             details = parse_latin(infobox, details)
             details = parse_synonyms_from_infobox(infobox, details)
             details = parse_image(infobox, details)
@@ -408,15 +389,6 @@ def parse_details(skip_parsed_interval, where=""):
               SET title = {}
                 , type = {}
                 , image_url = {}
-                , parent_id = {}
-                , parent_title = {}
-                , parent_type = {}
-                , named_ranks_only_parent_id = {}
-                , named_ranks_only_parent_title = {}
-                , named_ranks_only_parent_type = {}
-                , regular_ranks_only_parent_id = {}
-                , regular_ranks_only_parent_title = {}
-                , regular_ranks_only_parent_type = {}
                 , latin = {}
                 , titles_by_languages = {}
                 , last_error_message = NULL
@@ -425,15 +397,6 @@ def parse_details(skip_parsed_interval, where=""):
                 quote_string(details.title)
                 , quote_string(details.type)
                 , quote_nullable(details.image_url)
-                , non_quoted_nullable(details.parent_id)
-                , quote_nullable(details.parent_title)
-                , quote_nullable(details.parent_type)
-                , non_quoted_nullable(details.named_ranks_only_parent_id)
-                , quote_nullable(details.named_ranks_only_parent_title)
-                , quote_nullable(details.named_ranks_only_parent_type)
-                , non_quoted_nullable(details.regular_ranks_only_parent_id)
-                , quote_nullable(details.regular_ranks_only_parent_title)
-                , quote_nullable(details.regular_ranks_only_parent_type)
                 , quote_nullable(details.latin)
                 , quote_string(json.dumps(details.titles_by_languages))
                 , quote_string(details.id)
@@ -528,9 +491,7 @@ class ListItemDetails:
         self.synonyms = synonyms
 
 
-def parse_levels(infobox, details: ListItemDetails, lang_key: str, named_ranks: list, regular_ranks: list):
-    Logger.print(f"Ищем родителя для: ({details.id}) {details.type} {details.title}")
-
+def parse_levels(is_search_parent: bool, infobox, details: ListItemDetails, lang_key: str, named_ranks: list | None, regular_ranks: list | None):
     if "Устаревшее таксономическое" in infobox.text:
         raise MustBeSkippedException("Таксон устарел и должен быть пропущен")
 
@@ -599,12 +560,19 @@ def parse_levels(infobox, details: ListItemDetails, lang_key: str, named_ranks: 
     current_level = levels[0]
     level_0_type, level_0_title, _, can_be_current_level = get_level_info(current_level)
     if can_be_current_level:
-        details.type = level_0_type
-        if level_0_title not in details.synonyms:
-            details.synonyms.append(level_0_title)
+        if not is_search_parent:
+            details.type = level_0_type
+            if level_0_title not in details.synonyms:
+                details.synonyms.append(level_0_title)
+            Logger.print(f"Найдены тип и синоним: {level_0_type}: {level_0_title}")
         levels = levels[1:]
     else:
-        details.type = "?"
+        if not is_search_parent:
+            details.type = "?"
+            Logger.print(f"Текущий уровень не найден!")
+
+    if not is_search_parent:
+        return details
 
     is_parent_found = False
     is_named_ranks_parent_found = False
@@ -797,59 +765,152 @@ def parse_wikipedias_hrefs(details: ListItemDetails):
 
 def correct_parents(skip_parsed_interval: bool, where: str = None):
     """
-    После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
+    После парсинга списка пройдёмся по базе и заполним parent_id по названиям родителей,
+    хранящимся в иерархии уровней в infobox.
+    Чтобы мы могли находить id родителей по их названиям, поля title, latin и таблица synonyms
+    должны быть уже заполнены к этому моменту,
+    поэтому этап 2 parse_details() должен быть уже завершён.
     """
     Logger.print("Поправляем ссылки на родителей (построение дерева)...")
+
+    lang_key = "ru"
+
+    sql = """
+        SELECT array_agg(r.titles_by_languages->>{})
+        FROM public.ranks r;
+    """.format(
+        quote_string(lang_key)
+    )
+    result = DbListItemsIterator("parse_details:ranks", sql)
+    named_ranks = list(result.fetchone()[0])
+
+    sql = """
+        SELECT array_agg(r.titles_by_languages->>{})
+        FROM public.ranks r
+        WHERE is_regular = TRUE;
+    """.format(
+        quote_string(lang_key)
+    )
+    result = DbListItemsIterator("parse_details:ranks", sql)
+    regular_ranks = list(result.fetchone()[0])
+
     query = """
-        SELECT id, parent_title
-        FROM public.list
-        WHERE parent_title IS NOT NULL AND parent_id IS NULL  -- Только у которых уже заполнен текст родителя, но ещё не привязаны
+        SELECT l.id, l.type, l.title, h.infobox
+        FROM public.list l
+            INNER JOIN public.html_cache h ON l.id = h.id
+        WHERE parent_id IS NULL
     """
+    if skip_parsed_interval:
+        query += """
+            AND l.title > (SELECT COALESCE(MAX(title), '')
+                      FROM public.list
+                      WHERE parent_id IS NOT NULL
+            """
+        if where is not None and where != "":
+            query += """
+                        AND {}
+            """.format(where)
+        query += ")"
     if where is not None and where != "":
-        query += " AND " + where
-    query += ";"
-    print(query)
+        query += """
+        AND {}
+        """.format(where)
+    query += """
+      ORDER BY title;
+    """
+    Logger.print("СПИСОК ДЛЯ ПОИСКА РОДИТЕЛЕЙ:\n" + query)
     list_iterator = DbListItemsIterator('correct_parents:list', query)
 
-    # Цикл по элементам из списка, подготовленного с помощью populate_list()
-    success_counter = 0
-    without_parents = 0
     total_counter = 0
+    skipped_counter = 0
+    parents_found_counter = 0
+    named_parents_found_counter = 0
+    regular_parents_found_counter = 0
+    errors_counter = 0
     while True:
         list_item = list_iterator.fetchone()
         if not list_item:
             break
-        cur_id = list_item[0]
-        cur_parent_url = list_item[1]
-        # Ищем родителя в базе по parent_title
-        query = """
-            SELECT id
-            FROM public.list
-            WHERE page_id = '{}'
-            LIMIT 1;
-        """.format(cur_parent_url)
-        parent_in_db_iter = DbListItemsIterator('parse_details:get_parent', query)
-        if parent_in_db_iter.rowcount() > 0:
-            # Нашли в базе данных запись о родителе
-            parent_in_db = parent_in_db_iter.fetchone()[0]
+
+        details = ListItemDetails(id=list_item[0], title=list_item[2], page_id=None, synonyms=None)
+        details.type = str(list_item[1])
+        infobox_html = str(list_item[3])
+        Logger.print(f"ИЩЕМ РОДИТЕЛЯ ДЛЯ: {details.type}: {details.title}...")
+
+        try:
+            infobox = BeautifulSoup(infobox_html, "html.parser")
+
+            details = parse_levels(True, infobox, details, lang_key, named_ranks, regular_ranks)
+
             query = """
               UPDATE public.list
-              SET parent_id = '{}'
-              WHERE id = '{}';
-            """.format(parent_in_db, cur_id)
-            DbExecuteNonQuery.execute('parse_details:set_parent_id', query)
-            success_counter += 1
-        else:
-            # Не нашли
-            without_parents += 1
+              SET parent_id = {}
+                , parent_title = {}
+                , parent_type = {}
+                , named_ranks_only_parent_id = {}
+                , named_ranks_only_parent_title = {}
+                , named_ranks_only_parent_type = {}
+                , regular_ranks_only_parent_id = {}
+                , regular_ranks_only_parent_title = {}
+                , regular_ranks_only_parent_type = {}
+              WHERE id = {};
+            """.format(
+                non_quoted_nullable(details.parent_id)
+                , quote_nullable(details.parent_title)
+                , quote_nullable(details.parent_type)
+                , non_quoted_nullable(details.named_ranks_only_parent_id)
+                , quote_nullable(details.named_ranks_only_parent_title)
+                , quote_nullable(details.named_ranks_only_parent_type)
+                , non_quoted_nullable(details.regular_ranks_only_parent_id)
+                , quote_nullable(details.regular_ranks_only_parent_title)
+                , quote_nullable(details.regular_ranks_only_parent_type)
+                , int(details.id)
+            )
+            DbExecuteNonQuery.execute('correct_parents:update_details', query)
+
+            if details.parent_id:
+                parents_found_counter += 1
+            if details.named_ranks_only_parent_id:
+                named_parents_found_counter += 1
+            if details.regular_ranks_only_parent_id:
+                regular_parents_found_counter += 1
+
+        except MustBeSkippedException as e:
+            Logger.print(e.message)
+            skipped_counter += 1
+            query = """
+                          UPDATE public.list
+                          SET last_error_message = {},
+                              is_deleted = true
+                          WHERE id = {};
+                        """.format(
+                quote_string(e.message)
+                , int(details.id)
+            )
+            DbExecuteNonQuery.execute('correct_parents:update_details', query)
+
+        except BaseException:
+            err_message = "Stage 2 error:\n" + traceback.format_exc()
+            Logger.print('Ошибка:\n', err_message)
+            query = """
+              UPDATE public.list
+              SET last_error_message = {}
+              WHERE id = {};
+            """.format(
+                quote_string(err_message)
+                , int(details.id)
+            )
+            DbExecuteNonQuery.execute('correct_parents:update_details', query)
+            errors_counter += 1
+
         total_counter += 1
-        if total_counter % 100 == 0:
-            Logger.print("Построение дерева... найдено {}, не найдено {}, всего просмотрено {}"
-                         .format(success_counter, without_parents, total_counter))
+        Logger.print(f"Статистика: найдено родителей: {parents_found_counter}/{named_parents_found_counter}/{regular_parents_found_counter}, "
+                     f"пропущено {skipped_counter}, ошибок {errors_counter}, всего {total_counter}.")
+        Logger.print("===========================================")
+        time.sleep(Config.NEXT_CORRECT_PARENTS_DELAY)
+
     Logger.print("\n")
     Logger.print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ОКОНЧЕНО!")
-    Logger.print("Добавлены родители к " + str(success_counter) + " элементам.")
-    Logger.print("Не найдены родители для " + str(without_parents) + " элементов.")
 
 
 def test_task(timeout: float, will_success: bool):
