@@ -323,6 +323,12 @@ def parse_details(skip_parsed_interval, where=""):
             # details = ListItemDetails(id=70522, title="Aaaaba", page_id='2584924', synonyms=None)  # for debug
             # details = ListItemDetails(id=70539, title="Abbemyia", page_id='4693839', synonyms=None)  # for debug
             # details = ListItemDetails(id=48563, title="Аардоникс", page_id='2361954', synonyms=None)  # for debug
+            # Пример, где title родителя нет в базе и определять родителя надо по latin:
+            # details = ListItemDetails(id=52503, title="Геккон Уликовского", page_id='3967240', synonyms=None)  # for debug
+            # Пример, где название родителя одинаковое у двух элементов и определять родителя надо по latin:
+            # details = ListItemDetails(id=61463, title="Огнетелка Элизабеты", page_id='7002793', synonyms=None)  # for debug
+            # Пример, где ссылка на родителя содержит не latin, а русское название:
+            # details = ListItemDetails(id=58632, title="Лепидозавроморфы", page_id='3908851', synonyms=None)  # for debug
             details = ListItemDetails(id=list_item[0], title=list_item[1], page_id=list_item[2], synonyms=list_item[3])
             if details.synonyms is None:
                 details.synonyms = []
@@ -382,7 +388,7 @@ def parse_details(skip_parsed_interval, where=""):
 
             infobox = soup.select_one(".infobox")
 
-            details = parse_levels(infobox, details, named_ranks, regular_ranks)
+            details = parse_levels(infobox, details, lang_key, named_ranks, regular_ranks)
             details = parse_latin(infobox, details)
             details = parse_synonyms_from_infobox(infobox, details)
             details = parse_image(infobox, details)
@@ -499,7 +505,9 @@ class ListItemDetails:
         self.synonyms = synonyms
 
 
-def parse_levels(infobox, details: ListItemDetails, named_ranks: list, regular_ranks: list):
+def parse_levels(infobox, details: ListItemDetails, lang_key: str, named_ranks: list, regular_ranks: list):
+    Logger.print(f"Ищем родителя для: ({details.id}) {details.type} {details.title}")
+
     if "Устаревшее таксономическое" in infobox.text:
         raise MustBeSkippedException("Таксон устарел и должен быть пропущен")
 
@@ -534,6 +542,20 @@ def parse_levels(infobox, details: ListItemDetails, named_ranks: list, regular_r
 
         b_el = level_title_el.select_one("b")
         a_href_el = level_title_el.select_one("a")
+        if a_href_el:
+            href = a_href_el.get("href", None)
+            if not href:
+                raise CodeMustBeFixedException(f"URL-адрес href уровня иерархии пуст: level_title_el = '{level_title_el}'")
+            if href.startswith("/wiki/"):
+                href_title = href[len("/wiki/"):]
+            else:
+                wiki_base_url = Config.WIKIPEDIAS_URL_MASK.format(lang_key, "")
+                if href.startswith(wiki_base_url):
+                    href_title = href[len(wiki_base_url):]
+                else:
+                    raise CodeMustBeFixedException(f"Неизвестный старт URL-адреса href уровня иерархии: level_title_el = '{level_title_el}'")
+        else:
+            href_title = None
 
         # Extracting data from elements:
         level_type = (level_type_el
@@ -549,10 +571,10 @@ def parse_levels(infobox, details: ListItemDetails, named_ranks: list, regular_r
         if "," in level_title:
             level_title = level_title.split(",")[0]
         can_be_current_level = bool(b_el is not None and a_href_el is None)
-        return level_type, level_title, can_be_current_level
+        return level_type, level_title, href_title, can_be_current_level
 
     current_level = levels[0]
-    level_0_type, level_0_title, can_be_current_level = get_level_info(current_level)
+    level_0_type, level_0_title, _, can_be_current_level = get_level_info(current_level)
     if can_be_current_level:
         details.type = level_0_type
         if level_0_title not in details.synonyms:
@@ -565,16 +587,40 @@ def parse_levels(infobox, details: ListItemDetails, named_ranks: list, regular_r
     is_named_ranks_parent_found = False
     is_regular_ranks_parent_found = False
     for level in levels:
-        level_type, level_title, _ = get_level_info(level)
-        sql = """
-            SELECT id
-            FROM public.list
-            WHERE title = {}
-        """.format(quote_string(level_title))
-        query_result = DbListItemsIterator("check_parent_id", sql)
-        if not query_result.rowcount():
+        level_type, level_title, level_href_title, _ = get_level_info(level)
+
+        level_id = None
+        if level_href_title:
+            sql = """
+                SELECT id
+                FROM public.list
+                WHERE latin = {}
+            """.format(quote_string(level_href_title))
+            query_result = DbListItemsIterator("check_parent_id", sql)
+            if query_result.rowcount():
+                level_id = int(query_result.fetchone()[0])
+        if level_id is None:
+            sql = """
+                SELECT id
+                FROM public.list
+                WHERE title = {}
+            """.format(quote_string(level_title))
+            query_result = DbListItemsIterator("check_parent_id", sql)
+            if query_result.rowcount():
+                level_id = int(query_result.fetchone()[0])
+        if level_id is None:
+            sql = """
+                SELECT list_id
+                FROM public.synonyms
+                WHERE title = {}
+            """.format(quote_string(level_title))
+            query_result = DbListItemsIterator("check_parent_id", sql)
+            if query_result.rowcount() == 1:  # Синонимы двух разных видов могут быть одинаковыми
+                level_id = int(query_result.fetchone()[0])
+        if level_id is None:
+            # Этот родитель не найден в БД, поднимаемся к более общему родителю (костыль, чтобы виды оставались в дереве)
             continue
-        level_id = int(query_result.fetchone()[0])
+
         if not is_parent_found:
             details.parent_id = level_id
             details.parent_type = level_type
@@ -593,7 +639,6 @@ def parse_levels(infobox, details: ListItemDetails, named_ranks: list, regular_r
         if is_parent_found and is_named_ranks_parent_found and is_regular_ranks_parent_found:
             break
 
-    Logger.print(f"Детали: {details.type} {details.title}")
     if details.parent_id:
         Logger.print(f"Прямой родитель: ({details.parent_id}) {details.parent_type}: {details.parent_title}")
     else:
