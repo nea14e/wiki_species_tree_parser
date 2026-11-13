@@ -138,7 +138,7 @@ export class DbTasksComponent implements OnInit, OnDestroy {
   }
 
   isTaskResumeEnabled(task: DbTask): boolean {
-    return task.stage === '2';
+    return task.stage === '2' || task.stage === '3';
   }
 
   onDeleteClick(task: DbTask): void {
