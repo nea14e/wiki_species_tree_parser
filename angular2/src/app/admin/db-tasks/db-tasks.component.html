@@ -226,7 +226,7 @@
         </div>
       }
 
-      @if (editingTask()!.stage === '2') {
+      @if (editingTask()!.stage === '2' || editingTask()!.stage === '3') {
         <div class="row mt-4">
           <div class="col-3">
             skip_parsed_interval<span class="text-danger">*</span>:

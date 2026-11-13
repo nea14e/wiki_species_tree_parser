@@ -139,6 +139,7 @@ class DbTaskRunInfo:
             if task["args"].get("proxy", None):
                 args.append(task["args"]["proxy"])
         elif stage == "3":
+            args.append(str(bool(task["args"]["skip_parsed_interval"])))
             args.append('"' + str(task["args"]["where"]) + '"')
         elif stage == "test_task":
             args.append(str(bool(task["args"]["will_success"])))

@@ -107,10 +107,19 @@ def main():
         parse_details(skip_parsed_interval, where)  # 2 этап
     elif stage_number == '3':
         if len(sys.argv) >= 4:
-            where = sys.argv[3]
+            if sys.argv[3] == "True":
+                skip_parsed_interval = True
+            elif sys.argv[3] == "False":
+                skip_parsed_interval = False
+            else:
+                raise ValueError("Не удаётся прочитать bool: " + str(sys.argv[3]))
+        else:
+            skip_parsed_interval = True
+        if len(sys.argv) >= 5:
+            where = sys.argv[4]
         else:
             where = ""
-        correct_parents(where)  # 3 этап
+        correct_parents(skip_parsed_interval, where)  # 3 этап
     elif stage_number == '4':
         DbFunctions.update_leaves_count()
     else:
@@ -786,7 +795,7 @@ def parse_wikipedias_hrefs(details: ListItemDetails):
     return details
 
 
-def correct_parents(where: str = None):  # TODO больше не нужно
+def correct_parents(skip_parsed_interval: bool, where: str = None):
     """
     После парсинга списка пройдёмся по базе и заполним parent_id по parent_title.
     """
