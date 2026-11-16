@@ -172,13 +172,8 @@ BEGIN
             _prev_parent_type = _cur_parent_type;
 
             -- Если дошли до корня дерева или обнаружилось зацикливание (бывают битые данные)
-            IF _cur_parent_id IS NULL OR _cur_parent_id = ANY(_prev_parents_ids) THEN
-                RETURN JSONB_BUILD_OBJECT(
-                    '_id', _id,
-                    '_language_key1', _language_key1,
-                    '_language_key2', _language_key2,
-                    'levels', _levels_json
-                )::json;
+            IF (_cur_parent_id IS NULL AND _prev_parent_id IS NULL) OR _cur_parent_id = ANY(_prev_parents_ids) THEN
+                EXIT;
             END IF;
 
             -- Текущий родитель
@@ -232,7 +227,7 @@ BEGIN
                              WHEN 'regular' THEN regular_ranks_only_parent_id
                              WHEN 'named_only' THEN named_ranks_only_parent_id
                              WHEN 'all' THEN parent_id
-                      END) = _cur_parent_id        -- Элементы, дочерние к текущему родителю
+                      END) IS NOT DISTINCT FROM _cur_parent_id -- Элементы, дочерние к текущему родителю (к NULL для корня дерева)
                     AND "type" = _prev_parent_type -- Текущий родитель может иметь дочерние на нескольких уровнях. Тогда подгружаем только уровень с прошлым родителем
                     AND is_deleted = FALSE) t;
 
@@ -269,10 +264,31 @@ BEGIN
             END IF;
 
         END LOOP; -- Цикл по родителям
+    
+    RETURN JSONB_BUILD_OBJECT(
+            '_id', _id,
+            '_language_key1', _language_key1,
+            '_language_key2', _language_key2,
+            'levels', _levels_json
+           )::json;
 END;
 $$;
 
 /*
+SELECT public.get_tree_by_id(
+  _id := 11111,
+  _parent_mode := 'all',
+  _language_key1 := 'ru',
+  _language_key2 := 'latin'
+);
+
+SELECT public.get_tree_by_id(
+  _id := 111,
+  _parent_mode := 'all',
+  _language_key1 := 'ru',
+  _language_key2 := 'latin'
+);
+
 SELECT public.get_tree_by_id(
   _id := 69437,
   _parent_mode := 'regular',
