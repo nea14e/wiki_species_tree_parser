@@ -81,14 +81,22 @@ BEGIN
     FOR _cur_rank IN
         SELECT "type",
                titles_by_languages ->> _language_key1 AS rank_for_language1,
-               latin                                  AS rank_latin
+               latin                                  AS rank_latin,
+               "order" AS rank_order
         FROM public.ranks
         WHERE ("order" < _level_max_order OR _level_max_order IS NULL)
           AND "order" >= _level_min_order
-        ORDER BY "order"
+        UNION ALL
+        -- Дочерние элементы без уровня (показывать отдельным уровнем):
+        SELECT NULL AS "type",
+               '-' AS rank_for_language1,
+               '-' AS rank_latin,
+               99999 AS rank_order
+        WHERE _parent_mode = 'all'
+        ORDER BY rank_order
         LOOP
 
-            RAISE NOTICE 'CHILD _cur_rank: ''%''.', _cur_rank."type";
+            RAISE NOTICE 'CHILD _cur_rank: ''%''.', coalesce(_cur_rank."type", '(without rank)');
 
             SELECT JSONB_AGG(t ORDER BY title_for_language1)
             INTO _level_items_json
@@ -119,7 +127,11 @@ BEGIN
                              WHEN 'named_only' THEN named_ranks_only_parent_id
                              WHEN 'all' THEN parent_id
                       END) = _id                  -- дочерние элементы
-                    AND "type" = _cur_rank."type" -- только текущего уровня
+                    AND (
+                        (_cur_rank."type" IS NOT NULL AND "type" = _cur_rank."type") -- только текущего уровня
+                        OR (_cur_rank."type" IS NULL AND "type" NOT IN (SELECT rr."type"  -- только без уровня
+                                                                        FROM public.ranks rr))
+                      )
                     AND is_deleted = FALSE) t;
 
             IF _level_items_json IS NOT NULL THEN -- Если текущий уровень не имеет элементов, то будет NULL, что может испортить весь результат 
