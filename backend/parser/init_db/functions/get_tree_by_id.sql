@@ -60,7 +60,7 @@ BEGIN
                WHEN 'named_only' THEN named_ranks_only_parent_id
                WHEN 'all' THEN parent_id
                END,
-           ranks."type",
+           list."type",  -- иногда бывают битые виды рангов, всё равно нужно искать соседей на этих уровнях
            ranks."order",
            CASE
                WHEN _language_key1 != 'latin'
@@ -175,7 +175,7 @@ BEGIN
                        WHEN 'named_only' THEN named_ranks_only_parent_id
                        WHEN 'all' THEN parent_id
                    END,
-                   ranks."type", -- иногда бывают битые виды рангов, в этом случае тут будет NULL
+                   list."type", -- иногда бывают битые виды рангов, всё равно нужно искать соседей на этих уровнях
                    CASE
                        WHEN _language_key1 != 'latin'
                            THEN COALESCE(list.titles_by_languages ->> _language_key1, list.latin)

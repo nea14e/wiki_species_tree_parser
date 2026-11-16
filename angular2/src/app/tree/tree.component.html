@@ -73,20 +73,23 @@
       }
     </div>
 
-    <div class="position-relative me-2">
-      <div class="btn"
-           (click)="onFavoritesToggleClick()"
-           [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
-        <img src="/from-bootstrap/bookmarks.svg"
-             [alt]="rootData.translationRoot()?.translations?.favorites"
-             class="btn-img"/>
-        {{ rootData.translationRoot()?.translations?.favorites }}
-      </div>
-      @if (favoritesService.isFavoritesOpen()) {
-        <div class="dropdown-container">
-          <app-favorites (onFavoritesItemClick)="onMenuItemClick($event)"/>
-        </div>
-      }
+    <div>
+      <select [ngModel]="parentMode()"
+              (ngModelChange)="onParentModeChanged($event)"
+              class="me-1">
+        <option [value]="ParentModeEnum.regular"
+                [selected]="parentMode()===ParentModeEnum.regular">
+          {{ rootData.translationRoot()?.translations?.parent_mode_regular }}
+        </option>
+        <option [value]="ParentModeEnum.named_only"
+                [selected]="parentMode()===ParentModeEnum.named_only">
+          {{ rootData.translationRoot()?.translations?.parent_mode_named_only }}
+        </option>
+        <option [value]="ParentModeEnum.all"
+                [selected]="parentMode()===ParentModeEnum.all">
+          {{ rootData.translationRoot()?.translations?.parent_mode_all }}
+        </option>
+      </select>
     </div>
   </div>
 
@@ -105,7 +108,7 @@
            alt=""
            class="btn-img me-small"/>
     }
-    <div class="position-relative flex-grow-1">
+    <div class="position-relative flex-grow-1 me-small">
       <input #searchQueryInput
              type="text"
              class="input-text color-0"
@@ -118,6 +121,22 @@
            [ngClass]="!isShowSearch() ? 'invisible-element' : ''">
         <app-search (onSearchItemClick)="onMenuItemClick($event)"/>
       </div>
+    </div>
+
+    <div class="position-relative">
+      <div class="btn"
+           (click)="onFavoritesToggleClick()"
+           [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
+        <img src="/from-bootstrap/bookmarks.svg"
+             [alt]="rootData.translationRoot()?.translations?.favorites"
+             class="btn-img"/>
+        {{ rootData.translationRoot()?.translations?.favorites }}
+      </div>
+      @if (favoritesService.isFavoritesOpen()) {
+        <div class="dropdown-container">
+          <app-favorites (onFavoritesItemClick)="onMenuItemClick($event)"/>
+        </div>
+      }
     </div>
   </div>
 </div>

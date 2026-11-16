@@ -76,7 +76,8 @@ def get_childes_by_id(request,
 
 # Выдаёт дерево, раскрытое на записи с нужным id (уровни до него и все его прямые потомки на разных уровнях)
 @get_language_decorator()
-def get_tree_by_id(_, _id: int, language_key1: str, language_key2: str):
+def get_tree_by_id(request, _id: int, language_key1: str, language_key2: str):
+    parent_mode = str(request.GET.get('parent_mode'))
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
@@ -86,14 +87,15 @@ def get_tree_by_id(_, _id: int, language_key1: str, language_key2: str):
             _language_key1 := %s, 
             _language_key2 := %s
         );
-    """, (_id, 'regular', language_key1, language_key2))
+    """, (_id, parent_mode, language_key1, language_key2))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)
 
 
 # Выдаёт дерево с видом по умолчанию (первые три уровня целиком)
 @get_language_decorator()
-def get_tree_default(_, language_key1: str, language_key2: str):
+def get_tree_default(request, language_key1: str, language_key2: str):
+    parent_mode = str(request.GET.get('parent_mode'))
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
@@ -102,7 +104,7 @@ def get_tree_default(_, language_key1: str, language_key2: str):
             _language_key1 := %s,
             _language_key2 := %s
         );
-    """, ('regular', language_key1, language_key2))
+    """, (parent_mode, language_key1, language_key2))
     db_response = cur.fetchone()[0]
     return JsonResponse(db_response, safe=False)
 

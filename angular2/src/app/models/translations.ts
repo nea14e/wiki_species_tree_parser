@@ -15,6 +15,9 @@ export interface Translations {
   show_in_tree: string;
   to_tree_root: string;
   to_tree: string;
+  parent_mode_regular: string;
+  parent_mode_named_only: string;
+  parent_mode_all: string;
   go_back: string;
   go_forward: string;
   authors_content: string;

@@ -9,6 +9,7 @@ import {SearchItem} from './models/search-item';
 import {LanguageListItem} from './models/language-list-item';
 import {SelectedLanguageKey1} from './common/models/selected-language-key1';
 import {SelectedLanguageKey2} from './common/models/selected-language-key2';
+import {ParentModeEnum} from './models/parent-mode-enum';
 
 export const NETWORK_ERROR_DEFAULT_MESSAGE = 'Ошибка сети. Проверьте интернет-соединение.';
 
@@ -33,19 +34,24 @@ export class NetworkService {
     return this._http.get<TipOfTheDay>(environment.BACKEND_API_URL + 'get_tip_of_the_day_by_id/' + id);
   }
 
-  public getTreeDefault(language_key1: SelectedLanguageKey1, language_key2: SelectedLanguageKey2): Observable<Tree> {
+  public getTreeDefault(parentMode: ParentModeEnum, language_key1: SelectedLanguageKey1,
+                        language_key2: SelectedLanguageKey2): Observable<Tree> {
     if (language_key2 === null) {
       language_key2 = "null"
     }
     return this._http.get<Tree>(
       environment.BACKEND_API_URL + 'get_tree_default',
       {
-        params: {language_key1, language_key2}
+        params: {
+          parent_mode: parentMode.toString(),
+          language_key1,
+          language_key2
+        }
       }
     );
   }
 
-  public getTreeById(id: number, language_key1: SelectedLanguageKey1,
+  public getTreeById(id: number, parentMode: ParentModeEnum, language_key1: SelectedLanguageKey1,
                      language_key2: SelectedLanguageKey2): Observable<Tree> {
     if (language_key2 === null) {
       language_key2 = "null"
@@ -53,7 +59,11 @@ export class NetworkService {
     return this._http.get<Tree>(
       environment.BACKEND_API_URL + 'get_tree_by_id/' + id,
       {
-        params: {language_key1, language_key2}
+        params: {
+          parent_mode: parentMode.toString(),
+          language_key1,
+          language_key2
+        }
       }
     );
   }

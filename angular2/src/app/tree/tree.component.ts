@@ -20,13 +20,14 @@ import {Level} from '../models/level';
 import {FormsModule} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {TipOfTheDayDialogComponent} from '../tip-of-the-day/tip-of-the-day.component';
-import {combineLatest, distinctUntilChanged, filter, map, Subscription, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Subscription, switchMap, tap} from 'rxjs';
 import {NgClass} from '@angular/common';
 import {TreeHistoryItem} from '../models/tree-history-item';
 import {PlainListItemComponent} from '../common/plain-list-item/plain-list-item';
 import {FavoritesComponent} from '../favorites/favorites.component';
 import {SearchMediatorService} from '../search/search-mediator.service';
 import {SearchComponent} from '../search/search.component';
+import {ParentModeEnum} from '../models/parent-mode-enum';
 
 @Component({
   selector: 'app-tree.component',
@@ -81,6 +82,10 @@ export class TreeComponent implements OnInit, OnDestroy {
   isShowBackMenu = signal(false);
   isShowForwardMenu = signal(false);
 
+  parentMode = signal<ParentModeEnum>(ParentModeEnum.regular);
+  parentModeChanged$ = new BehaviorSubject<ParentModeEnum>(ParentModeEnum.regular);
+  ParentModeEnum = ParentModeEnum;
+
   ngOnInit(): void {
     this._subscribeQueryParamMapId();
     this._subscribeQueryParamsMapAttachToTipId();
@@ -101,9 +106,21 @@ export class TreeComponent implements OnInit, OnDestroy {
       .pipe(
         map(selectedLanguagesInfo => JSON.stringify(selectedLanguagesInfo)),
         distinctUntilChanged()
-      )
+      );
 
-    this._queryParamMapIdSubscription = combineLatest([queryParamMapChanged$, selectedLanguageChanged$])
+    const parentModeChanged$ = this.parentModeChanged$
+      .pipe(
+        tap(parentMode => {
+          this.parentMode.set(parentMode);
+        }),
+        distinctUntilChanged()
+      );
+
+    this._queryParamMapIdSubscription = combineLatest([
+      queryParamMapChanged$,
+      selectedLanguageChanged$,
+      parentModeChanged$
+    ])
       .pipe(
         map(params => params[0]),
         tap({
@@ -115,11 +132,13 @@ export class TreeComponent implements OnInit, OnDestroy {
           ? this._networkService.getTreeById
           (
             id,
+            this.parentMode(),
             this.rootData.selectedLanguageKey1(),
             this.rootData.selectedLanguageKey2()
           )
           : this._networkService.getTreeDefault
           (
+            this.parentMode(),
             this.rootData.selectedLanguageKey1(),
             this.rootData.selectedLanguageKey2()
           )
@@ -425,5 +444,9 @@ export class TreeComponent implements OnInit, OnDestroy {
     this._forwardTreeHistory.set([]);
 
     this._selectItemById(itemId);
+  }
+
+  onParentModeChanged(value: ParentModeEnum) {
+    this.parentModeChanged$.next(value);
   }
 }
