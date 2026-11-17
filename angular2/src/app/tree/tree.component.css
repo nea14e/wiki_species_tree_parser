@@ -1,7 +1,19 @@
+.level-row.has-selected {
+  background-color: var(--level-row-selected-background-color);
+}
+
+.level-row.has-expanded {
+  background-color: var(--level-row-expanded-background-color);
+}
+
 .level-title {
 }
 
 .level-title.has-selected {
+  color: var(--item-selected-2);
+}
+
+.level-title.has-expanded {
   color: var(--item-accent);
 }
 

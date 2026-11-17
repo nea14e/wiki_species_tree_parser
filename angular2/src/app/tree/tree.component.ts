@@ -221,6 +221,9 @@ export class TreeComponent implements OnInit, OnDestroy {
     if (level.is_level_has_selected_item) {
       return 'has-selected';
     }
+    if (level.is_level_has_expanded_item) {
+      return 'has-expanded';
+    }
     return '';
   }
 

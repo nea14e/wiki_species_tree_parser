@@ -142,7 +142,7 @@
 </div>
 
 @for (level of tree()?.levels; track level) {
-  <div class="row m-0">
+  <div class="level-row row m-0" [class]="getLevelClass(level)">
     <div class="level-hr col-12 mb-2" [class]="getLevelClass(level)"></div>
 
     <div class="level-title col-2 ml-0 mr-0" [class]="getLevelClass(level)">
@@ -164,7 +164,7 @@
       } @else if (!!level.is_level_has_expanded_item) {
         <div [title]="rootData.translationRoot()?.translations?.expanded_tooltip"
              style="margin-left: -12px;">
-          <img src="/from-bootstrap/caret-down.svg"
+          <img src="/from-bootstrap/caret-down-fill-blue.svg"
                alt=""
                class="level-expanded-arrow"/>
         </div>
