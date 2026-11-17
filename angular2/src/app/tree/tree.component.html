@@ -10,9 +10,16 @@
            alt=""/>
     </div>
   } @else {
+    <div class="btn me-2"
+         (click)="onExpandAndPinPanelClick()"
+         [title]="rootData.translationRoot()?.translations?.expand_and_pin">
+      <img src="/from-bootstrap/pin-angle.svg"
+           class="btn-img"
+           alt=""/>
+    </div>
     <div class="btn"
-         (click)="onExpandPanelClick()"
-         [title]="rootData.translationRoot()?.translations?.expand">
+         (click)="onExpandPanelOnceClick()"
+         [title]="rootData.translationRoot()?.translations?.expand_once">
       <img src="/from-bootstrap/chevron-double-right.svg"
            class="btn-img"
            alt=""/>

@@ -2,7 +2,8 @@ WITH cte(lang_key, comment, translations) AS (
   VALUES ('ru', 'Русский',
     '{
         "close": "Закрыть",
-        "expand": "Развернуть",
+        "expand_and_pin": "Развернуть и приколоть",
+        "expand_once": "Развернуть один раз",
         "collapse": "Свернуть",
         "site_title": "Дерево видов",
         "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Этот сайт - просмотрщик Викивидов/Википедии в виде дерева.",
@@ -87,7 +88,8 @@ WITH cte(lang_key, comment, translations) AS (
          ('be', 'Беларускі',
           '{
             "close": "Закрыть",
-            "expand": "Развернуть",
+            "expand_and_pin": "Развернуть и приколоть",
+            "expand_once": "Развернуть один раз",
             "collapse": "Свернуть",
             "site_title": "Дерево видов",
             "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Этот сайт - просмотрщик Викивидов/Википедии в виде дерева.",
@@ -172,7 +174,8 @@ WITH cte(lang_key, comment, translations) AS (
          ('fr', 'Français',
           '{
             "close": "Закрыть",
-            "expand": "Развернуть",
+            "expand_and_pin": "Развернуть и приколоть",
+            "expand_once": "Развернуть один раз",
             "collapse": "Свернуть",
             "site_title": "Arbre des espèces animales",
             "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Этот сайт - просмотрщик Викивидов/Википедии в виде дерева.",
@@ -257,7 +260,8 @@ WITH cte(lang_key, comment, translations) AS (
          ('de', 'Deutsch',
           '{
             "close": "Закрыть",
-            "expand": "Развернуть",
+            "expand_and_pin": "Развернуть и приколоть",
+            "expand_once": "Развернуть один раз",
             "collapse": "Свернуть",
             "site_title": "Stammbaum der Tierarten",
             "site_description": "Биологическая систематика более чем 100 000 видов животных, растений, бактерий и грибов. Этот сайт - просмотрщик Викивидов/Википедии в виде дерева.",
@@ -342,7 +346,8 @@ WITH cte(lang_key, comment, translations) AS (
     ('en', 'English',
       '{
         "close": "Close",
-        "expand": "Expand",
+        "expand_and_pin": "Expand and pin",
+        "expand_once": "Expand once",
         "collapse": "Collapse",
         "site_title": "Species tree",
         "site_description": "Biological systematics of more than 100,000 species of animals, plants, bacteria and fungi. This site is the viewer of Wikispecies/Wikipedia via tree.",

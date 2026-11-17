@@ -62,6 +62,8 @@ export class TreeComponent implements OnInit, OnDestroy {
   @ViewChild("treeRoot") treeRootElement!: ElementRef;
 
   isShowStickyPanel = signal(true);
+  private _isAutoCollapseStickyPanel = false;
+
   isShowSearch = signal(false);
   @ViewChild("searchQueryInput") searchQueryInput!: ElementRef;
   searchMediatorService = inject(SearchMediatorService);
@@ -257,6 +259,10 @@ export class TreeComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this._isAutoCollapseStickyPanel) {
+      this.isShowStickyPanel.set(false);
+    }
+
     this._backTreeHistory.update(prevHistory => {
       return [
         ...prevHistory,
@@ -288,6 +294,10 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   openTipDialog(): void {
+    if (this._isAutoCollapseStickyPanel) {
+      this.isShowStickyPanel.set(false);
+    }
+
     const tipIdString = this._activatedRoute.snapshot.queryParamMap.get("tipId");
     const tipId = !!tipIdString ? +tipIdString : null;
     console.log("openTipDialog(): tipId:", tipId);  // TODO
@@ -344,11 +354,18 @@ export class TreeComponent implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
+
     if (!target.closest('.position-relative')) {
       this.isShowBackMenu.set(false);
       this.isShowForwardMenu.set(false);
       this.favoritesService.isFavoritesOpen.set(false);
       this.isShowSearch.set(false);
+    }
+
+    if (!target.closest('.sticky-panel')) {
+      if (this._isAutoCollapseStickyPanel) {
+        this.isShowStickyPanel.set(false);
+      }
     }
   }
 
@@ -356,6 +373,9 @@ export class TreeComponent implements OnInit, OnDestroy {
     this.isShowBackMenu.set(false);
     this.isShowForwardMenu.set(false);
     this.isShowSearch.set(false);
+    if (this._isAutoCollapseStickyPanel) {
+      this.isShowStickyPanel.set(false);
+    }
 
     const indexToMove = this._backTreeHistory()
       .findIndex(item => item.random_id === selectedItem.random_id);
@@ -380,6 +400,9 @@ export class TreeComponent implements OnInit, OnDestroy {
     this.isShowBackMenu.set(false);
     this.isShowForwardMenu.set(false);
     this.isShowSearch.set(false);
+    if (this._isAutoCollapseStickyPanel) {
+      this.isShowStickyPanel.set(false);
+    }
 
     const indexToMove = this._forwardTreeHistory()
       .findIndex(item => item.random_id === selectedItem.random_id);
@@ -401,6 +424,10 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onGoToSelectedItemClick() {
+    if (this._isAutoCollapseStickyPanel) {
+      this.isShowStickyPanel.set(false);
+    }
+
     this._goToSelectedItem();
   }
 
@@ -436,6 +463,9 @@ export class TreeComponent implements OnInit, OnDestroy {
     this.isShowSearch.set(false);
     this.searchQueryInput.nativeElement.blur();
     this.favoritesService.isFavoritesOpen.set(false);
+    if (this._isAutoCollapseStickyPanel) {
+      this.isShowStickyPanel.set(false);
+    }
 
     if (this.selectedItemInfo()?.item?.id === itemId) {
       this._goToSelectedItem();
@@ -457,14 +487,24 @@ export class TreeComponent implements OnInit, OnDestroy {
   }
 
   onParentModeChanged(value: ParentModeEnum) {
+    if (this._isAutoCollapseStickyPanel) {
+      this.isShowStickyPanel.set(false);
+    }
+
     this.parentModeChanged$.next(value);
   }
 
   onCollapsePanelClick() {
     this.isShowStickyPanel.set(false);
+    this._isAutoCollapseStickyPanel = true;
   }
 
-  onExpandPanelClick() {
+  onExpandAndPinPanelClick() {
+    this.isShowStickyPanel.set(true);
+    this._isAutoCollapseStickyPanel = false;
+  }
+
+  onExpandPanelOnceClick() {
     this.isShowStickyPanel.set(true);
   }
 }

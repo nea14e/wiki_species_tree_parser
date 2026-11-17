@@ -1,6 +1,7 @@
 export interface Translations {
   close: string;
-  expand: string;
+  expand_and_pin: string;
+  expand_once: string;
   collapse: string;
   favorites: string;
   favorites_is_empty: string;
