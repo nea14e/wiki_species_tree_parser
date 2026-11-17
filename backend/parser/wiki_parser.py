@@ -121,7 +121,7 @@ def main():
             where = ""
         correct_parents(skip_parsed_interval, where)  # 3 этап
     elif stage_number == '4':
-        DbFunctions.update_leaves_count()
+        update_leaves_count()
     else:
         print_usage()
 
@@ -912,6 +912,76 @@ def correct_parents(skip_parsed_interval: bool, where: str = None):
     Logger.print("\n")
     Logger.print("ОБНОВЛЕНИЕ РОДИТЕЛЕЙ ОКОНЧЕНО!")
 
+
+def update_leaves_count():
+    _update_leaves_count_internal("parent_id", "leaves_count")
+    _update_leaves_count_internal("named_ranks_only_parent_id", "named_ranks_only_leaves_count")
+    _update_leaves_count_internal("regular_ranks_only_parent_id", "regular_ranks_only_leaves_count")
+
+    Logger.print("ПОДСЧЁТ КОЛИЧЕСТВА ЛИСТЬЕВ УСПЕШНО ЗАВЕРШЁН!")
+
+
+def _update_leaves_count_internal(parent_id_field_name: str, leaves_count_field_name: str):
+    Logger.print(f"ПОДСЧЁТ КОЛИЧЕСТВА ЛИСТЬЕВ ДЛЯ ПОЛЯ {parent_id_field_name}...")
+
+    Logger.print(f"Очистка старых данных...")
+    sql = f"""
+        UPDATE public.list
+        SET {leaves_count_field_name} = NULL;
+    """
+    DbExecuteNonQuery.execute("update_leaves_count", sql)
+
+    Logger.print(f"Поиск листьев...")
+    sql = f"""
+        UPDATE public.list
+        SET {leaves_count_field_name} = 1
+        WHERE NOT EXISTS(SELECT 1
+                         FROM public.list child
+                         WHERE child.{parent_id_field_name} = list.id);
+    """
+    DbExecuteNonQuery.execute("update_leaves_count", sql)
+
+    iteration_counter = 1
+    while True:
+        Logger.print(f"Подсчёт количества листьев в узлах дерева для {parent_id_field_name} (№ {iteration_counter})...")
+        sql = f"""
+            WITH cte AS (
+                UPDATE public.list target
+                SET {leaves_count_field_name} = source.sum_from_childes
+                FROM (SELECT child.{parent_id_field_name},
+                             SUM(child.{leaves_count_field_name})                                     AS sum_from_childes,
+                             SUM(CASE WHEN child.{leaves_count_field_name} IS NULL THEN 1 ELSE 0 END) AS unfilled_childes_count
+                      FROM public.list child
+                      GROUP BY child.{parent_id_field_name}) AS source
+                WHERE target.id = source.{parent_id_field_name}
+                    AND target.{leaves_count_field_name} IS NULL  -- только ещё не заполненные
+                    AND source.unfilled_childes_count = 0  -- только если все дочерние уже заполнены
+                RETURNING target.id
+            )
+            SELECT count(1)
+            FROM cte;
+        """
+        db_iterator = DbListItemsIterator("update_leaves_count", sql)
+        row_count = int(db_iterator.fetchone()[0])
+        if row_count > 0:
+            Logger.print(f"Количество листьев обновлено для {row_count} узлов дерева. Повторяем...")
+            iteration_counter += 1
+        else:
+            Logger.print("Узлов без количества листьев больше нет.")
+            break
+
+    Logger.print(f"Стирание отметок на листьях...")
+    sql = f"""
+        UPDATE public.list
+        SET {leaves_count_field_name} = 0
+        WHERE NOT EXISTS(SELECT 1
+                       FROM public.list child
+                       WHERE child.{parent_id_field_name} = list.id);
+    """
+    DbExecuteNonQuery.execute("update_leaves_count", sql)
+
+    Logger.print(f"Количества листьев для поля {parent_id_field_name} обновлены.")
+    Logger.print("")
 
 def test_task(timeout: float, will_success: bool):
     Logger.print("Test task started for timeout = {0} seconds, will_success = {1}.".format(timeout, will_success))

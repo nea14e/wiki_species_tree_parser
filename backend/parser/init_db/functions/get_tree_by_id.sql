@@ -118,7 +118,11 @@ BEGIN
                              WHEN 'named_only' THEN named_ranks_only_parent_id
                              WHEN 'all' THEN parent_id
                              END AS parent_id,
-                         leaves_count,
+                         CASE _parent_mode
+                             WHEN 'regular' THEN regular_ranks_only_leaves_count
+                             WHEN 'named_only' THEN named_ranks_only_leaves_count
+                             WHEN 'all' THEN leaves_count
+                         END AS leaves_count,
                          FALSE   AS is_expanded,
                          FALSE   AS is_selected
                   FROM public.list
@@ -216,8 +220,12 @@ BEGIN
                              WHEN 'regular' THEN regular_ranks_only_parent_id
                              WHEN 'named_only' THEN named_ranks_only_parent_id
                              WHEN 'all' THEN parent_id
-                             END         AS parent_id,
-                         leaves_count,
+                         END AS parent_id,
+                         CASE _parent_mode
+                             WHEN 'regular' THEN regular_ranks_only_leaves_count
+                             WHEN 'named_only' THEN named_ranks_only_leaves_count
+                             WHEN 'all' THEN leaves_count
+                         END AS leaves_count,
                          COALESCE((id = _prev_parent_id)::boolean OR (id = _id)::boolean,
                                   FALSE) AS is_expanded,
                          COALESCE((id = _id)::boolean,

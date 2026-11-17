@@ -137,7 +137,6 @@ class DbFunctions:
         run_script("functions", "search_by_words", "Хранимка по поиску: перенакатываем...")
         run_script("functions", "get_tip_of_the_day", "Хранимка по выдаче совета дня...")
         run_script("functions", "get_tip_of_the_day_by_id", "Хранимка по выдаче совета дня по id...")
-        run_script("functions", "service_update_leaves_count", "Хранимка по подсчёту листов в дереве: перенакатываем...")
         run_script("functions", "check_rights", "Хранимка по проверке прав пользователей-админов: перенакатываем...")
         run_script("functions", "percent_of", "Хранимка по расчёту процента от двух чисел (служебная): перенакатываем...")
         run_script("functions", "percent_of_to_color", "Хранимка по расчёту цвета от двух чисел (служебная): перенакатываем...")
@@ -155,20 +154,6 @@ class DbFunctions:
 
         Logger.print("\n\n===================================================")
         Logger.print("\n\n")
-
-
-    @staticmethod
-    def update_leaves_count():
-        # Обновление количества видов в каждом узле дерева
-        sql = """
-                SELECT public.service_update_leaves_count();
-            """
-        print(sql)
-        db_list_iter = DbListItemsIterator(DbFunctions.default_conn_tag, sql)
-        result_message = str(db_list_iter.fetchone()[0])
-        db_list_iter.commit()  # Обязательно сохранить изменения, сделанные в этом соединении
-        Logger.print("Обновление количества видов в каждом узле дерева успешно завершено. Сообщение из БД:")
-        Logger.print(result_message)
 
 
 def quote_nullable(val):
