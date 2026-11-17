@@ -50,6 +50,7 @@
   border: 2px solid black;
   border-radius: 0.5rem;
   background-color: var(--panel-background-color);
+  width: fit-content;
 }
 
 .btn.active,

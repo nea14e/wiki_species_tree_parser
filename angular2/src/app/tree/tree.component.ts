@@ -61,6 +61,7 @@ export class TreeComponent implements OnInit, OnDestroy {
   );
   @ViewChild("treeRoot") treeRootElement!: ElementRef;
 
+  isShowStickyPanel = signal(true);
   isShowSearch = signal(false);
   @ViewChild("searchQueryInput") searchQueryInput!: ElementRef;
   searchMediatorService = inject(SearchMediatorService);
@@ -457,5 +458,13 @@ export class TreeComponent implements OnInit, OnDestroy {
 
   onParentModeChanged(value: ParentModeEnum) {
     this.parentModeChanged$.next(value);
+  }
+
+  onCollapsePanelClick() {
+    this.isShowStickyPanel.set(false);
+  }
+
+  onExpandPanelClick() {
+    this.isShowStickyPanel.set(true);
   }
 }

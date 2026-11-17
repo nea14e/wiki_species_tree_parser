@@ -1,144 +1,166 @@
 <div #treeRoot class="row router-hr"></div>
 
-<div class="sticky-panel p-2 m-2">
-  <div class="d-flex justify-content-center align-items-center p-1">
-    <div class="btn me-4"
-         (click)="openTipDialog()"
-         [title]="rootData.translationRoot()?.translations?.tip_of_the_day_word">
-      <img src="/from-bootstrap/patch-question-fill.svg" alt="" class="btn-img"/>
-      {{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}
+<div class="sticky-panel d-flex align-items-center p-2 m-2">
+  @if (isShowStickyPanel()) {
+    <div class="btn me-2"
+         (click)="onCollapsePanelClick()"
+         [title]="rootData.translationRoot()?.translations?.collapse">
+      <img src="/from-bootstrap/chevron-double-left.svg"
+           class="btn-img"
+           alt=""/>
     </div>
-
-    <div class="position-relative me-small">
-      <div class="btn"
-           (click)="onToTreeRootClick()"
-           [title]="rootData.translationRoot()?.translations?.to_tree_root">
-        <img src="/from-bootstrap/house-door.svg"
-             class="btn-img"
-             [alt]="rootData.translationRoot()?.translations?.to_tree_root"/>
-      </div>
+  } @else {
+    <div class="btn"
+         (click)="onExpandPanelClick()"
+         [title]="rootData.translationRoot()?.translations?.expand">
+      <img src="/from-bootstrap/chevron-double-right.svg"
+           class="btn-img"
+           alt=""/>
     </div>
+  }
 
-    <div class="position-relative">
-      <div class="btn"
-           (click)="isBackEnabled() ? onBackButtonClick() : $event.stopPropagation()"
-           [ngClass]="isBackEnabled() ? '' : 'disabled'">
-        <img src="/from-bootstrap/arrow-left.svg"
-             [alt]="rootData.translationRoot()?.translations?.go_back"
-             class="btn-img"/>
-      </div>
-
-      @if (isShowBackMenu()) {
-        <div class="dropdown-container">
-          @for (historyItem of _backTreeReversedHistory(); track historyItem.random_id) {
-            <app-plain-list-item
-              [level]="historyItem.level"
-              [item]="historyItem.item"
-              [isShowTreeRootIcon]="!historyItem.item"
-              (onClick)="onBackHistoryItemClick(historyItem)">
-            </app-plain-list-item>
-          }
-        </div>
-      }
-    </div>
-
-    <div class="position-relative">
-      <app-plain-list-item
-        [level]="selectedItemInfo()?.level ?? null"
-        [item]="selectedItemInfo()?.item ?? null"
-        [isShowTreeRootIcon]="!selectedItemInfo()"
-        (onClick)="onGoToSelectedItemClick()">
-      </app-plain-list-item>
-    </div>
-
-    <div class="position-relative me-4">
-      <div class="btn"
-           (click)="isForwardEnabled() ? onForwardButtonClick() : $event.stopPropagation()"
-           [ngClass]="isForwardEnabled() ? '' : 'disabled'">
-        <img src="/from-bootstrap/arrow-right.svg"
-             [alt]="rootData.translationRoot()?.translations?.go_forward"
-             class="btn-img"/>
-      </div>
-      @if (isShowForwardMenu()) {
-        <div class="dropdown-container">
-          @for (historyItem of _forwardTreeHistory(); track historyItem.random_id) {
-            <app-plain-list-item
-              [level]="historyItem.level"
-              [item]="historyItem.item"
-              [isShowTreeRootIcon]="!historyItem.item"
-              (onClick)="onForwardHistoryItemClick(historyItem)">
-            </app-plain-list-item>
-          }
-        </div>
-      }
-    </div>
-
+  @if (isShowStickyPanel()) {
     <div>
-      <select [ngModel]="parentMode()"
-              (ngModelChange)="onParentModeChanged($event)"
-              class="me-1">
-        <option [value]="ParentModeEnum.regular"
-                [selected]="parentMode()===ParentModeEnum.regular">
-          {{ rootData.translationRoot()?.translations?.parent_mode_regular }}
-        </option>
-        <option [value]="ParentModeEnum.named_only"
-                [selected]="parentMode()===ParentModeEnum.named_only">
-          {{ rootData.translationRoot()?.translations?.parent_mode_named_only }}
-        </option>
-        <option [value]="ParentModeEnum.all"
-                [selected]="parentMode()===ParentModeEnum.all">
-          {{ rootData.translationRoot()?.translations?.parent_mode_all }}
-        </option>
-      </select>
-    </div>
-  </div>
-
-  <div class="d-flex justify-content-center align-items-center p-1">
-    @if (!!attachToTipId()) {
-      <div class="btn me-small"
-           (click)="cancelAttachingToTipId()"
-           [title]="rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id">
-        <img src="/from-bootstrap/x.svg"
-             alt=""
-             class="btn-img"/>
-        {{ rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id }}
-      </div>
-    } @else {
-      <img src="/from-bootstrap/search.svg"
-           alt=""
-           class="btn-img me-small"/>
-    }
-    <div class="position-relative flex-grow-1 me-small">
-      <input #searchQueryInput
-             type="text"
-             class="input-text color-0"
-             [ngModel]="searchMediatorService.searchQuery.value"
-             (ngModelChange)="onSearchQueryChanged($event)"
-             (focus)="onSearchQueryInputFocus()"
-             [placeholder]="rootData.translationRoot()?.translations?.search_tooltip"
-             [title]="rootData.translationRoot()?.translations?.search_tooltip">
-      <div class="dropdown-container"
-           [ngClass]="!isShowSearch() ? 'invisible-element' : ''">
-        <app-search (onSearchItemClick)="onMenuItemClick($event)"/>
-      </div>
-    </div>
-
-    <div class="position-relative">
-      <div class="btn"
-           (click)="onFavoritesToggleClick()"
-           [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
-        <img src="/from-bootstrap/bookmarks.svg"
-             [alt]="rootData.translationRoot()?.translations?.favorites"
-             class="btn-img"/>
-        {{ rootData.translationRoot()?.translations?.favorites }}
-      </div>
-      @if (favoritesService.isFavoritesOpen()) {
-        <div class="dropdown-container">
-          <app-favorites (onFavoritesItemClick)="onMenuItemClick($event)"/>
+      <div class="d-flex justify-content-center align-items-center p-1">
+        <div class="btn me-4"
+             (click)="openTipDialog()"
+             [title]="rootData.translationRoot()?.translations?.tip_of_the_day_word">
+          <img src="/from-bootstrap/patch-question-fill.svg" alt="" class="btn-img"/>
+          {{ rootData.translationRoot()?.translations?.tip_of_the_day_word }}
         </div>
-      }
+
+        <div class="position-relative me-small">
+          <div class="btn"
+               (click)="onToTreeRootClick()"
+               [title]="rootData.translationRoot()?.translations?.to_tree_root">
+            <img src="/from-bootstrap/house-door.svg"
+                 class="btn-img"
+                 [alt]="rootData.translationRoot()?.translations?.to_tree_root"/>
+          </div>
+        </div>
+
+        <div class="position-relative">
+          <div class="btn"
+               (click)="isBackEnabled() ? onBackButtonClick() : $event.stopPropagation()"
+               [ngClass]="isBackEnabled() ? '' : 'disabled'">
+            <img src="/from-bootstrap/arrow-left.svg"
+                 [alt]="rootData.translationRoot()?.translations?.go_back"
+                 class="btn-img"/>
+          </div>
+
+          @if (isShowBackMenu()) {
+            <div class="dropdown-container">
+              @for (historyItem of _backTreeReversedHistory(); track historyItem.random_id) {
+                <app-plain-list-item
+                  [level]="historyItem.level"
+                  [item]="historyItem.item"
+                  [isShowTreeRootIcon]="!historyItem.item"
+                  (onClick)="onBackHistoryItemClick(historyItem)">
+                </app-plain-list-item>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="position-relative">
+          <app-plain-list-item
+            [level]="selectedItemInfo()?.level ?? null"
+            [item]="selectedItemInfo()?.item ?? null"
+            [isShowTreeRootIcon]="!selectedItemInfo()"
+            (onClick)="onGoToSelectedItemClick()">
+          </app-plain-list-item>
+        </div>
+
+        <div class="position-relative me-4">
+          <div class="btn"
+               (click)="isForwardEnabled() ? onForwardButtonClick() : $event.stopPropagation()"
+               [ngClass]="isForwardEnabled() ? '' : 'disabled'">
+            <img src="/from-bootstrap/arrow-right.svg"
+                 [alt]="rootData.translationRoot()?.translations?.go_forward"
+                 class="btn-img"/>
+          </div>
+          @if (isShowForwardMenu()) {
+            <div class="dropdown-container">
+              @for (historyItem of _forwardTreeHistory(); track historyItem.random_id) {
+                <app-plain-list-item
+                  [level]="historyItem.level"
+                  [item]="historyItem.item"
+                  [isShowTreeRootIcon]="!historyItem.item"
+                  (onClick)="onForwardHistoryItemClick(historyItem)">
+                </app-plain-list-item>
+              }
+            </div>
+          }
+        </div>
+
+        <div>
+          <select [ngModel]="parentMode()"
+                  (ngModelChange)="onParentModeChanged($event)"
+                  class="me-1">
+            <option [value]="ParentModeEnum.regular"
+                    [selected]="parentMode()===ParentModeEnum.regular">
+              {{ rootData.translationRoot()?.translations?.parent_mode_regular }}
+            </option>
+            <option [value]="ParentModeEnum.named_only"
+                    [selected]="parentMode()===ParentModeEnum.named_only">
+              {{ rootData.translationRoot()?.translations?.parent_mode_named_only }}
+            </option>
+            <option [value]="ParentModeEnum.all"
+                    [selected]="parentMode()===ParentModeEnum.all">
+              {{ rootData.translationRoot()?.translations?.parent_mode_all }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center align-items-center p-1">
+        @if (!!attachToTipId()) {
+          <div class="btn me-small"
+               (click)="cancelAttachingToTipId()"
+               [title]="rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id">
+            <img src="/from-bootstrap/x.svg"
+                 alt=""
+                 class="btn-img"/>
+            {{ rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id }}
+          </div>
+        } @else {
+          <img src="/from-bootstrap/search.svg"
+               alt=""
+               class="btn-img me-small"/>
+        }
+        <div class="position-relative flex-grow-1 me-small">
+          <input #searchQueryInput
+                 type="text"
+                 class="input-text color-0"
+                 [ngModel]="searchMediatorService.searchQuery.value"
+                 (ngModelChange)="onSearchQueryChanged($event)"
+                 (focus)="onSearchQueryInputFocus()"
+                 [placeholder]="rootData.translationRoot()?.translations?.search_tooltip"
+                 [title]="rootData.translationRoot()?.translations?.search_tooltip">
+          <div class="dropdown-container"
+               [ngClass]="!isShowSearch() ? 'invisible-element' : ''">
+            <app-search (onSearchItemClick)="onMenuItemClick($event)"/>
+          </div>
+        </div>
+
+        <div class="position-relative">
+          <div class="btn"
+               (click)="onFavoritesToggleClick()"
+               [ngClass]="favoritesService.isFavoritesOpen() ? 'btn-selected' : '' ">
+            <img src="/from-bootstrap/bookmarks.svg"
+                 [alt]="rootData.translationRoot()?.translations?.favorites"
+                 class="btn-img"/>
+            {{ rootData.translationRoot()?.translations?.favorites }}
+          </div>
+          @if (favoritesService.isFavoritesOpen()) {
+            <div class="dropdown-container">
+              <app-favorites (onFavoritesItemClick)="onMenuItemClick($event)"/>
+            </div>
+          }
+        </div>
+      </div>
     </div>
-  </div>
+  }
 </div>
 
 @for (level of tree()?.levels; track level) {
