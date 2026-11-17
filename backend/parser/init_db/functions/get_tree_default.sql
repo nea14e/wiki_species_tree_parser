@@ -29,6 +29,9 @@ BEGIN
            titles_by_languages ->> _language_key1 AS rank_for_language1,
            "type" AS rank_latin
     FROM public.ranks
+    WHERE (is_regular AND _parent_mode = 'regular')
+        OR _parent_mode = 'named_only'
+        OR _parent_mode = 'all'
     ORDER BY "order" DESC -- we are going from top level to bottom
     LIMIT 3 -- show 3 highest levels
     LOOP
