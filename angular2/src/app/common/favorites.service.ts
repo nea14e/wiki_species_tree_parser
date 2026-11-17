@@ -10,7 +10,8 @@ export class FavoritesService {
   private readonly favoritesCookieKey = 'favoriteItems';
   private _cookieService = inject(CookieService);
   private _hasCookiePrivate = false;
-  items = signal<FavoritesItem[]>([]);
+  private _items = signal<FavoritesItem[]>([]);
+  items = this._items.asReadonly();
   isFavoritesOpen = signal(false);
 
   constructor() {
@@ -19,8 +20,7 @@ export class FavoritesService {
 
   private loadData(): void {
     const favorites = this._cookieService.getObject(this.favoritesCookieKey);
-    this.items.set(favorites as FavoritesItem[] ?? []);
-    this.isFavoritesOpen.set(!!favorites);
+    this._items.set(favorites as FavoritesItem[] ?? []);
     this._hasCookiePrivate = !!favorites;
   }
 
@@ -29,7 +29,7 @@ export class FavoritesService {
   }
 
   addItem(level: Level, item: Item): void {
-    const itemsClone = [...this.items()];
+    const itemsClone = [...this._items()];
     itemsClone.push({
       id: item.id,
       rank_for_language1: level.rank_for_language1,
@@ -40,20 +40,20 @@ export class FavoritesService {
       image_url: item.image_url,
       leaves_count: item.leaves_count
     } as FavoritesItem)
-    this.items.set(itemsClone)
+    this._items.set(itemsClone)
     this._cookieService.putObject(this.favoritesCookieKey, itemsClone, {expires: '2999-12-31'});
     this._hasCookiePrivate = true;
     this.isFavoritesOpen.set(true);
   }
 
   deleteItem(idToDelete: number): void {
-    let itemsClone = [...this.items()];
+    let itemsClone = [...this._items()];
     itemsClone = itemsClone.filter(item => item.id !== idToDelete);
-    this.items.set(itemsClone);
+    this._items.set(itemsClone);
     this._cookieService.putObject(this.favoritesCookieKey, itemsClone, {expires: '2999-12-31'});
   }
 
   isItemInFavorites(itemToCheck: Item): boolean {
-    return this.items().some(item => item.id === itemToCheck.id);
+    return this._items().some(item => item.id === itemToCheck.id);
   }
 }

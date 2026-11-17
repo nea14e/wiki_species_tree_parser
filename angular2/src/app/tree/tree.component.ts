@@ -292,6 +292,12 @@ export class TreeComponent implements OnInit, OnDestroy {
       panelClass: 'customized-panel-dialog'
     });
     matDialogRef.componentInstance.loadTip(tipId);
+    matDialogRef.afterClosed()
+      .subscribe({
+        next: _ => {
+          this.favoritesService.isFavoritesOpen.set(!!this.favoritesService.items());
+        }
+      });
   }
 
   ngOnDestroy() {
