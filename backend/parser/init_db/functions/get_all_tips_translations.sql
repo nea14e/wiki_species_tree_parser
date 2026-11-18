@@ -22,7 +22,7 @@ FROM (
               r.titles_by_languages ->> admin_lang_cte.lang_key  AS rank_by_admin,
               r.titles_by_languages ->> _language_key            AS rank_by_language
        FROM public.tips_of_the_day ti
-              LEFT JOIN PUBLIC.list li ON ti.page_id = li.page_id
+              LEFT JOIN PUBLIC.list li ON ti.list_id = li.id
               LEFT JOIN public.ranks r ON li.type = r.type
               LEFT JOIN admin_lang_cte ON TRUE
      ) t
