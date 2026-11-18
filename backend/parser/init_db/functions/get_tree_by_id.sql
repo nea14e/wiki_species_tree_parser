@@ -51,6 +51,19 @@ BEGIN
         RETURN _cached_result::json;
       END IF;
     END IF;*/
+        
+    -- Если выбранный элемент (id = _id) находится на нерегулярном уровне,
+    -- то поправляем _parent_mode, потому что иначе его дочерние не будут видны
+    SELECT CASE
+               WHEN _parent_mode = 'regular' AND ranks.type IS NOT NULL AND ranks.is_regular = FALSE THEN 'named_only'::parent_mode
+               WHEN _parent_mode IN ('regular', 'named_only') AND ranks.type IS NULL THEN 'all'::parent_mode
+               ELSE _parent_mode
+           END
+    INTO _parent_mode
+    FROM public.list
+        LEFT JOIN public.ranks ON list.type = ranks.type
+    WHERE id = _id;
+    -- Далее уже используется новое значение _parent_mode
 
     -- Для выбранного элемента (id = _id) подгружаем дочерние элементы всех уровней
     -- (дочерние могут располагаться на нескольких разных уровнях, поэтому цикл по уровням)
@@ -275,6 +288,7 @@ BEGIN
     
     RETURN JSONB_BUILD_OBJECT(
             '_id', _id,
+            '_parent_mode', _parent_mode,
             '_language_key1', _language_key1,
             '_language_key2', _language_key2,
             'levels', _levels_json
@@ -293,6 +307,14 @@ SELECT public.get_tree_by_id(
 SELECT public.get_tree_by_id(
   _id := 111,
   _parent_mode := 'all',
+  _language_key1 := 'ru',
+  _language_key2 := 'latin'
+);
+
+-- Текущий уровень - нерегулярный:
+SELECT public.get_tree_by_id(
+  _id := 11,
+  _parent_mode := 'regular',
   _language_key1 := 'ru',
   _language_key2 := 'latin'
 );

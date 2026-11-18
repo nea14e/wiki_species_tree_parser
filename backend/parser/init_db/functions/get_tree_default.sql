@@ -96,6 +96,7 @@ BEGIN
 
   RETURN jsonb_build_object(
       '_id', NULL,
+      '_parent_mode', _parent_mode,
       '_language_key1', _language_key1,
       '_language_key2', _language_key2,
       'levels', _levels_json
