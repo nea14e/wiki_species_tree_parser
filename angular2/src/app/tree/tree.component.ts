@@ -115,7 +115,6 @@ export class TreeComponent implements OnInit, OnDestroy {
     const parentModeChanged$ = this.parentModeChanged$
       .pipe(
         tap(parentMode => {
-          console.log('parentModeChanged$:', parentMode, 'signal:', this.parentMode());  // TODO
           this.parentMode.set(parentMode);
         }),
         distinctUntilChanged(),
@@ -128,9 +127,6 @@ export class TreeComponent implements OnInit, OnDestroy {
       parentModeChanged$
     ])
       .pipe(
-        tap(params => {  // TODO
-          console.log('loading for:', params[2]);
-        }),
         map(params => params[0]),
         tap({
           next: id => {
@@ -157,10 +153,8 @@ export class TreeComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.tree.set(data);
           this._goToSelectedItem();
-          console.log('data._parent_mode:', data._parent_mode);  // TODO
           this._isIgnoreParentModeChanges = true;
           this.parentModeChanged$.next(data._parent_mode);
-          this.parentMode.set(data._parent_mode);  // Из-за игнорирования изменений нужно делать вручную
           this._isIgnoreParentModeChanges = false;
         }, error: () => {
           alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
