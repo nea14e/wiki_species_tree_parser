@@ -114,12 +114,12 @@ export class TreeComponent implements OnInit, OnDestroy {
 
     const parentModeChanged$ = this.parentModeChanged$
       .pipe(
-        filter(_ => !this._isIgnoreParentModeChanges),
         tap(parentMode => {
           console.log('parentModeChanged$:', parentMode, 'signal:', this.parentMode());  // TODO
           this.parentMode.set(parentMode);
         }),
-        distinctUntilChanged()
+        distinctUntilChanged(),
+        filter(_ => !this._isIgnoreParentModeChanges)
       );
 
     this._queryParamMapIdSubscription = combineLatest([
