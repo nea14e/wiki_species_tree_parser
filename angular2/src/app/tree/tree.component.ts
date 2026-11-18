@@ -85,15 +85,15 @@ export class TreeComponent implements OnInit, OnDestroy {
   isShowBackMenu = signal(false);
   isShowForwardMenu = signal(false);
 
-  parentMode = signal<ParentModeEnum>(ParentModeEnum.all);
-  parentModeChanged$ = new BehaviorSubject<ParentModeEnum>(ParentModeEnum.all);
+  parentMode = signal<ParentModeEnum>(ParentModeEnum.regular);
+  parentModeChanged$ = new BehaviorSubject<ParentModeEnum>(ParentModeEnum.regular);
+  private _isIgnoreParentModeChanges = false;
   ParentModeEnum = ParentModeEnum;
 
   ngOnInit(): void {
     this._subscribeQueryParamMapId();
     this._subscribeQueryParamsMapAttachToTipId();
     this.openTipDialog();
-    this.parentModeChanged$.next(ParentModeEnum.regular);
   }
 
   private _subscribeQueryParamMapId() {
@@ -114,11 +114,11 @@ export class TreeComponent implements OnInit, OnDestroy {
 
     const parentModeChanged$ = this.parentModeChanged$
       .pipe(
+        filter(_ => !this._isIgnoreParentModeChanges),
         tap(parentMode => {
           console.log('parentModeChanged$:', parentMode, 'signal:', this.parentMode());  // TODO
           this.parentMode.set(parentMode);
         }),
-        filter(parentMode => this.parentMode() !== parentMode),
         distinctUntilChanged()
       );
 
@@ -158,8 +158,10 @@ export class TreeComponent implements OnInit, OnDestroy {
           this.tree.set(data);
           this._goToSelectedItem();
           console.log('data._parent_mode:', data._parent_mode);  // TODO
-          this.parentMode.set(data._parent_mode);  // ДО установки parentModeChanged$
+          this._isIgnoreParentModeChanges = true;
           this.parentModeChanged$.next(data._parent_mode);
+          this.parentMode.set(data._parent_mode);  // Из-за игнорирования изменений нужно делать вручную
+          this._isIgnoreParentModeChanges = false;
         }, error: () => {
           alert(this.rootData.translationRoot()?.translations.network_error || NETWORK_ERROR_DEFAULT_MESSAGE);
         }
