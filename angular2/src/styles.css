@@ -191,6 +191,12 @@
 .tip-of-the-day-center {
 }
 
+select {
+  background-color: var(--item-color-0);
+  border: 2px solid black;
+  border-radius: 0.5rem;
+}
+
 .parent {
   position: relative;
 }
