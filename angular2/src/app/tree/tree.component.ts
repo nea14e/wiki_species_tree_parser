@@ -28,6 +28,7 @@ import {FavoritesComponent} from '../favorites/favorites.component';
 import {SearchMediatorService} from '../search/search-mediator.service';
 import {SearchComponent} from '../search/search.component';
 import {ParentModeEnum} from '../models/parent-mode-enum';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'app-tree.component',
@@ -50,6 +51,7 @@ export class TreeComponent implements OnInit, OnDestroy {
   private _copyToClipboardService = inject(CopyToClipboardService);
   public favoritesService = inject(FavoritesService);
   private _dialog = inject(MatDialog);
+  private _toastService = inject(ToastrService);
   private _queryParamMapIdSubscription: Subscription | null = null;
 
   tree = signal<Tree | null>(null);
@@ -154,6 +156,9 @@ export class TreeComponent implements OnInit, OnDestroy {
           this.tree.set(data);
           this._goToSelectedItem();
           this._isIgnoreParentModeChanges = true;
+          if (this.parentModeChanged$.value !== data._parent_mode) {
+            this._toastService.warning(this.rootData.translationRoot()?.translations.parent_mode_changed_automatically);
+          }
           this.parentModeChanged$.next(data._parent_mode);
           this._isIgnoreParentModeChanges = false;
         }, error: () => {

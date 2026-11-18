@@ -21,6 +21,7 @@ export interface Translations {
   parent_mode_regular: string;
   parent_mode_named_only: string;
   parent_mode_all: string;
+  parent_mode_changed_automatically: string;
   go_back: string;
   go_forward: string;
   authors_content: string;

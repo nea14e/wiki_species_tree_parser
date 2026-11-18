@@ -5,11 +5,17 @@ import {routes} from './app.routes';
 import {CookieModule} from 'ngx-cookie';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from '@angular/material/dialog';
+import {ToastrModule} from 'ngx-toastr';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    importProvidersFrom(CookieModule.withOptions(), MatProgressSpinnerModule, MatDialogModule),
+    importProvidersFrom(
+      CookieModule.withOptions(),
+      MatProgressSpinnerModule,
+      MatDialogModule,
+      ToastrModule.forRoot()
+    ),
   ]
 };
