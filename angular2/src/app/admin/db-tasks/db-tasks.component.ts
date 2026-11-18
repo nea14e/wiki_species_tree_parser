@@ -1,6 +1,5 @@
 import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {DbTask} from '../models/db-task';
-import {AdminLanguage} from '../models/admin-language';
 import {RootDataKeeperService} from '../../common/root-data-keeper.service';
 import {NetworkDbTasksService} from './network-db-tasks.service';
 import {FormsModule} from '@angular/forms';
@@ -39,7 +38,6 @@ export class DbTasksComponent implements OnInit, OnDestroy {
   logShowingTaskId = signal<number | null>(null);
   logShowingTask = signal<DbTask | null>(null);
   logShowingAutoScroll = signal(true);
-  knownLanguagesAll = signal<AdminLanguage[]>([]);
 
   balloonMessage: string | null = null;
   balloonTimeoutId: number | null = null;
@@ -48,17 +46,6 @@ export class DbTasksComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.reloadList();
-
-    if (!!this.rootData.adminPassword) {
-      this.networkAdminService.getKnownLanguagesAll(this.rootData.adminPassword).subscribe(
-        {
-          next: data => {
-            this.knownLanguagesAll.set(data);
-          }, error: error => {
-            alert(error);
-          }
-        });
-    }
   }
 
   private reloadList(): void {

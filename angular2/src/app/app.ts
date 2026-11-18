@@ -8,7 +8,6 @@ import {Title} from '@angular/platform-browser';
 import {BaseNetworkAdminService} from './admin/network-admin.service';
 import {Location, NgClass} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {LanguageListItem} from './models/language-list-item';
 import {Subscription} from 'rxjs';
 
 @Component({
@@ -26,7 +25,6 @@ export class App implements OnInit, OnDestroy {
   private location = inject(Location);
   private titleService = inject(Title);
 
-  languagesList = signal<LanguageListItem[] | []>([]);
   translationRoot = signal<TranslationRoot | null>(null);
   private _languagesChangedSubscription: Subscription | null = null;
   isAdminMode = signal(false);  // активируется по URL "/admin" и его продолжениям
@@ -57,7 +55,7 @@ export class App implements OnInit, OnDestroy {
   private _getLanguagesList() {
     this.networkService.getLanguagesList().subscribe({
       next: data => {
-        this.languagesList.set(data);
+        this.rootData.languagesList.set(data);
       }, error: () => {
         alert(this.rootData.translationRoot()?.translations.network_error ?? NETWORK_ERROR_DEFAULT_MESSAGE);
       }

@@ -3,6 +3,7 @@ import {TreeComponent} from './tree/tree.component';
 import {SearchComponent} from './search/search.component';
 import {DbTasksComponent} from './admin/db-tasks/db-tasks.component';
 import {FillingStatsComponent} from './admin/filling-stats/filling-stats.component';
+import {TipTranslationComponent} from './admin/tip-translation/tip-translation.component';
 
 export const routes: Routes = [
   // {path: 'tip', component: TipOfTheDayComponent},
@@ -11,7 +12,7 @@ export const routes: Routes = [
   // { path: 'authors', component: AuthorsComponent },
   // { path: 'admin', redirectTo: 'tip' },
   {path: 'admin/db-tasks', component: DbTasksComponent},
-  // { path: 'admin/tip-translation', component: TipTranslationComponent },
+  {path: 'admin/tip-translation', component: TipTranslationComponent},
   {path: 'admin/filling-stats', component: FillingStatsComponent},
   // { path: 'admin/admin-users', component: AdminUsersComponent },
   {path: '**', redirectTo: 'tree'},

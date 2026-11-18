@@ -68,7 +68,7 @@
         <select [(ngModel)]="languageKey"
                 (change)="reload()"
         >
-          @for (lang of knownLanguagesAll(); track lang.lang_key) {
+          @for (lang of rootData.languagesList(); track lang.lang_key) {
             <option [value]="lang.lang_key"
                     [selected]="languageKey() === lang.lang_key">
               {{ lang.lang_key }} - {{ lang.comment }}

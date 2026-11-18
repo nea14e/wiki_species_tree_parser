@@ -1,0 +1,116 @@
+<div class="row router-hr"></div>
+<h3>{{ rootData.translationRoot()?.translations?.admin_db_tasks }}</h3>
+
+<!--TODO @if (rootData.canManageTips()) {
+  <div class="row ml-0 mr-0 mb-2">
+
+    <div class="btn col-auto mr-2 mt-2"
+         (click)="onCreateClick()"
+         [title]="rootData.translationRoot()?.translations?.create"
+    >
+      <img src="assets/from-bootstrap/plus.svg" class="btn-img"/>
+    </div>
+  </div>
+}-->
+
+<div class="row ml-0 mr-0 mt-4 mb-2">
+  <div>
+    @if (isTestDb()) {
+      <div>You are working with TEST database</div>
+    }
+    @if (!isTestDb()) {
+      <div class="text-warning">You are working with PRODUCTION database</div>
+    }
+    <small>To change database please edit BACKEND_IS_USE_TEST_DB variable in Config.py</small>
+  </div>
+</div>
+
+<div class="row ml-0 mr-0">
+  <table class="table table-bordered container-fluid">
+    <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+      @for (lang of rootData.languagesList(); track lang.lang_key) {
+        <th>
+          {{ lang.lang_key }}
+        </th>
+      }
+    </tr>
+    </thead>
+    <tbody>
+      @for (tip of tips(); track tip) {
+        <tr>
+          <td>
+            <div class="d-flex justify-content-start">
+              <div class="plain-list-item-img-container">
+                @if (!!tip.image_url) {
+                  <img [src]="tip.image_url"
+                       class="plain-list-item-img-content"
+                       alt="">
+                }
+              </div>
+              <div class="align-self-center">
+                <small>{{ tip.rank_by_admin || tip.rank_by_language }}</small>
+                <br/>
+                <b>{{ tip.title_by_admin || tip.title_by_latin }}</b>
+                <br/>
+                <i>{{ tip.title_by_language || tip.title_by_latin }}</i>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="col-auto mr-auto d-flex">
+              {{ getShortTipText(tip) }}
+            </div>
+          </td>
+          <td>
+            <div class="btn col-auto mr-2 mt-3"
+                 [title]="rootData.translationRoot()?.translations?.show_in_tree"
+                 (click)="!!tip.species_id ? onShowInTreeClick(tip) : $event.stopPropagation()"
+                 [class]="!!tip.species_id ? '' : 'disabled'">
+              <img src="/from-bootstrap/eye.svg"
+                   class="btn-img"
+                   alt=""/>
+            </div>
+
+            <!--TODO <div *ngIf="!rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
+                 (click)="onEditClick(tip)"
+                 [title]="rootData.translationRoot?.translations.show_details"
+            >
+              <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
+            </div>
+
+            <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
+                 [ngClass]="isEditingTip(tip) ? 'active' : ''"
+                 (click)="onEditClick(tip)"
+                 [title]="rootData.translationRoot?.translations.edit"
+            >
+              <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
+            </div>
+
+            <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
+                 (click)="onDuplicateClick(tip)"
+                 [title]="rootData.translationRoot?.translations.duplicate_and_edit"
+            >
+              <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
+            </div>
+
+            <div *ngIf="rootData.canManageTips() && !isEditingTip(tip)" class="btn col-auto mr-2 mt-3"
+                 (click)="onDeleteClick(tip)"
+                 [title]="rootData.translationRoot?.translations.delete"
+            >
+              <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
+            </div>-->
+          </td>
+          @for (lang of rootData.languagesList(); track lang.lang_key) {
+            <td>
+              {{ getLanguageFillingStatus(tip, lang) }}
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

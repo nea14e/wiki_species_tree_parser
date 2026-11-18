@@ -273,38 +273,6 @@ def _get_admin_user_id_by_password_internal(request):
     return int(user_id)
 
 
-# для этого права не нужны
-def admin_get_known_languages_all(request):
-    conn = connections["default"]
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT COALESCE(json_agg(t ORDER BY t.lang_key), '[]')
-        FROM (
-               SELECT *
-               FROM public.known_languages
-             ) t;
-    """)
-    db_response = cur.fetchone()[0]
-    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
-
-
-# для этого права не нужны
-def admin_get_main_admin_language(request):
-    conn = connections["default"]
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT json_build_object(
-                    'lang_key', lang_key,
-                    'comment', comment
-                )
-        FROM public.known_languages
-        WHERE is_main_for_admins = TRUE
-        LIMIT 1;
-    """)
-    db_response = cur.fetchone()[0]
-    return JsonResponse(db_response, safe=False)  # unsafe указывается только для функций БД на языке SQL
-
-
 # ====================================
 # Администрирование через фронтэнд - ЗАДАЧИ БД
 # ====================================

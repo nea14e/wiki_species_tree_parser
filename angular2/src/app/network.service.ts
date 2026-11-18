@@ -11,7 +11,8 @@ import {SelectedLanguageKey1} from './common/models/selected-language-key1';
 import {SelectedLanguageKey2} from './common/models/selected-language-key2';
 import {ParentModeEnum} from './models/parent-mode-enum';
 
-export const NETWORK_ERROR_DEFAULT_MESSAGE = 'Ошибка сети. Проверьте интернет-соединение.';
+export const NETWORK_ERROR_DEFAULT_MESSAGE = 'Ошибка сети. Проверьте интернет-соединение.\n' +
+  'Network error. Check your Internet connection.';
 
 @Service()
 export class NetworkService {

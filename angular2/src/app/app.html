@@ -20,7 +20,7 @@
                   [selected]="rootData.selectedLanguageKey1()==='latin'">
             Latin
           </option>
-          @for (languageItem of languagesList(); track languageItem.lang_key) {
+          @for (languageItem of rootData.languagesList(); track languageItem.lang_key) {
             <option [value]="languageItem.lang_key"
                     [selected]="rootData.selectedLanguageKey1()===languageItem.lang_key">
               {{ languageItem.lang_key + " - " + languageItem.comment }}
@@ -38,7 +38,7 @@
                   [selected]="rootData.selectedLanguageKey2()==='latin'">
             Latin
           </option>
-          @for (languageItem of languagesList(); track languageItem.lang_key) {
+          @for (languageItem of rootData.languagesList(); track languageItem.lang_key) {
             <option [value]="languageItem.lang_key"
                     [selected]="rootData.selectedLanguageKey2()===languageItem.lang_key">
               {{ languageItem.lang_key + " - " + languageItem.comment }}

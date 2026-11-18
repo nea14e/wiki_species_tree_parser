@@ -21,7 +21,7 @@ from django.urls import path
 from species_tree_backend.views import get_languages_list, get_translations, \
         get_childes_by_id, get_tree_by_id, get_tree_default, \
         search_by_words, get_tip_of_the_day, get_tip_of_the_day_by_id, check, \
-        admin_try_login, admin_get_known_languages_all, admin_get_main_admin_language, \
+        admin_try_login, \
         admin_get_tasks, admin_add_task, admin_edit_task, admin_delete_task, \
         admin_start_one_task, admin_stop_one_task, \
         admin_get_filling_stats, \
@@ -47,8 +47,6 @@ urlpatterns = [
     path('', check),
     # admin - общее
     path('api/admin_try_login', admin_try_login),
-    path('api/admin_get_known_languages_all', admin_get_known_languages_all),
-    path('api/admin_get_main_admin_language', admin_get_main_admin_language),
     # admin - задачи БД
     path('api/admin_get_tasks', admin_get_tasks),
     path('api/admin_add_task', admin_add_task),
