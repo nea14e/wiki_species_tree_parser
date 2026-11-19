@@ -532,6 +532,12 @@ def parse_levels(is_search_parent: bool, infobox, details: ListItemDetails, lang
                 raise CodeMustBeFixedException(f"URL-адрес href уровня иерархии пуст: level_title_el = '{level_title_el}'")
             if href.startswith("/wiki/"):
                 href_title = href[len("/wiki/"):]
+            elif href.startswith("/w/index.php?"):
+                href_query_params = href[len("/w/index.php?"):]
+                href_query_params = list(href_query_params.split("&"))
+                href_query_params = list(map(lambda p: p.split("="), href_query_params))
+                title_query_param = next(p for p in href_query_params if p[0] == "title")
+                href_title = title_query_param[1]
             else:
                 wiki_base_url = Config.WIKIPEDIAS_URL_MASK.format(lang_key, "")
                 if href.startswith(wiki_base_url):
