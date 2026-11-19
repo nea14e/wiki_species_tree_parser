@@ -121,20 +121,9 @@
       </div>
 
       <div class="d-flex justify-content-center align-items-center p-1">
-        @if (!!attachToTipId()) {
-          <div class="btn me-small"
-               (click)="cancelAttachingToTipId()"
-               [title]="rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id">
-            <img src="/from-bootstrap/x.svg"
-                 alt=""
-                 class="btn-img"/>
-            {{ rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id }}
-          </div>
-        } @else {
-          <img src="/from-bootstrap/search.svg"
-               alt=""
-               class="btn-img me-small"/>
-        }
+        <img src="/from-bootstrap/search.svg"
+             alt=""
+             class="btn-img me-small"/>
         <div class="position-relative flex-grow-1 me-small">
           <input #searchQueryInput
                  type="text"
@@ -224,50 +213,69 @@
 
           @if (!!item.is_selected) {
             <div class="item-btn-container">
-              @if (canReadWiki(item)) {
-                <div class="item-btn btn ml-2 mr-1"
-                     (click)="onReadWikiClick(item); $event.stopPropagation();"
-                     [title]="rootData.translationRoot()?.translations?.read_on_wiki"
-                >
-                  <img src="/from-bootstrap/layout-text-sidebar-reverse.svg"
-                       [alt]="rootData.translationRoot()?.translations?.read_on_wiki"
-                       class="item-btn-img"/>
+              @if (!!attachToTipId()) {
+                <div class="btn me-small"
+                     (click)="cancelAttachingToTipId()"
+                     [title]="rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id">
+                  <img src="/from-bootstrap/x.svg"
+                       alt=""
+                       class="btn-img"/>
+                  {{ rootData.translationRoot()?.translations?.cancel_attaching_to_tip_id }}
                 </div>
-              }
-              <div class="item-btn btn mr-1"
-                   (click)="onYandexItemClick(item); $event.stopPropagation();"
-                   [title]="rootData.translationRoot()?.translations?.search_in_yandex"
-              >
-                <img src="/from-bootstrap/globe.svg"
-                     [alt]="rootData.translationRoot()?.translations?.search_in_yandex"
-                     class="item-btn-img"/>
-              </div>
-              <div class="item-btn btn mr-1"
-                   (click)="onShareItemClick(item); $event.stopPropagation();"
-                   [title]="rootData.translationRoot()?.translations?.copy_link_to_share"
-              >
-                <img src="/from-bootstrap/share.svg"
-                     [alt]="rootData.translationRoot()?.translations?.copy_link_to_share"
-                     class="item-btn-img"/>
-              </div>
-              @if (favoritesService.isItemInFavorites(item)) {
-                <div class="item-btn btn mr-1 item-btn-highlight"
-                     (click)="onUnFavoritesItemClick(item); $event.stopPropagation();"
-                     [title]="rootData.translationRoot()?.translations?.delete_favorite"
-                >
-                  <img src="/from-bootstrap/bookmark-check-fill.svg"
-                       [alt]="rootData.translationRoot()?.translations?.delete_favorite"
-                       class="item-btn-img"/>
+                <div class="btn me-small"
+                     (click)="attachingToTipId(item)"
+                     [title]="rootData.translationRoot()?.translations?.attach_to_fact">
+                  <img src="/from-bootstrap/patch-question-fill.svg"
+                       alt=""
+                       class="btn-img"/>
+                  {{ rootData.translationRoot()?.translations?.attach_to_fact }}
                 </div>
               } @else {
+                @if (canReadWiki(item)) {
+                  <div class="item-btn btn ml-2 mr-1"
+                       (click)="onReadWikiClick(item); $event.stopPropagation();"
+                       [title]="rootData.translationRoot()?.translations?.read_on_wiki"
+                  >
+                    <img src="/from-bootstrap/layout-text-sidebar-reverse.svg"
+                         [alt]="rootData.translationRoot()?.translations?.read_on_wiki"
+                         class="item-btn-img"/>
+                  </div>
+                }
                 <div class="item-btn btn mr-1"
-                     (click)="onFavoritesItemClick(level, item); $event.stopPropagation();"
-                     [title]="rootData.translationRoot()?.translations?.add_to_favorites"
+                     (click)="onYandexItemClick(item); $event.stopPropagation();"
+                     [title]="rootData.translationRoot()?.translations?.search_in_yandex"
                 >
-                  <img src="/from-bootstrap/bookmarks.svg"
-                       [alt]="rootData.translationRoot()?.translations?.add_to_favorites"
+                  <img src="/from-bootstrap/globe.svg"
+                       [alt]="rootData.translationRoot()?.translations?.search_in_yandex"
                        class="item-btn-img"/>
                 </div>
+                <div class="item-btn btn mr-1"
+                     (click)="onShareItemClick(item); $event.stopPropagation();"
+                     [title]="rootData.translationRoot()?.translations?.copy_link_to_share"
+                >
+                  <img src="/from-bootstrap/share.svg"
+                       [alt]="rootData.translationRoot()?.translations?.copy_link_to_share"
+                       class="item-btn-img"/>
+                </div>
+                @if (favoritesService.isItemInFavorites(item)) {
+                  <div class="item-btn btn mr-1 item-btn-highlight"
+                       (click)="onUnFavoritesItemClick(item); $event.stopPropagation();"
+                       [title]="rootData.translationRoot()?.translations?.delete_favorite"
+                  >
+                    <img src="/from-bootstrap/bookmark-check-fill.svg"
+                         [alt]="rootData.translationRoot()?.translations?.delete_favorite"
+                         class="item-btn-img"/>
+                  </div>
+                } @else {
+                  <div class="item-btn btn mr-1"
+                       (click)="onFavoritesItemClick(level, item); $event.stopPropagation();"
+                       [title]="rootData.translationRoot()?.translations?.add_to_favorites"
+                  >
+                    <img src="/from-bootstrap/bookmarks.svg"
+                         [alt]="rootData.translationRoot()?.translations?.add_to_favorites"
+                         class="item-btn-img"/>
+                  </div>
+                }
               }
             </div>
           }

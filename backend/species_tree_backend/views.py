@@ -573,6 +573,8 @@ def admin_edit_tip_translation(request):
 def admin_attach_tip_to_tree(request):
     body = json.loads(request.body)
 
+    tip_id = int(body["tipId"])
+    list_id = int(body["speciesId"])
     user_id = _get_admin_user_id_by_password_internal(request)
 
     conn = connections["default"]
@@ -591,22 +593,23 @@ def admin_attach_tip_to_tree(request):
             WHERE NOT EXISTS(SELECT 1 FROM log_upd)
         )
         UPDATE public.tips_of_the_day
-        SET page_id = %(page_id)s 
+        SET list_id = %(list_id)s 
         WHERE id = %(tip_id)s
     """, {
-        "tip_id": body["tipId"],
-        "page_id": body["speciesPageUrl"],
+        "tip_id": tip_id,
+        "list_id": list_id,
         "user_id": user_id,
     }
     )
-    return JsonResponse({"is_ok": True, "message": "Tip tipId={tipId} has now speciesPageUrl={speciesPageUrl} attached."
-                        .format(tipId=body["tipId"], speciesPageUrl=body["speciesPageUrl"])})
+    return JsonResponse({"is_ok": True, "message": "Tip tipId={tipId} has now speciesId={speciesId} attached."
+                        .format(tipId=body["tipId"], speciesId=body["speciesId"])})
 
 
 @check_right_request_decorator([RIGHTS.EDIT_LANGUAGES_LIST, RIGHTS.EDIT_TIPS_LIST])
 def admin_detach_tip_from_tree(request):
     body = json.loads(request.body)
 
+    tip_id = int(body["tipId"])
     user_id = _get_admin_user_id_by_password_internal(request)
 
     conn = connections["default"]
@@ -625,10 +628,10 @@ def admin_detach_tip_from_tree(request):
             WHERE NOT EXISTS(SELECT 1 FROM log_upd)
         )
         UPDATE public.tips_of_the_day
-        SET page_id = NULL
+        SET list_id = NULL
         WHERE id = %(tip_id)s
     """, {
-        "tip_id": body["tipId"],
+        "tip_id": tip_id,
         "user_id": user_id,
     }
     )

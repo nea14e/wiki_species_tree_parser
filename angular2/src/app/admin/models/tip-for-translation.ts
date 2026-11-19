@@ -3,7 +3,7 @@ import {TranslationsByLanguages} from './translations-by-languages';
 export interface TipForTranslation {
   id: number;
   tip_on_languages: TranslationsByLanguages;
-  species_id: number;
+  species_id: number | null;
   page_id: string;
   image_url: string;
   titles_by_languages: TranslationsByLanguages;

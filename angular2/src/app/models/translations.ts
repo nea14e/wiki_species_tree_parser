@@ -58,6 +58,7 @@ export interface Translations {
   admin_create_tip: string;
   admin_edit_tip: string;
   attach_to_tree: string;
+  attach_to_fact: string;
   detach_from_tree: string;
   cancel_attaching_to_tip_id: string;
   admin_edit_translation: string;

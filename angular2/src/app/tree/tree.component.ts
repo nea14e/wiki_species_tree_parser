@@ -336,6 +336,25 @@ export class TreeComponent implements OnInit, OnDestroy {
         queryParams: {attachToTipId: null},
         queryParamsHandling: "merge"
       }
+    ).then(_ => {
+      this.attachToTipId.set(null);
+    });
+  }
+
+  attachingToTipId(item: Item) {
+    if (!confirm(this.rootData.translationRoot()?.translations.attach_to_fact + "?")) {
+      return;
+    }
+
+    this._router.navigate(
+      ['admin', 'tip-translation'],
+      {
+        queryParams: {
+          attachToTipId: this.attachToTipId(),
+          attachItemId: item.id
+        },
+        queryParamsHandling: "merge"
+      }
     );
   }
 

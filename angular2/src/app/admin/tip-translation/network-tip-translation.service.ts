@@ -37,10 +37,10 @@ export class NetworkTipTranslationService extends BaseNetworkAdminService {
     );
   }
 
-  public attachTipToTree(tipId: number, speciesPageUrl: string, adminKey: string): Observable<AdminResponse> {
+  public attachTipToTree(tipId: number, speciesId: number, adminKey: string): Observable<AdminResponse> {
     return this.pipeAdminQueries(
       this.http.post<AdminResponse>(environment.BACKEND_API_URL + 'admin_attach_tip_to_tree',
-        {adminKey, tipId, speciesPageUrl})
+        {adminKey, tipId, speciesId})
     );
   }
 

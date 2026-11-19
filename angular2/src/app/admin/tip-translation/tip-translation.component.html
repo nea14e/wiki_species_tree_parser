@@ -1,5 +1,5 @@
 <div class="row router-hr"></div>
-<h3>{{ rootData.translationRoot()?.translations?.admin_db_tasks }}</h3>
+<h3>{{ rootData.translationRoot()?.translations?.admin_tips_list }}</h3>
 
 <!--TODO @if (rootData.canManageTips()) {
   <div class="row ml-0 mr-0 mb-2">
@@ -43,7 +43,7 @@
       @for (tip of tips(); track tip) {
         <tr>
           <td>
-            <div class="d-flex justify-content-start">
+            <div class="d-flex justify-content-start me-small">
               <div class="plain-list-item-img-container">
                 @if (!!tip.image_url) {
                   <img [src]="tip.image_url"
@@ -61,48 +61,67 @@
             </div>
           </td>
           <td>
-            <div class="col-auto mr-auto d-flex">
-              {{ getShortTipText(tip) }}
+            <div class="d-flex">
+              <div class="btn col-auto me-small"
+                   [title]="rootData.translationRoot()?.translations?.show_in_tree"
+                   (click)="!!tip.species_id ? onShowInTreeClick(tip) : $event.stopPropagation()"
+                   [class.disabled]="!tip.species_id">
+                <img src="/from-bootstrap/eye.svg"
+                     class="btn-img"
+                     alt=""/>
+              </div>
+
+              <div class="btn col-auto me-small"
+                   [title]="rootData.translationRoot()?.translations?.attach_to_tree"
+                   (click)="onAttachToTreeClick(tip)">
+                <img src="/from-bootstrap/diagram-3.svg"
+                     class="btn-img"
+                     alt=""/>
+              </div>
+
+              <div class="btn col-auto me-small"
+                   [title]="rootData.translationRoot()?.translations?.detach_from_tree"
+                   (click)="!!tip.species_id ? onDetachFromTreeClick(tip) : $event.stopPropagation()"
+                   [class.disabled]="!tip.species_id">
+                <img src="/from-bootstrap/x.svg"
+                     class="btn-img"
+                     alt=""/>
+              </div>
+
+              <!--TODO <div *ngIf="!rootData.canManageTips()" class="btn col-auto me-small"
+                   (click)="onEditClick(tip)"
+                   [title]="rootData.translationRoot?.translations.show_details"
+              >
+                <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
+              </div>
+
+              <div *ngIf="rootData.canManageTips()" class="btn col-auto me-small"
+                   [ngClass]="isEditingTip(tip) ? 'active' : ''"
+                   (click)="onEditClick(tip)"
+                   [title]="rootData.translationRoot?.translations.edit"
+              >
+                <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
+              </div>
+
+              <div *ngIf="rootData.canManageTips()" class="btn col-auto me-small"
+                   (click)="onDuplicateClick(tip)"
+                   [title]="rootData.translationRoot?.translations.duplicate_and_edit"
+              >
+                <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
+              </div>
+
+              <div *ngIf="rootData.canManageTips() && !isEditingTip(tip)" class="btn col-auto me-small"
+                   (click)="onDeleteClick(tip)"
+                   [title]="rootData.translationRoot?.translations.delete"
+              >
+                <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
+              </div>-->
             </div>
           </td>
           <td>
-            <div class="btn col-auto mr-2 mt-3"
-                 [title]="rootData.translationRoot()?.translations?.show_in_tree"
-                 (click)="!!tip.species_id ? onShowInTreeClick(tip) : $event.stopPropagation()"
-                 [class]="!!tip.species_id ? '' : 'disabled'">
-              <img src="/from-bootstrap/eye.svg"
-                   class="btn-img"
-                   alt=""/>
+            <div class="col-auto mr-auto d-flex">
+              {{ getShortTipText(tip) }}
             </div>
-
-            <!--TODO <div *ngIf="!rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
-                 (click)="onEditClick(tip)"
-                 [title]="rootData.translationRoot?.translations.show_details"
-            >
-              <img src="assets/from-bootstrap/eye.svg" class="btn-img"/>
-            </div>
-
-            <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
-                 [ngClass]="isEditingTip(tip) ? 'active' : ''"
-                 (click)="onEditClick(tip)"
-                 [title]="rootData.translationRoot?.translations.edit"
-            >
-              <img src="assets/from-bootstrap/pencil-fill.svg" class="btn-img"/>
-            </div>
-
-            <div *ngIf="rootData.canManageTips()" class="btn col-auto mr-2 mt-3"
-                 (click)="onDuplicateClick(tip)"
-                 [title]="rootData.translationRoot?.translations.duplicate_and_edit"
-            >
-              <img src="assets/from-bootstrap/stickies.svg" class="btn-img"/>
-            </div>
-
-            <div *ngIf="rootData.canManageTips() && !isEditingTip(tip)" class="btn col-auto mr-2 mt-3"
-                 (click)="onDeleteClick(tip)"
-                 [title]="rootData.translationRoot?.translations.delete"
-            >
-              <img src="assets/from-bootstrap/x.svg" class="btn-img"/>
-            </div>-->
           </td>
           @for (lang of rootData.languagesList(); track lang.lang_key) {
             <td (click)="onTipTranslationClick(tip, lang)"

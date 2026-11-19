@@ -256,3 +256,7 @@ select.disabled {
   margin-top: 0.7rem;
   font-style: italic;
 }
+
+.me-small {
+  margin-right: var(--small-margin);
+}
