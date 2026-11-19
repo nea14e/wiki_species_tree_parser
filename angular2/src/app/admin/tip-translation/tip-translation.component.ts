@@ -1,10 +1,12 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectorRef, Component, inject, OnInit, signal} from '@angular/core';
 import {NetworkTipTranslationService} from './network-tip-translation.service';
 import {RootDataKeeperService} from '../../common/root-data-keeper.service';
 import {NETWORK_ERROR_DEFAULT_MESSAGE} from '../../network.service';
 import {TipForTranslation} from '../models/tip-for-translation';
 import {Router} from '@angular/router';
 import {LanguageListItem} from '../../models/language-list-item';
+import {MatDialog} from '@angular/material/dialog';
+import {EditTipTranslationComponent} from './edit-tip-translation/edit-tip-translation.component';
 
 @Component({
   selector: 'app-tip-translation.component',
@@ -21,8 +23,10 @@ export class TipTranslationComponent implements OnInit {
 
   rootData = inject(RootDataKeeperService);
   private _networkService = inject(NetworkTipTranslationService);
+  private _changeDetectorRef = inject(ChangeDetectorRef);
 
   private _router = inject(Router);
+  private _dialog = inject(MatDialog);
 
   ngOnInit() {
     this.reload();
@@ -60,7 +64,16 @@ export class TipTranslationComponent implements OnInit {
       return text!.substring(0, this.SHORT_TIP_TEXT_LENGTH) +
         (text.length > this.SHORT_TIP_TEXT_LENGTH ? "..." : "");
     }
-    return "";
+    return "-";
+  }
+
+  getShortTipTranslatedText(tip: TipForTranslation, lang: LanguageListItem) {
+    const text = tip.tip_on_languages[lang.lang_key];
+    if (!!text) {
+      return text!.substring(0, this.SHORT_TIP_TEXT_LENGTH) +
+        (text.length > this.SHORT_TIP_TEXT_LENGTH ? "..." : "");
+    }
+    return "-";
   }
 
   getLanguageFillingStatus(tip: TipForTranslation, lang: LanguageListItem) {
@@ -68,5 +81,23 @@ export class TipTranslationComponent implements OnInit {
       return "V";
     }
     return "X";
+  }
+
+  onTipTranslationClick(tip: TipForTranslation, lang: LanguageListItem) {
+    const matDialogRef = this._dialog.open(EditTipTranslationComponent, {
+      panelClass: 'customized-panel-dialog'
+    });
+    matDialogRef.componentInstance.setCallerData(tip, lang.lang_key, (savedTip) => {
+      tip.tip_on_languages = savedTip.tip_on_languages;
+      this._changeDetectorRef.markForCheck();
+    });
+  }
+
+  getColorForTipCell(tip: TipForTranslation, lang: LanguageListItem) {
+    if (!!tip.tip_on_languages[lang.lang_key]) {
+      return '#a6dca6';
+    } else {
+      return '#f57c7c';
+    }
   }
 }

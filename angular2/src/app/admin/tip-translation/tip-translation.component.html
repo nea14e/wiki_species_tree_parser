@@ -105,7 +105,10 @@
             </div>-->
           </td>
           @for (lang of rootData.languagesList(); track lang.lang_key) {
-            <td>
+            <td (click)="onTipTranslationClick(tip, lang)"
+                class="pointer"
+                [title]="getShortTipTranslatedText(tip, lang)"
+                [style.background]="getColorForTipCell(tip, lang)">
               {{ getLanguageFillingStatus(tip, lang) }}
             </td>
           }

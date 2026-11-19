@@ -71,6 +71,7 @@ export interface Translations {
   duplicate_and_edit: string;
   delete: string;
   save: string;
+  confirm_save: string;
   cancel: string;
   success: string;
   admin_editing_now: string;

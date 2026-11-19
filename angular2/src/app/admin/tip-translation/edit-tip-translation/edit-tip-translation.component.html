@@ -1,0 +1,94 @@
+<div class="customized-panel-dialog-content container-fluid">
+
+  <div class="d-flex align-items-center">
+    <h3 class="m-2 flex-grow-1 text-center">
+      {{ rootData.translationRoot()?.translations?.tip_of_the_day_word + " #" + (!!tip() ? tip().id : "") }}
+    </h3>
+    <img src="/from-bootstrap/x.svg"
+         (click)="onCancelClick()"
+         [alt]="rootData.translationRoot()?.translations?.close"
+         class="btn-img cursor-pointer"/>
+  </div>
+
+  @if (!!tip()) {
+    <div class="d-flex">
+
+      <div class="col-6">
+        <div class="d-flex mb-2">
+          <img src="/from-bootstrap/translate.svg"
+               [alt]="rootData.translationRoot()?.translations?.language"
+               class="btn-img me-1"/>
+          <select [ngModel]="langKey1()"
+                  (ngModelChange)="setLang1($event)"
+                  class="me-1">
+            @for (languageItem of rootData.languagesList(); track languageItem.lang_key) {
+              <option [value]="languageItem.lang_key"
+                      [selected]="langKey1()===languageItem.lang_key">
+                {{ languageItem.lang_key + " - " + languageItem.comment }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="row">
+          @if (!!tip().image_url) {
+            <div class="col-auto mb-2">
+              <img [src]="'https:' + tip().image_url" alt="">
+            </div>
+          }
+          <div class="col-auto d-flex mb-2">
+            <p class="col-8 font-weight-bold align-self-center">{{ tip().tip_on_languages[langKey1()] }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="d-flex mb-2">
+          <img src="/from-bootstrap/translate.svg"
+               [alt]="rootData.translationRoot()?.translations?.language"
+               class="btn-img me-1"/>
+          <select [ngModel]="langKey2()"
+                  disabled
+                  class="me-1">
+            @for (languageItem of rootData.languagesList(); track languageItem.lang_key) {
+              <option [value]="languageItem.lang_key"
+                      [selected]="langKey2()===languageItem.lang_key">
+                {{ languageItem.lang_key + " - " + languageItem.comment }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="row">
+          @if (!!tip().image_url) {
+            <div class="col-auto mb-2">
+              <img [src]="'https:' + tip().image_url" alt="">
+            </div>
+          }
+          <div class="col-auto d-flex mb-2">
+          <textarea [(ngModel)]="tip().tip_on_languages[langKey2()]"
+                    (keyup)="autoGrowTextArea($event)"
+                    class="resize-horizontal not-too-small-textarea">
+          </textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <div class="d-flex justify-content-between align-items-center m-2">
+    <div class="btn me-2"
+         (click)="onCancelClick()"
+    >
+      <img src="/from-bootstrap/arrow-left.svg" class="btn-img" alt=""/>
+      {{ rootData.translationRoot()?.translations?.cancel }}
+    </div>
+
+    <div class="btn"
+         (click)="onSaveClick()"
+    >
+      <img src="/from-bootstrap/check-2.svg" class="btn-img" alt=""/>
+      {{ rootData.translationRoot()?.translations?.save }}
+    </div>
+  </div>
+
+</div>
