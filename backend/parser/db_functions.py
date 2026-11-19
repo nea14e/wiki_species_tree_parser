@@ -124,8 +124,6 @@ class DbFunctions:
         run_script("fill_tables", "known_languages_ANY_set_main", "Таблица public.known_languages (для прода/теста) - выбор основного языка для администрирования")
         if is_test:
             run_script("fill_tables", "tips_of_the_day_TEST", "Таблица public.tips_of_the_day (для теста)")
-        else:
-            run_script("fill_tables", "tips_of_the_day_PROD", "Таблица public.tips_of_the_day (для прода)")
 
         # Хранимки для выдачи данных
         # (триггерные функции надо писать в скрипте создания их таблицы)
