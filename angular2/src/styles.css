@@ -197,6 +197,18 @@ select {
   border-radius: 0.5rem;
 }
 
+select:hover:not(:disabled):not(.disabled) {
+  background-color: var(--item-color-1);
+}
+
+select:disabled {
+  background-color: lightgray;
+}
+
+select.disabled {
+  background-color: lightgray;
+}
+
 .parent {
   position: relative;
 }
