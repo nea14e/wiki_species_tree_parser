@@ -1,15 +1,12 @@
 DO $$
   BEGIN
-    IF EXISTS(
+    IF NOT EXISTS(
         SELECT 1
         FROM pg_class tbl
                INNER JOIN pg_attribute col ON col.attrelid = tbl.oid
         WHERE tbl.relname = 'tips_of_the_day'
-          AND col.attname = 'page_id') THEN
-              
-      ALTER TABLE public.tips_of_the_day
-        DROP COLUMN IF EXISTS page_id;
-              
+          AND col.attname = 'list_id') THEN
+                            
       ALTER TABLE public.tips_of_the_day
         ADD COLUMN IF NOT EXISTS list_id bigint;
         

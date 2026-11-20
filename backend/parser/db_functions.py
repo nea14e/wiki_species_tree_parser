@@ -88,7 +88,6 @@ class DbFunctions:
 
         # Таблица с советами дня
         create_table("tips_of_the_day", "Таблица с советами дня")
-        run_script("tables", "tips_of_the_day_ADD_page_url")
         run_script("tables", "tips_of_the_day_CHANGE_page_id_TO_list_id")
 
         # Таблица с названиями на разных языках
