@@ -30,6 +30,7 @@ class Config:
     NEXT_LIST_PAGE_DELAY = 1.0  # Для составления списка
     NEXT_DETAILS_PAGE_DELAY = 1.0  # Для детализации
     NEXT_CORRECT_PARENTS_DELAY = 1.0  # Для поиска родителей
+    NEXT_UPDATE_LEAVES_COUNT_DELAY = 1.0  # Для подсчёта количества листьев
     TOO_MANY_REQUESTS_ADDITIONAL_DELAY = 10.0  # Дополнительное ожидание, когда запросы шлём слишком часто
 
     # URL-адреса и маски для них. Иногда надо их править.

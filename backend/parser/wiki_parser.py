@@ -971,10 +971,11 @@ def _update_leaves_count_internal(parent_id_field_name: str, leaves_count_field_
         row_count = int(db_iterator.fetchone()[0])
         if row_count > 0:
             Logger.print(f"Количество листьев обновлено для {row_count} узлов дерева. Повторяем...")
-            iteration_counter += 1
         else:
             Logger.print("Узлов без количества листьев больше нет.")
             break
+        iteration_counter += 1
+        time.sleep(Config.NEXT_UPDATE_LEAVES_COUNT_DELAY)
 
     Logger.print(f"Стирание отметок на листьях...")
     sql = f"""
