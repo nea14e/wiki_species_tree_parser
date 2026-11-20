@@ -76,12 +76,12 @@ def get_childes_by_id(request,
 
 # Выдаёт дерево, раскрытое на записи с нужным id (уровни до него и все его прямые потомки на разных уровнях)
 @get_language_decorator()
-def get_tree_by_id(request, _id: int, language_key1: str, language_key2: str):
+def get_tree_by_id_short(request, _id: int, language_key1: str, language_key2: str):
     parent_mode = str(request.GET.get('parent_mode'))
     conn = connections["default"]
     cur = conn.cursor()
     cur.execute("""
-        SELECT public.get_tree_by_id(
+        SELECT public.get_tree_by_id_short(
             _id := %s,
             _parent_mode := %s,
             _language_key1 := %s, 

@@ -130,7 +130,7 @@ class DbFunctions:
         Logger.print("Хранимки и прочие скрипты:")
         run_script("functions", "get_translations", "Хранимка по выдаче перевода...")
         run_script("functions", "get_tree_default", "Хранимка для выдачи дерева по умолчанию: перенакатываем...")
-        run_script("functions", "get_tree_by_id", "Хранимка для выдачи дерева по id: перенакатываем...")
+        run_script("functions", "get_tree_by_id_short", "Хранимка для выдачи дерева по id (сокращенный вариант): перенакатываем...")
         run_script("functions", "get_childes_by_id", "Хранимка для подгрузки потомков дерева по id: перенакатываем...")
         run_script("functions", "search_by_words", "Хранимка по поиску: перенакатываем...")
         run_script("functions", "get_tip_of_the_day", "Хранимка по выдаче совета дня...")

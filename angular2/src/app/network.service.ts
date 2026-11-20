@@ -58,7 +58,7 @@ export class NetworkService {
       language_key2 = "null"
     }
     return this._http.get<Tree>(
-      environment.BACKEND_API_URL + 'get_tree_by_id/' + id,
+      environment.BACKEND_API_URL + 'get_tree_by_id_short/' + id,  // Сокращённый вариант дерева
       {
         params: {
           parent_mode: parentMode.toString(),
